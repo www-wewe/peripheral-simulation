@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: PeripheralSimulation
+Bundle-SymbolicName: PeripheralSimulation;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: peripheralsimulation.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-23
+Automatic-Module-Name: PeripheralSimulation
+Import-Package: jakarta.inject;version="[2.0.0,3.0.0)"
+Bundle-ActivationPolicy: lazy
+Bundle-ClassPath: ., libs/devs.jar, libs/devs-utilities.jar
+
