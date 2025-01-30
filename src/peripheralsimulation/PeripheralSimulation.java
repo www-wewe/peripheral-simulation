@@ -30,9 +30,5 @@ public class PeripheralSimulation extends digraph {
     	return super.Out();
     }
     
-    public String getSimulationOutput() {
-        // Vráťte výstup simulácie (napr. stav periférií)
-        return "Príkladová správa"; // Nahradiť skutočnými dátami
-    }
 }
 

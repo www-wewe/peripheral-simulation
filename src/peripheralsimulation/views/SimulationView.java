@@ -1,6 +1,7 @@
 package peripheralsimulation.views;
 
 
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -20,7 +21,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.part.ViewPart;
 
-
+import model.modeling.MessageInterface;
 import model.modeling.digraph;
 import model.simulation.coordinator;
 import GenCol.entity;
@@ -58,6 +59,8 @@ public class SimulationView extends ViewPart {
 	private Action action2;
 	private Action doubleClickAction;
 	private Table table;
+    private Label statusLabel;
+    private Button runSimulationButton;
 	 
 
 	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
@@ -75,81 +78,93 @@ public class SimulationView extends ViewPart {
 		}
 	}
 
-	@Override
-	public void createPartControl(Composite parent) {
-		// Nastavenie layoutu
-        parent.setLayout(new FillLayout(SWT.VERTICAL));
+	 @Override
+	    public void createPartControl(Composite parent) {
+	        // Nastavenie layoutu
+	        parent.setLayout(new FillLayout(SWT.VERTICAL));
 
-        // Štítok na stav simulácie
-        Label statusLabel = new Label(parent, SWT.NONE);
-        statusLabel.setText("Simulácia prebieha...");
+	        // Štítok na stav simulácie
+	        statusLabel = new Label(parent, SWT.NONE);
+	        statusLabel.setText("Kliknite na tlačidlo na spustenie simulácie...");
 
-        // Tabuľka na zobrazenie výstupu simulácie
-        table = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
-        table.setHeaderVisible(true);
-        table.setLinesVisible(true);
+	        // Tlačidlo na spustenie simulácie
+	        runSimulationButton = new Button(parent, SWT.PUSH);
+	        runSimulationButton.setText("Spustiť simuláciu");
 
-        // Stĺpce tabuľky
-        TableColumn timeColumn = new TableColumn(table, SWT.NONE);
-        timeColumn.setText("Čas");
-        timeColumn.setWidth(100);
+	        // Tabuľka na zobrazenie výstupu simulácie
+	        table = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+	        table.setHeaderVisible(true);
+	        table.setLinesVisible(true);
 
-        TableColumn messageColumn = new TableColumn(table, SWT.NONE);
-        messageColumn.setText("Správa");
-        messageColumn.setWidth(300);
+	        // Stĺpce tabuľky
+	        TableColumn timeColumn = new TableColumn(table, SWT.NONE);
+	        timeColumn.setText("Čas");
+	        timeColumn.setWidth(100);
 
-        // Spustenie simulácie v samostatnom vlákne
-        Thread simulationThread = new Thread(() -> {
-            try {
-                // Inicializácia modelu simulácie
-                PeripheralSimulation model = new PeripheralSimulation();
-                coordinator simulator = new coordinator(model);
+	        TableColumn messageColumn = new TableColumn(table, SWT.NONE);
+	        messageColumn.setText("Správa");
+	        messageColumn.setWidth(300);
 
-                // Inicializácia simulátora
-                simulator.initialize();
+	        // Nastavenie akcie na stlačenie tlačidla
+	        runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
+	    }
 
-                // Simulácia krokov
-                while (simulator.getTN() < Double.POSITIVE_INFINITY) { // Pokračuje, kým má simulácia udalosti
-                    simulator.simulate(1); // Jeden časový krok
+	    private void runSimulation() {
+	        // Spustenie simulácie v samostatnom vlákne
+	        Thread simulationThread = new Thread(() -> {
+	            try {
+	                // Inicializácia modelu simulácie
+	                PeripheralSimulation model = new PeripheralSimulation();
+	                coordinator simulator = new coordinator(model);
 
-                    // Získanie aktuálneho času
-                    double currentTime = simulator.getTN();
+	                // Inicializácia simulátora
+	                simulator.initialize();
+	                Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia prebieha..."));
 
-                    // Získanie výstupov z modelu
-                    String outputMessage = model.getSimulationOutput();
+	                // Simulácia krokov
+	                while (simulator.getTN() < Double.POSITIVE_INFINITY) { // Pokračuje, kým má simulácia udalosti
+	                    simulator.simulate(1); // Jeden časový krok
 
-                    // Aktualizácia tabuľky vo vlákne GUI
-                    Display.getDefault().asyncExec(() -> {
-                        if (outputMessage != null && !outputMessage.isEmpty()) {
-                            TableItem item = new TableItem(table, SWT.NONE);
-                            item.setText(new String[] { String.valueOf(currentTime), outputMessage });
-                        }
-                    });
-                }
+	                    // Získanie aktuálneho času
+	                    double currentTime = simulator.getTN();
 
-                // Simulácia dokončená
-                Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
-            } catch (Exception e) {
-                e.printStackTrace();
-                Display.getDefault().asyncExec(() -> statusLabel.setText("Chyba počas simulácie."));
-            }
-        });
+	                    // Získanie výstupov z modelu
+	                    MessageInterface<Object> outputMessage = simulator.getOutput();
 
-        simulationThread.start();
-		
+	                    System.out.println("outputMessage: " + outputMessage);
+	                    System.out.println(simulator.getOutputForTimeView());
+
+	                    // Aktualizácia tabuľky vo vlákne GUI
+	                    Display.getDefault().asyncExec(() -> {
+	                        if (outputMessage != null && !outputMessage.isEmpty()) {
+	                            TableItem item = new TableItem(table, SWT.NONE);
+	                            item.setText(new String[] { String.valueOf(currentTime), outputMessage.toString() });
+	                        }
+	                    });
+	                }
+
+	                // Simulácia dokončená
+	                Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
+	            } catch (Exception e) {
+	                e.printStackTrace();
+	                Display.getDefault().asyncExec(() -> statusLabel.setText("Chyba počas simulácie."));
+	            }
+	        });
+
+	        simulationThread.start();
+	    }
+
 //		  viewer = new TableViewer(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL);
 //		  
 //		  viewer.setContentProvider(ArrayContentProvider.getInstance());
 //		  viewer.setInput(new String[] { "One", "Two", "Three" });
 //		  viewer.setLabelProvider(new ViewLabelProvider());
-		  
-		  // Create the help context id for the viewer's control
-		  workbench.getHelpSystem().setHelp(viewer.getControl(),
-		  "PeripheralSimulation.viewer"); getSite().setSelectionProvider(viewer);
-		  makeActions(); hookContextMenu(); hookDoubleClickAction();
-		  contributeToActionBars();
-		 
-	}
+	
+	// Create the help context id for the viewer's control
+//		  workbench.getHelpSystem().setHelp(viewer.getControl(),
+//		  "PeripheralSimulation.viewer"); getSite().setSelectionProvider(viewer);
+//		  makeActions(); hookContextMenu(); hookDoubleClickAction();
+//		  contributeToActionBars();
 
 	private void hookContextMenu() {
 		MenuManager menuMgr = new MenuManager("#PopupMenu");

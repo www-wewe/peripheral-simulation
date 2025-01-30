@@ -10,5 +10,15 @@ Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: PeripheralSimulation
 Import-Package: jakarta.inject;version="[2.0.0,3.0.0)"
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: ., libs/devs.jar, libs/devs-utilities.jar
+Bundle-ClassPath: .,
+ libs/devs.jar,
+ libs/devs-utilities.jar,
+ libs/com.ibm.icu_58.2.0.v20170418-1837.jar,
+ libs/DEVS-View-20221215-Java11.jar,
+ libs/fmu-wrapper-2.26.2.jar,
+ libs/gson-2.9.0.jar,
+ libs/chartengineapi.jar,
+ libs/jna-4.1.0.jar,
+ libs/js.jar,
+ libs/simple-xml-2.7.1.jar
 
