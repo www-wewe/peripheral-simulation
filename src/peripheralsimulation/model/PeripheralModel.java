@@ -1,4 +1,4 @@
-package peripheralsimulation.engine;
+package peripheralsimulation.model;
 
 public interface PeripheralModel {
 

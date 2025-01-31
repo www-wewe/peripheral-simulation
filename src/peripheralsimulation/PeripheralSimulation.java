@@ -1,34 +1,27 @@
 package peripheralsimulation;
 
-import model.modeling.*;
-import model.simulation.*;
-import peripheralsimulation.engine.SCTimerModel;
+import model.modeling.digraph;
+import peripheralsimulation.engine.InputGenerator;
+import peripheralsimulation.model.SCTimerModel;
 
 public class PeripheralSimulation extends digraph {
+
     public PeripheralSimulation() {
         super("PeripheralSimulation");
 
-        // Vytvorte atomic model pre SCTimer
+        InputGenerator generator = new InputGenerator();
         SCTimerModel timer = new SCTimerModel();
 
-        // Pridajte model do simulácie
+        add(generator);
         add(timer);
 
-        // Definujte porty na coupled modeli
         addInport("globalStart");
         addOutport("globalTimeout");
 
-        // Prepojte globalStart s input portom timeru
         addCoupling(this, "globalStart", timer, "start");
-
-        // Prepojte output port timeru s globalTimeout
         addCoupling(timer, "timeout", this, "globalTimeout");
-    }
-    @Override
-    public MessageInterface<Object> Out() {
-    	// TODO Auto-generated method stub
-    	return super.Out();
-    }
-    
-}
+        addCoupling(generator, "start", timer, "start");
 
+        System.out.println("[PeripheralSimulation] Model inicializovaný s prepojeniami.");
+    }
+}
