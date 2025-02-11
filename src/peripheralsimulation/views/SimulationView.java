@@ -1,6 +1,7 @@
 package peripheralsimulation.views;
 
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -9,10 +10,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.SWT;
 import jakarta.inject.Inject;
+import peripheralsimulation.CounterSimulation;
 import peripheralsimulation.PeripheralSimulation;
+import peripheralsimulation.SCTimerSimulation;
 import peripheralsimulation.engine.SimulationCore;
+import peripheralsimulation.model.Peripheral;
 
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.TableItem;
@@ -37,6 +40,7 @@ public class SimulationView extends ViewPart {
 	private Button pauseSimulationButton;
 	private Button stopSimulationButton;
 	private SimulationCore simulationCore;
+	private Combo combo;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -82,7 +86,7 @@ public class SimulationView extends ViewPart {
 		// Start simulation button
 		runSimulationButton = new Button(parent, SWT.PUSH);
 		runSimulationButton.setText("Spustiť simuláciu");
-		runSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		runSimulationButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
 		if (simulationCore == null || !simulationCore.isSimulationRunning()) {
 			runSimulationButton.setEnabled(true);
@@ -100,17 +104,39 @@ public class SimulationView extends ViewPart {
 		} else {
 			stopSimulationButton.setEnabled(false);
 		}
+
+		// label ku comboboxu
+		Label comboLabel = new Label(parent, SWT.NONE);
+		comboLabel.setText("Vyberte perifériu:");
+		comboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		
+		// combobox na výber periférie
+		combo = new Combo(parent, SWT.READ_ONLY);
+		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		combo.add(Peripheral.SCTIMER.toString());
+		combo.add(Peripheral.COUNTER.toString());
+		combo.select(0);
 	}
 
 	private void runSimulation() {
 		if (simulationCore == null) {
-			PeripheralSimulation model = new PeripheralSimulation();
-			simulationCore = new SimulationCore(model, this::updateTable);
+			PeripheralSimulation peripheralSimulation;
+			switch (combo.getText()) {
+			case "SCTimer":
+				peripheralSimulation = new SCTimerSimulation();
+				break;
+			case "Counter":
+				peripheralSimulation = new CounterSimulation();
+				break;
+			default:
+				throw new IllegalArgumentException("Neznáma periféria.");
+			}
+			simulationCore = new SimulationCore(peripheralSimulation, this::updateTable);
 		}
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia beží..."));
 		Thread simulationThread = new Thread(() -> {
 			try {
-				simulationCore.startSimulation(100); // Spustíme na 100 krokov
+				simulationCore.startSimulation(Integer.MAX_VALUE); // FIXME: nekonečno?
 				if (!simulationCore.isSimulationPaused()) {
 					Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
 				}

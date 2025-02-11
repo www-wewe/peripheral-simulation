@@ -4,7 +4,7 @@ import model.modeling.atomic;
 import model.modeling.message;
 import GenCol.entity;
 
-public class SCTimerModel extends atomic {
+public class SCTimerModel extends atomic implements PeripheralModel {
     private int timerValue;
 
     public SCTimerModel() {

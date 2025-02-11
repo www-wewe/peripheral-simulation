@@ -3,6 +3,7 @@ package peripheralsimulation.engine;
 import java.util.function.BiConsumer;
 import model.modeling.digraph;
 import model.simulation.coordinator;
+import peripheralsimulation.PeripheralSimulation;
 
 /**
  * Universal simulation core, which is able to simulate any peripheral model.
@@ -15,8 +16,11 @@ public class SimulationCore {
 	private int start;
 	private BiConsumer<Double, String> outputHandler;
 
-	public SimulationCore(digraph model, BiConsumer<Double, String> outputHandler) {
-		this.simulator = new coordinator(model);
+	public SimulationCore(PeripheralSimulation simulation, BiConsumer<Double, String> outputHandler) {
+		if (!(simulation instanceof digraph s)) {
+            throw new IllegalArgumentException("Model musí byť typu diagraph.");
+        }
+		this.simulator = new coordinator(s);
 		this.outputHandler = outputHandler;
 		this.running = false;
 		this.paused = false;
@@ -30,7 +34,6 @@ public class SimulationCore {
 			simulator.initialize();
 		}
 		for (int i = start; i < steps && running; i++) {
-			System.out.println("[SimulationCore] Iterácia " + i);
 			if (paused) {
 				start = i;
 				System.out.println("[SimulationCore] Simulácia pozastavená.");
