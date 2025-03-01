@@ -10,11 +10,11 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.SWT;
 import jakarta.inject.Inject;
-import peripheralsimulation.CounterSimulation;
-import peripheralsimulation.PeripheralSimulation;
-import peripheralsimulation.SCTimerSimulation;
-import peripheralsimulation.engine.SimulationCore;
+import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.model.Peripheral;
+import peripheralsimulation.model.PeripheralModel;
+import peripheralsimulation.model.SCTimerModel;
+import peripheralsimulation.model.CounterModel;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -37,14 +37,13 @@ public class SimulationView extends ViewPart {
 	private Table table;
 	private Label statusLabel;
 	private Button runSimulationButton;
-	private Button pauseSimulationButton;
 	private Button stopSimulationButton;
-	private SimulationCore simulationCore;
+	private SimulationEngine simulationCore;
 	private Combo combo;
 
 	@Override
 	public void createPartControl(Composite parent) {
-		GridLayout layout = new GridLayout(2, false);
+		GridLayout layout = new GridLayout(3, false);
 		parent.setLayout(layout);
 
 		// Štítok na stav simulácie
@@ -54,7 +53,7 @@ public class SimulationView extends ViewPart {
 
 		makeButtons(parent);
 
-		// Tabuľka na zobrazenie výstupu simulácie
+		// Tabuľka na zobrazenie výstupu simulácie // neskôr graf?
 		table = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		table.setHeaderVisible(true);
 		table.setLinesVisible(true);
@@ -72,16 +71,6 @@ public class SimulationView extends ViewPart {
 	}
 
 	private void makeButtons(Composite parent) {
-		// Pause simulation button
-		pauseSimulationButton = new Button(parent, SWT.PUSH);
-		pauseSimulationButton.setText("Pauznúť simuláciu");
-		pauseSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		pauseSimulationButton.addListener(SWT.Selection, event -> pauseSimulation());
-		if (simulationCore != null && simulationCore.isSimulationRunning()) {
-			pauseSimulationButton.setEnabled(true);
-		} else {
-			pauseSimulationButton.setEnabled(false);
-		}
 
 		// Start simulation button
 		runSimulationButton = new Button(parent, SWT.PUSH);
@@ -107,9 +96,9 @@ public class SimulationView extends ViewPart {
 
 		// label ku comboboxu
 		Label comboLabel = new Label(parent, SWT.NONE);
-		comboLabel.setText("Vyberte perifériu:");
+		comboLabel.setText("Vyberte perifériu: ");
 		comboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-		
+
 		// combobox na výber periférie
 		combo = new Combo(parent, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
@@ -120,24 +109,26 @@ public class SimulationView extends ViewPart {
 
 	private void runSimulation() {
 		if (simulationCore == null) {
-			PeripheralSimulation peripheralSimulation;
+			simulationCore = new SimulationEngine(this::updateTable);
+			PeripheralModel simulationModel;
 			switch (combo.getText()) {
 			case "SCTimer":
-				peripheralSimulation = new SCTimerSimulation();
+				simulationModel = new SCTimerModel();
 				break;
 			case "Counter":
-				peripheralSimulation = new CounterSimulation();
+				simulationModel = new CounterModel(5, 1, 0, 1.0); // overflowValue, increment, initialValue, timeStep
 				break;
 			default:
 				throw new IllegalArgumentException("Neznáma periféria.");
 			}
-			simulationCore = new SimulationCore(peripheralSimulation, this::updateTable);
+			simulationCore.addPeripheral(simulationModel);
 		}
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia beží..."));
 		Thread simulationThread = new Thread(() -> {
 			try {
+				simulationCore.initSimulation();
 				simulationCore.startSimulation(Integer.MAX_VALUE); // FIXME: nekonečno?
-				if (!simulationCore.isSimulationPaused()) {
+				if (!simulationCore.isSimulationRunning()) {
 					Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
 				}
 			} catch (Exception e) {
@@ -149,28 +140,19 @@ public class SimulationView extends ViewPart {
 		simulationThread.start();
 
 		runSimulationButton.setEnabled(false);
-		pauseSimulationButton.setEnabled(true);
 		stopSimulationButton.setEnabled(true);
 	}
 
-	private void updateTable(Double currentTime, String outputMessage) {
+	private void updateTable(double timeValue, int counterValue) {
 		Display.getDefault().asyncExec(() -> {
 			TableItem item = new TableItem(table, SWT.NONE);
-			item.setText(new String[] { String.valueOf(currentTime), outputMessage });
+			item.setText(new String[] { String.valueOf(timeValue), String.valueOf(counterValue) });
 		});
-	}
-
-	private void pauseSimulation() {
-		simulationCore.pauseSimulation();
-		runSimulationButton.setEnabled(true);
-		pauseSimulationButton.setEnabled(false);
-		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia pozastavená."));
 	}
 
 	private void stopSimulation() {
 		simulationCore.stopSimulation();
 		runSimulationButton.setEnabled(true);
-		pauseSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(false);
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia zastavená."));
 	}

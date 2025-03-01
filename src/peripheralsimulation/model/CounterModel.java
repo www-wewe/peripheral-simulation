@@ -1,75 +1,54 @@
 package peripheralsimulation.model;
 
-import model.modeling.atomic;
-import model.modeling.message;
-import GenCol.entity;
+import peripheralsimulation.engine.SimulationEngine;
 
 /**
- * CounterModel je DEVS atomický model, ktorý reprezentuje čítač.
- * Spracováva vstupné správy "increment" a zvyšuje svoju internú hodnotu.
- * Každých 5 časových jednotiek odosiela svoju aktuálnu hodnotu na výstup.
+ * A simple counter model that increments at a fixed interval and wraps back to
+ * zero upon reaching an overflow value.
  */
-public class CounterModel extends atomic implements PeripheralModel {
-    private int count; // Aktuálna hodnota čítača
+public class CounterModel implements PeripheralModel {
 
-    /**
-     * Konštruktor modelu CounterModel.
-     * Inicializuje názov modelu a pridáva vstupný port "increment" a výstupný port "output".
-     */
-    public CounterModel() {
-        super("CounterModel");
-        addInport("increment");
-        addOutport("output");
-        count = 0;
-    }
+	private int overflowValue; // e.g., 255 for 8-bit, 65535 for 16-bit, etc.
+	private int increment; // increment of current value each time step
+	private int currentValue; // internal counter
+	private double timeStep; // e.g., 1.0 for each iteration
 
-    /**
-     * Externá prechodová funkcia (delta-ext).
-     * Spracováva prichádzajúce správy na porte "increment" a zvyšuje hodnotu čítača.
-     * 
-     * @param e Uplynutý čas od poslednej udalosti.
-     * @param x Vstupná správa obsahujúca signál "increment".
-     */
-    @Override
-    public void deltext(double e, message x) {
-        if (messageOnPort(x, "increment", 0)) {
-            count++;
-            System.out.println("[CounterModel] Prijatý signál INCREMENT, nová hodnota: " + count);
-        }
-    }
+	public CounterModel(int overflowValue, int increment, int initialValue, double timeStep) {
+		this.overflowValue = overflowValue;
+		this.increment = increment;
+		this.currentValue = initialValue;
+		this.timeStep = timeStep;
+	}
 
-    /**
-     * Interná prechodová funkcia (delta-int).
-     * Po každom naplánovanom výstupe model zostáva aktívny a udržiava svoju hodnotu.
-     */
-    @Override
-    public void deltint() {
-        passivate(); // Čítač ostáva v aktuálnom stave, kým nepríde nový podnet.
-    }
+	@Override
+	public void initialize(SimulationEngine engine) {
+		// Schedule the first increment
+		scheduleIncrement(engine, engine.getCurrentTime() + timeStep);
+	}
 
-    /**
-     * Výstupná funkcia (lambda).
-     * Posiela aktuálnu hodnotu čítača na výstup každých 5 časových jednotiek.
-     * 
-     * @return message obsahujúca aktuálnu hodnotu čítača.
-     */
-    @Override
-    public message out() {
-        message m = new message();
-        System.out.println("[CounterModel] Odosielam aktuálnu hodnotu: " + count);
-        m.add(makeContent("output", new entity(String.valueOf(count))));
-        return m;
-    }
+	private void scheduleIncrement(SimulationEngine engine, double eventTime) {
+		engine.scheduleEvent(eventTime, () -> update(engine));
+	}
 
-    /**
-     * Časová funkcia (ta).
-     * Určuje interval, v ktorom model odosiela výstupnú hodnotu.
-     * 
-     * @return Čas do ďalšej udalosti (5.0 jednotiek času).
-     */
-    @Override
-    public double ta() {
-        return 5.0; // Každých 5 časových jednotiek posiela výstupnú hodnotu
-    }
+	@Override
+	public void update(SimulationEngine engine) {
+		// Increment logic
+		currentValue += increment;
+		if (currentValue > overflowValue) {
+			currentValue = 0; // Overflow resets to zero
+		}
+
+		System.out.println("[CounterPeripheral] time=" + engine.getCurrentTime() +
+				", currentValue=" + currentValue);
+
+		// Next increment
+		double nextTime = engine.getCurrentTime() + timeStep;
+		scheduleIncrement(engine, nextTime);
+	}
+
+	@Override
+	public int getCurrentValue() {
+		return currentValue;
+	}
+
 }
-
