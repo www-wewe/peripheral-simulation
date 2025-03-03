@@ -7,44 +7,5 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="libs/com.ibm.icu_58.2.0.v20170418-1837.jar"/>
-	<classpathentry kind="lib" path="libs/DEVS-View-20221215-Java11.jar"/>
-	<classpathentry kind="lib" path="libs/fmu-wrapper-2.26.2.jar"/>
-	<classpathentry kind="lib" path="libs/gson-2.9.0.jar"/>
-	<classpathentry kind="lib" path="libs/chartengineapi.jar"/>
-	<classpathentry kind="lib" path="libs/jna-4.1.0.jar"/>
-	<classpathentry kind="lib" path="libs/js.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.core_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.core.ui_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.device.extension_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.device.swt_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.engine_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.engine.extension_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.timeview.event_1.0.0.201905311724.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.timeview.piecewiseconstant_1.0.0.201905311724.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.ui_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.birt.chart.ui.extension_4.8.0.v201806261756.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.core.commands_3.9.100.v20180404-1234.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.core.contenttype_3.7.0.v20180426-1644.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.core.jobs_3.10.0.v20180427-1454.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.core.runtime_3.14.0.v20180417-0825.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.e4.ui.workbench3_0.14.100.v20180403-0945.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.common_2.14.0.v20180527-1134.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore_2.14.0.v20180529-1144.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.emf.ecore.xmi_2.14.0.v20180129-1548.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.equinox.app_1.3.500.v20171221-2204.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.equinox.common_3.10.0.v20180412-1130.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.equinox.preferences_3.7.100.v20180510-1129.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.equinox.registry_3.8.0.v20180426-1327.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.jface_3.14.0.v20180423-0714.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.osgi_3.13.0.v20180409-1500.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.osgi.compatibility.state_1.1.100.v20180331-1743.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.swt_3.107.0.v20180611-0422.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.swt.win32.win32.x86_64_3.107.0.v20180611-0422.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.ui_3.109.100.v20180426-0903.jar"/>
-	<classpathentry kind="lib" path="libs/org.eclipse.ui.workbench_3.111.0.v20180524-1156.jar"/>
-	<classpathentry kind="lib" path="libs/postgresql-42.2.14.jar"/>
-	<classpathentry kind="lib" path="libs/postgresql-42.2.5.jar"/>
-	<classpathentry kind="lib" path="libs/simple-xml-2.7.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
