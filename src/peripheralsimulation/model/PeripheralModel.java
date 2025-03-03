@@ -25,6 +25,8 @@ public interface PeripheralModel {
 
 	/**
 	 * Called by the SimulationEngine at each time step.
+	 * Schedule next increment only if the simulation is running.
+	 * Use {@link SimulationEngine.isSimulationRunning()}.
 	 * 
 	 * @param engine The core simulation engine controlling scheduling and time
 	 */

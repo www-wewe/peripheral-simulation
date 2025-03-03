@@ -3,52 +3,60 @@ package peripheralsimulation.model;
 import peripheralsimulation.engine.SimulationEngine;
 
 /**
- * A simple counter model that increments at a fixed interval and wraps back to
- * zero upon reaching an overflow value.
+ * Simulates a hardware counter incrementing at a given clock frequency with a
+ * prescaler. Once it exceeds 'overflowValue', it resets to zero (overflow).
  */
 public class CounterModel implements PeripheralModel {
 
-	private int overflowValue; // e.g., 255 for 8-bit, 65535 for 16-bit, etc.
-	private int increment; // increment of current value each time step
+	private int overflowValue; // e.g., 255 for 8-bit
 	private int currentValue; // internal counter
-	private double timeStep; // e.g., 1.0 for each iteration
+	private double tickPeriod; // time between increments = 1/(clockFreq/prescaler)
 
-	public CounterModel(int overflowValue, int increment, int initialValue, double timeStep) {
+	/**
+	 * 
+	 * @param overflowValue Max counter value before overflow (e.g. 255 for 8-bit).
+	 * @param initialValue  Starting value of the counter.
+	 * @param clockFreq     Frequency of the counter clock in Hz (e.g., 1000.0 => 1
+	 *                      kHz).
+	 * @param prescaler     Clock prescaler (e.g., 1, 2, 4, 8...), divides the clock
+	 *                      freq. The effective freq => clockFreq / prescaler.
+	 */
+	public CounterModel(int overflowValue, int initialValue, double clockFreq, int prescaler) {
 		this.overflowValue = overflowValue;
-		this.increment = increment;
 		this.currentValue = initialValue;
-		this.timeStep = timeStep;
+
+		// Each increment occurs every (1 / (clockFreq / prescaler)) time units
+		this.tickPeriod = 1.0 / (clockFreq / prescaler);
 	}
 
 	@Override
 	public void initialize(SimulationEngine engine) {
 		// Schedule the first increment
-		scheduleIncrement(engine, engine.getCurrentTime() + timeStep);
-	}
-
-	private void scheduleIncrement(SimulationEngine engine, double eventTime) {
-		engine.scheduleEvent(eventTime, () -> update(engine));
+		scheduleNextIncrement(engine, engine.getCurrentTime() + tickPeriod);
 	}
 
 	@Override
 	public void update(SimulationEngine engine) {
-		// Increment logic
-		currentValue += increment;
+		// Increment the counter
+		currentValue++;
 		if (currentValue > overflowValue) {
-			currentValue = 0; // Overflow resets to zero
+			currentValue = 0; // overflow
 		}
 
-		System.out.println("[CounterPeripheral] time=" + engine.getCurrentTime() +
-				", currentValue=" + currentValue);
+		System.out.println("[CounterModel] time=" + engine.getCurrentTime() + ", currentValue=" + currentValue);
 
-		// Next increment
-		double nextTime = engine.getCurrentTime() + timeStep;
-		scheduleIncrement(engine, nextTime);
+		// Schedule next increment
+		if (engine.isSimulationRunning()) {
+			scheduleNextIncrement(engine, engine.getCurrentTime() + tickPeriod);
+		}
+	}
+
+	private void scheduleNextIncrement(SimulationEngine engine, double eventTime) {
+		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	@Override
 	public int getCurrentValue() {
 		return currentValue;
 	}
-
 }

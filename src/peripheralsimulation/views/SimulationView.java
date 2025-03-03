@@ -108,21 +108,25 @@ public class SimulationView extends ViewPart {
 	}
 
 	private void runSimulation() {
-		if (simulationCore == null) {
-			simulationCore = new SimulationEngine(this::updateTable);
-			PeripheralModel simulationModel;
-			switch (combo.getText()) {
-			case "SCTimer":
-				simulationModel = new SCTimerModel();
-				break;
-			case "Counter":
-				simulationModel = new CounterModel(5, 1, 0, 1.0); // overflowValue, increment, initialValue, timeStep
-				break;
-			default:
-				throw new IllegalArgumentException("Neznáma periféria.");
-			}
-			simulationCore.addPeripheral(simulationModel);
+		simulationCore = new SimulationEngine(this::updateTable);
+		PeripheralModel simulationModel;
+		switch (combo.getText()) {
+		case "SCTimer":
+			simulationModel = new SCTimerModel();
+			break;
+		case "Counter":
+			simulationModel = new CounterModel(
+					255,  // overflow value
+				    0,    // initial value
+				    1000, // 1 kHz clock
+				    1     // prescaler
+				    );
+			break;
+		default:
+			throw new IllegalArgumentException("Neznáma periféria.");
 		}
+		simulationCore.addPeripheral(simulationModel);
+
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia beží..."));
 		Thread simulationThread = new Thread(() -> {
 			try {
@@ -135,16 +139,20 @@ public class SimulationView extends ViewPart {
 				e.printStackTrace();
 				Display.getDefault().asyncExec(() -> statusLabel.setText("Chyba počas simulácie."));
 			}
+			runSimulationButton.setEnabled(true);
+			stopSimulationButton.setEnabled(false);
 		});
 
 		simulationThread.start();
-
 		runSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(true);
 	}
 
 	private void updateTable(double timeValue, int counterValue) {
 		Display.getDefault().asyncExec(() -> {
+			if (!simulationCore.isSimulationRunning()) {
+				return;
+			}
 			TableItem item = new TableItem(table, SWT.NONE);
 			item.setText(new String[] { String.valueOf(timeValue), String.valueOf(counterValue) });
 		});

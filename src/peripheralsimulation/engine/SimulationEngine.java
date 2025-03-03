@@ -91,7 +91,7 @@ public class SimulationEngine {
 				}
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1000); // TODO parametrize
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -122,6 +122,7 @@ public class SimulationEngine {
 
 	public void stopSimulation() {
 		running = false;
+		eventQueue.clear(); // So no more events can fire
 		currentTime = 0.0;
 		System.out.println("[SimulationCore] Simulácia zastavená.");
 	}
