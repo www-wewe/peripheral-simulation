@@ -1,5 +1,8 @@
 package peripheralsimulation.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import peripheralsimulation.engine.SimulationEngine;
 
 /**
@@ -11,6 +14,7 @@ public class CounterModel implements PeripheralModel {
 	private int overflowValue; // e.g., 255 for 8-bit
 	private int currentValue; // internal counter
 	private double tickPeriod; // time between increments = 1/(clockFreq/prescaler)
+	private boolean justOverflowed; // flag to indicate overflow
 
 	/**
 	 * 
@@ -27,6 +31,7 @@ public class CounterModel implements PeripheralModel {
 
 		// Each increment occurs every (1 / (clockFreq / prescaler)) time units
 		this.tickPeriod = 1.0 / (clockFreq / prescaler);
+		this.justOverflowed = false;
 	}
 
 	@Override
@@ -40,7 +45,8 @@ public class CounterModel implements PeripheralModel {
 		// Increment the counter
 		currentValue++;
 		if (currentValue > overflowValue) {
-			currentValue = 0; // overflow
+			currentValue = 0; //
+			justOverflowed = true;
 		}
 
 		System.out.println("[CounterModel] time=" + engine.getCurrentTime() + ", currentValue=" + currentValue);
@@ -56,7 +62,10 @@ public class CounterModel implements PeripheralModel {
 	}
 
 	@Override
-	public int getCurrentValue() {
-		return currentValue;
+	public Map<String, Object> getOutputs() {
+		Map<String, Object> out = new HashMap<>();
+		out.put("CURRENT_VALUE", currentValue);
+		out.put("OVERFLOW_OCCURRED", (currentValue == 0) && justOverflowed);
+		return out;
 	}
 }

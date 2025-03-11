@@ -13,6 +13,12 @@ public enum Peripheral {
 		public String toString() {
 			return "Counter";
 		}
-    }
+    },
+	SYSTICKTIMER {
+		@Override
+		public String toString() {
+			return "System Tick Timer";
+		}
+	},
 
 }

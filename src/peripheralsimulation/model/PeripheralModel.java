@@ -1,5 +1,7 @@
 package peripheralsimulation.model;
 
+import java.util.Map;
+
 import peripheralsimulation.engine.SimulationEngine;
 
 /**
@@ -33,7 +35,9 @@ public interface PeripheralModel {
 	void update(SimulationEngine engine);
 
 	/**
-	 * Get the current value of the peripheral.
-	 */
-	int getCurrentValue();
+     * Returns a map of named outputs so the UI can select which to display.
+     * The keys can be e.g. "CURRENT", "INTERRUPT", etc.
+     * The values can be integers, booleans, strings, or whatever is relevant.
+     */
+    Map<String, Object> getOutputs();
 }

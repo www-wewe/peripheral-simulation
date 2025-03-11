@@ -3,6 +3,7 @@ package peripheralsimulation.engine;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.function.BiConsumer;
@@ -37,10 +38,11 @@ public class SimulationEngine {
 
 	/**
 	 * A consumer to handle simulation output (e.g., display in a view).
+	 * Key: current time, Value: map of peripheral outputs with their values.
 	 */
-	private BiConsumer<Double, Integer> outputHandler;
+	private BiConsumer<Double, Map<String,Object>> outputHandler;
 
-	public SimulationEngine(BiConsumer<Double, Integer> outputHandler) {
+	public SimulationEngine(BiConsumer<Double, Map<String,Object>> outputHandler) {
 		this.outputHandler = outputHandler;
 		this.currentTime = 0.0;
 		this.running = false;
@@ -87,7 +89,8 @@ public class SimulationEngine {
 			// Poslanie výstupu do SimulationView
 			for (PeripheralModel model : modules) {
 				if (outputHandler != null) {
-					outputHandler.accept(getCurrentTime(), model.getCurrentValue());
+			        Map<String, Object> outputs = model.getOutputs();
+			        outputHandler.accept(getCurrentTime(), outputs);
 				}
 			}
 			try {

@@ -8,12 +8,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.*;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+
+import java.util.Map;
+
 import org.eclipse.swt.SWT;
 import jakarta.inject.Inject;
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.io.systick.SysTickRegisterDump;
+import peripheralsimulation.io.systick.SysTickTimerConfig;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.model.SCTimerModel;
+import peripheralsimulation.model.SysTickTimerModel;
 import peripheralsimulation.model.CounterModel;
 
 import org.eclipse.swt.layout.GridData;
@@ -102,6 +108,7 @@ public class SimulationView extends ViewPart {
 		// combobox na výber periférie
 		combo = new Combo(parent, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		combo.add(Peripheral.SYSTICKTIMER.toString());
 		combo.add(Peripheral.SCTIMER.toString());
 		combo.add(Peripheral.COUNTER.toString());
 		combo.select(0);
@@ -111,16 +118,21 @@ public class SimulationView extends ViewPart {
 		simulationCore = new SimulationEngine(this::updateTable);
 		PeripheralModel simulationModel;
 		switch (combo.getText()) {
+		case "System Tick Timer":
+			SysTickRegisterDump dump = new SysTickRegisterDump();
+			// fill in the fields from your exported data or from code
+			SysTickTimerConfig config = new SysTickTimerConfig(dump);
+			simulationModel = new SysTickTimerModel(config);
+			break;
 		case "SCTimer":
 			simulationModel = new SCTimerModel();
 			break;
 		case "Counter":
-			simulationModel = new CounterModel(
-					255,  // overflow value
-				    0,    // initial value
-				    1000, // 1 kHz clock
-				    1     // prescaler
-				    );
+			simulationModel = new CounterModel(255, // overflow value
+					0, // initial value
+					1000, // 1 kHz clock
+					1 // prescaler
+			);
 			break;
 		default:
 			throw new IllegalArgumentException("Neznáma periféria.");
@@ -148,13 +160,22 @@ public class SimulationView extends ViewPart {
 		stopSimulationButton.setEnabled(true);
 	}
 
-	private void updateTable(double timeValue, int counterValue) {
+	private void updateTable(double timeValue, Map<String, Object> outputs) {
 		Display.getDefault().asyncExec(() -> {
 			if (!simulationCore.isSimulationRunning()) {
 				return;
 			}
+			// každý output má vlastný stlpec?
 			TableItem item = new TableItem(table, SWT.NONE);
-			item.setText(new String[] { String.valueOf(timeValue), String.valueOf(counterValue) });
+//			item.setText(new String[] { String.valueOf(timeValue), String.valueOf(counterValue) });
+			String currentVal = outputs.getOrDefault("CURRENT", "").toString();
+			String interruptVal = outputs.getOrDefault("INTERRUPT_LINE", "").toString();
+			String rowText[] = { String.valueOf(timeValue), currentVal, interruptVal };
+			item.setText(rowText);
+			// If interrupt is true, set a background color:
+			if (interruptVal.equals("true")) {
+				item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_YELLOW));
+			}
 		});
 	}
 

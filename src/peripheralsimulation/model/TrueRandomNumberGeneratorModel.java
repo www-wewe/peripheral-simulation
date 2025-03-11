@@ -1,5 +1,6 @@
 package peripheralsimulation.model;
 
+import java.util.Map;
 import java.util.Random;
 
 import peripheralsimulation.engine.SimulationEngine;
@@ -34,8 +35,8 @@ public class TrueRandomNumberGeneratorModel implements PeripheralModel {
 	}
 
 	@Override
-	public int getCurrentValue() {
-		return latestValue;
+	public Map<String, Object> getOutputs() {
+		return Map.of("RANDOM", latestValue);
 	}
 
 }
