@@ -1,35 +1,57 @@
 package peripheralsimulation.io.systick;
 
 public class SysTickRegisterDump {
-	// Example raw integers from the device
-	private int SYST_CSR; // 0xE000E010
-	private int SYST_RVR; // 0xE000E014
-	private int SYST_CVR; // 0xE000E018 (if needed)
-	private int SYST_CALIB; // 0xE000E01C
+
+	private int SYST_CSR; // control and status register
+	private int SYST_RVR; // reload value register
+	private int SYST_CVR; // current value register
+	private int SYST_CALIB; // read-only calibration info
 
 	// CPU frequency or external frequencies
-	private double mainClk; // e.g. 48e6
-	private double externalClk; // e.g. 12e6
+	private double mainClk; // e.g. 48e6 (48 MHz) - CPU clock
+	private double externalClk; // e.g. 12e6 (12 MHz) - external (system tick timer) clock
 
 	// MCUXpresso clock config
 	// SYSCON->SYSTICKCLKDIV0,DIV,0, SYSCON->SYSTICKCLKSEL0,SEL,0 ...
-	private int SYSTICKCLKDIV0; // e.g. 0
-	private int SYSTICKCLKSEL0; // e.g. 0
-	private int SYSTICKCLKDIV1; // e.g. 0
-	private int SYSTICKCLKSEL1; // e.g. 7
+	private int SYSTICKCLKDIV0;
+	private int SYSTICKCLKSEL0;
+	private int SYSTICKCLKDIV1;
+	private int SYSTICKCLKSEL1;
 
-	// example
+	/**
+	 * Example calculates an interrupt interval of 10 ms using external clock (12
+	 * MHz). The manual states SYST_CSR=0x3 for external clock + interrupt + enable,
+	 * SYST_RVR=0x1D4BF => 119999 decimal => 12MHz * 0.01s - 1 = 120000 - 1.
+	 */
 	public SysTickRegisterDump() {
-		this.SYST_CSR = 0xE000E010;
-		this.SYST_RVR = 0xE000E014;
-		this.SYST_CVR = 0xE000E018;
-		this.SYST_CALIB = 0xE000E01C;
+		// SYST_CSR bits:
+		// bit0=1 => ENABLE
+		// bit1=1 => TICKINT
+		// bit2=0 => external clock // 1 => CPU clock
+		this.SYST_CSR = 0x3; // 0b11 => (ENABLE=1, TICKINT=1, CLKSOURCE=0)
+
+		// Reload value for 10 ms at 12 MHz => 120000 - 1 = 119999
+		this.SYST_RVR = 0x0001D4BF;
+
+		// Typically we clear CVR to 0 so it restarts from RVR
+		this.SYST_CVR = 0;
+
+		// Calibration register (optional)
+		this.SYST_CALIB = 0;
+
+		// mainClk=48 MHz (CPU clock), externalClk=12 MHz
 		this.mainClk = 48e6;
 		this.externalClk = 12e6;
+
+		// Dividers and selectors:
+		// If we want no division, SYSTICKCLKDIV0=0 means "DIV=0 => freq/(0+1)=freq"
+		// SEL=0 might correspond to "external" or might be the main clock,
+		// depending on how your MCU's clock tree is defined. The manual's example
+		// is picking the external clock at 12 MHz, so we do:
 		this.SYSTICKCLKDIV0 = 0;
-		this.SYSTICKCLKSEL0 = 0;
+		this.SYSTICKCLKSEL0 = 0; // 0 => external clock, if that's how your device enumerates it
 		this.SYSTICKCLKDIV1 = 0;
-		this.SYSTICKCLKSEL1 = 7;
+		this.SYSTICKCLKSEL1 = 0;
 	}
 
 	// GETTERS AND SETTERS
