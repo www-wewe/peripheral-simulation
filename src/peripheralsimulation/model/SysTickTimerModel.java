@@ -2,6 +2,7 @@ package peripheralsimulation.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.io.systick.SysTickTimerConfig;
@@ -43,6 +44,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	/**
 	 * Calculate the tick period based on the configuration
+	 * 
 	 * @param config
 	 */
 	private double calculateTickPeriod() {
@@ -80,23 +82,21 @@ public class SysTickTimerModel implements PeripheralModel {
 				// If TICKINT=1 => raise interrupt
 				if (config.tickInt) {
 					interruptLine = true;
-					// In a real system, interruptLine might cause the CPU to run the SysTick ISR
-					// We could also schedule an "interrupt event" in the SimulationEngine if needed
 				}
 			} else {
 				countFlag = false;
 			}
 
 			// Re-schedule next tick
-			scheduleNextDecrement(engine, engine.getCurrentTime() + tickPeriod);
+			if (engine.isSimulationRunning()) {
+				scheduleNextDecrement(engine, engine.getCurrentTime() + tickPeriod);
+			}
 		}
 
 	}
 
 	private void scheduleNextDecrement(SimulationEngine engine, double eventTime) {
-		if (engine.isSimulationRunning()) {
-			engine.scheduleEvent(eventTime, () -> update(engine));
-		}
+		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	/**
@@ -110,8 +110,8 @@ public class SysTickTimerModel implements PeripheralModel {
 	}
 
 	/**
-	 * User might call this to "write" to SYST_CVR. Writing any value clears the
-	 * System Tick counter and the COUNTFLAG bit in SYST_CSR.
+	 * "write" to SYST_CVR. Writing any value clears the System Tick counter and the
+	 * COUNTFLAG bit in SYST_CSR.
 	 * 
 	 * @param value to write to SYST_CVR
 	 */
@@ -123,7 +123,7 @@ public class SysTickTimerModel implements PeripheralModel {
 	}
 
 	/**
-	 * User might call this to "write" to SYST_CSR,
+	 * "write" to SYST_CSR,
 	 * 
 	 * @param enable
 	 * @param tickInt
@@ -161,12 +161,17 @@ public class SysTickTimerModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputs() {
+	public Map<String, Object> getOutputValues() {
 		Map<String, Object> out = new HashMap<>();
-		out.put("CURRENT", currentValue);
-		out.put("INTERRUPT_LINE", interruptLine);
-		out.put("COUNTFLAG", countFlag);
+		out.put("CURRENT", readCVR());
+		out.put("INTERRUPT_LINE", isInterruptLine());
+		out.put("COUNTFLAG", readCountFlag());
 		return out;
+	}
+
+	@Override
+	public Set<String> getOutputs() {
+		return Set.of("CURRENT", "INTERRUPT_LINE", "COUNTFLAG");
 	}
 
 }

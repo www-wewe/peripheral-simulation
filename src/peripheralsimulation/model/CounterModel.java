@@ -2,6 +2,7 @@ package peripheralsimulation.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import peripheralsimulation.engine.SimulationEngine;
 
@@ -62,10 +63,15 @@ public class CounterModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputs() {
+	public Map<String, Object> getOutputValues() {
 		Map<String, Object> out = new HashMap<>();
 		out.put("CURRENT_VALUE", currentValue);
 		out.put("OVERFLOW_OCCURRED", (currentValue == 0) && justOverflowed);
 		return out;
+	}
+
+	@Override
+	public Set<String> getOutputs() {
+		return Set.of("CURRENT_VALUE", "OVERFLOW_OCCURRED");
 	}
 }

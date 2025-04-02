@@ -1,6 +1,7 @@
 package peripheralsimulation.model;
 
 import java.util.Map;
+import java.util.Set;
 
 import peripheralsimulation.engine.SimulationEngine;
 
@@ -39,5 +40,11 @@ public interface PeripheralModel {
      * The keys can be e.g. "CURRENT", "INTERRUPT", etc.
      * The values can be integers, booleans, strings, or whatever is relevant.
      */
-    Map<String, Object> getOutputs();
+    Map<String, Object> getOutputValues();
+
+    /**
+     * Returns the set of output names that the peripheral can provide.
+     * @return a set of output names
+     */
+    Set<String> getOutputs();
 }

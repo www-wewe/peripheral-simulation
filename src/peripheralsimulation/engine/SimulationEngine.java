@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.function.BiConsumer;
+
+import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.PeripheralModel;
 
 /**
@@ -40,17 +42,17 @@ public class SimulationEngine {
 	 * A consumer to handle simulation output (e.g., display in a view).
 	 * Key: current time, Value: map of peripheral outputs with their values.
 	 */
-	private BiConsumer<Double, Map<String,Object>> outputHandler;
+	private BiConsumer<Double, Map<String, Object>> outputHandler;
 
-	public SimulationEngine(BiConsumer<Double, Map<String,Object>> outputHandler) {
+	public SimulationEngine(BiConsumer<Double, Map<String, Object>> outputHandler) {
 		this.outputHandler = outputHandler;
 		this.currentTime = 0.0;
 		this.running = false;
 	}
 
 	/**
-	 * Initializes or resets the simulation. Clears the event queue and sets time to
-	 * zero.
+	 * Initializes or resets the simulation.
+	 * Clears the event queue and sets time to zero.
 	 */
 	public void initSimulation() {
 		eventQueue.clear();
@@ -89,12 +91,12 @@ public class SimulationEngine {
 			// Poslanie výstupu do SimulationView
 			for (PeripheralModel model : modules) {
 				if (outputHandler != null) {
-			        Map<String, Object> outputs = model.getOutputs();
-			        outputHandler.accept(getCurrentTime(), outputs);
+					Map<String, Object> outputs = model.getOutputValues();
+					outputHandler.accept(getCurrentTime(), outputs);
 				}
 			}
 			try {
-				Thread.sleep(1000); // TODO parametrize
+				Thread.sleep(UserPreferences.getMillisToWait()); // TODO: parametrize
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -125,7 +127,7 @@ public class SimulationEngine {
 
 	public void stopSimulation() {
 		running = false;
-		eventQueue.clear(); // So no more events can fire
+		eventQueue.clear();
 		currentTime = 0.0;
 		System.out.println("[SimulationCore] Simulácia zastavená.");
 	}

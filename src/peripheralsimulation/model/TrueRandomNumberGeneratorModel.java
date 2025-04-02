@@ -2,6 +2,7 @@ package peripheralsimulation.model;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import peripheralsimulation.engine.SimulationEngine;
 
@@ -35,8 +36,13 @@ public class TrueRandomNumberGeneratorModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputs() {
+	public Map<String, Object> getOutputValues() {
 		return Map.of("RANDOM", latestValue);
+	}
+
+	@Override
+	public Set<String> getOutputs() {
+		return Set.of("RANDOM");
 	}
 
 }

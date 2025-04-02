@@ -1,6 +1,7 @@
 package peripheralsimulation.model;
 
 import java.util.Map;
+import java.util.Set;
 
 import peripheralsimulation.engine.SimulationEngine;
 
@@ -21,7 +22,13 @@ public class SCTimerModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputs() {
+	public Map<String, Object> getOutputValues() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<String> getOutputs() {
 		// TODO Auto-generated method stub
 		return null;
 	}
