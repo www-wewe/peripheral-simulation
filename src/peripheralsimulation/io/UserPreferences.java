@@ -1,15 +1,16 @@
 package peripheralsimulation.io;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import peripheralsimulation.model.PeripheralModel;
 
+// TODO: Make this class a singleton
 public class UserPreferences {
 
-	private double updateInterval;
-	private Set<String> selectedOutputs;
+	private Set<String> selectedOutputs = new HashSet<>();
 	private PeripheralModel peripheralModel;
 	private List<UserPreferencesListener> listeners = new ArrayList<>();
 	private boolean onlyChanges = false;
@@ -27,14 +28,6 @@ public class UserPreferences {
 		for (UserPreferencesListener listener : listeners) {
 			listener.onPreferencesChanged();
 		}
-	}
-
-	public double getUpdateInterval() {
-		return updateInterval;
-	}
-
-	public void setUpdateInterval(double updateInterval) {
-		this.updateInterval = updateInterval;
 	}
 
 	public Set<String> getSelectedOutputs() {
