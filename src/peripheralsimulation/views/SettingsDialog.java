@@ -10,6 +10,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -24,12 +25,15 @@ public class SettingsDialog extends Dialog {
 	private UserPreferences userPreferences;
 	private List<Button> checkboxes = new ArrayList<>();
 	private Button onlyChanges;
-	private Text millisToWaitText;
+	private Text millisToWaitTextField;
+	private Combo visualizationSelectionCombo;
+	private Text monitoringFreqTextField;
+	private Text simulationTimeRangeFromTextField;
+	private Text simulationTimeRangeToTextField;
 
-
-	public SettingsDialog(Shell parentShell, UserPreferences userPreferences) {
+	public SettingsDialog(Shell parentShell) {
 		super(parentShell);
-		this.userPreferences = userPreferences;
+		this.userPreferences = UserPreferences.getInstance();
 	}
 
 	@Override
@@ -38,6 +42,9 @@ public class SettingsDialog extends Dialog {
 		dialog.setLayout(new GridLayout(1, false));
 		addCheckboxes(dialog);
 		addTextFieldMillisToWait(dialog);
+		addTextFieldMonitoringFreq(dialog);
+		addTextFieldsForTimeRange(dialog);
+		addGuiSelection(dialog);
 		return dialog;
 	}
 
@@ -49,6 +56,16 @@ public class SettingsDialog extends Dialog {
 
 	@Override
 	protected void okPressed() {
+		SimulationGuiChoice selectedGui;
+		switch (visualizationSelectionCombo.getText()) {
+		case "Graph": // TODO: make graph default
+			selectedGui = SimulationGuiChoice.GRAPH;
+			break;
+		default:
+			selectedGui = SimulationGuiChoice.TABLE;
+			break;
+		}
+		userPreferences.setSelectedSimulationGUI(selectedGui);
 		Set<String> selectedOutputs = new HashSet<>();
 		for (Button checkbox : checkboxes) {
 			if (checkbox.getSelection()) {
@@ -57,7 +74,21 @@ public class SettingsDialog extends Dialog {
 		}
 		userPreferences.setSelectedOutputs(selectedOutputs);
 		userPreferences.setOnlyChanges(onlyChanges.getSelection());
-		UserPreferences.setMillisToWait(Long.parseLong(millisToWaitText.getText()));
+
+		String millisToWait = millisToWaitTextField.getText();
+		if (millisToWait.isEmpty()) {
+			millisToWaitTextField.setText("0");
+		}
+		try {
+			Long.parseLong(millisToWait);
+		} catch (NumberFormatException e) {
+			millisToWaitTextField.setText("0");
+		}
+		userPreferences.setMillisToWait(Long.parseLong(millisToWait));
+		// TODO: verify inputs
+		userPreferences.setMonitoringFreq(Double.parseDouble(monitoringFreqTextField.getText()));
+		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
+		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
 		super.okPressed();
 	}
 
@@ -69,7 +100,6 @@ public class SettingsDialog extends Dialog {
 	private void addCheckboxes(Composite dialog) {
 		PeripheralModel selectedPeripheral = userPreferences.getPeripheralModel();
 		if (selectedPeripheral != null) {
-			// Assuming userPreferences has a method to get outputs for a peripheral
 			Set<String> outputs = selectedPeripheral.getOutputs();
 			for (String output : outputs) {
 				Button checkbox = new Button(dialog, SWT.CHECK);
@@ -85,10 +115,66 @@ public class SettingsDialog extends Dialog {
 
 	private void addTextFieldMillisToWait(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
-	    label.setText("Milliseconds to wait:");
+		label.setText("Milliseconds to wait:");
 
-	    millisToWaitText = new Text(dialog, SWT.BORDER);
-	    millisToWaitText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-	    millisToWaitText.setText(String.valueOf(UserPreferences.getMillisToWait()));
+		millisToWaitTextField = new Text(dialog, SWT.BORDER);
+		millisToWaitTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		millisToWaitTextField.setText(String.valueOf(userPreferences.getMillisToWait()));
+	}
+
+	/**
+	 * Add combo box for selecting the simulation visualization.
+	 * 
+	 * @param dialog
+	 */
+	private void addGuiSelection(Composite dialog) {
+		// label ku comboboxu
+		Label comboLabel = new Label(dialog, SWT.NONE);
+		comboLabel.setText("Select GUI: ");
+		comboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+
+		// combobox na výber vizualizácie
+		visualizationSelectionCombo = new Combo(dialog, SWT.READ_ONLY);
+		visualizationSelectionCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		visualizationSelectionCombo.add(SimulationGuiChoice.TABLE.toString());
+		visualizationSelectionCombo.add(SimulationGuiChoice.GRAPH.toString());
+		visualizationSelectionCombo.select(userPreferences.getSelectedSimulationGUI().ordinal());
+	}
+
+	/**
+	 * Add text field for monitoring frequency. (How often the simulation should be
+	 * updated)
+	 * 
+	 * @param dialog
+	 */
+	private void addTextFieldMonitoringFreq(Composite dialog) {
+		Label label = new Label(dialog, SWT.NONE);
+		label.setText("Monitoring frequency:");
+
+		monitoringFreqTextField = new Text(dialog, SWT.BORDER);
+		monitoringFreqTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringFreq()));
+	}
+
+	/**
+	 * Add text fields (from, to) for time range.
+	 * 
+	 * @param dialog
+	 */
+	private void addTextFieldsForTimeRange(Composite dialog) {
+		Label label = new Label(dialog, SWT.NONE);
+		label.setText("Simulation time range (from, to):");
+
+		Composite timeRangeComposite = new Composite(dialog, SWT.NONE);
+		timeRangeComposite.setLayout(new GridLayout(2, false));
+
+		simulationTimeRangeFromTextField = new Text(timeRangeComposite, SWT.BORDER);
+		simulationTimeRangeFromTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		simulationTimeRangeFromTextField.setText(String.valueOf(userPreferences.getSimulationTimeRangeFrom()));
+
+		simulationTimeRangeToTextField = new Text(timeRangeComposite, SWT.BORDER);
+		simulationTimeRangeToTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		simulationTimeRangeToTextField.setText(String.valueOf(userPreferences.getSimulationTimeRangeTo()));
+
 	}
 }
