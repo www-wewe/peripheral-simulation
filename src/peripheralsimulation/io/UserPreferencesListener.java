@@ -1,5 +1,7 @@
 package peripheralsimulation.io;
 
 public interface UserPreferencesListener {
-	void onPreferencesChanged();
+	void onSelectedOutputsChanged();
+
+	void onSelectedSimulationGUIChanged();
 }
