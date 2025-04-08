@@ -1,4 +1,4 @@
-package peripheralsimulation.views;
+package peripheralsimulation.ui;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,12 +77,12 @@ public class SettingsDialog extends Dialog {
 
 		String millisToWait = millisToWaitTextField.getText();
 		if (millisToWait.isEmpty()) {
-			millisToWaitTextField.setText("0");
+			millisToWait = "0";
 		}
 		try {
 			Long.parseLong(millisToWait);
 		} catch (NumberFormatException e) {
-			millisToWaitTextField.setText("0");
+			millisToWait = "0";
 		}
 		userPreferences.setMillisToWait(Long.parseLong(millisToWait));
 		// TODO: verify inputs
@@ -115,7 +115,7 @@ public class SettingsDialog extends Dialog {
 
 	private void addTextFieldMillisToWait(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
-		label.setText("Milliseconds to wait:");
+		label.setText("Milliseconds to wait between each simulation step:");
 
 		millisToWaitTextField = new Text(dialog, SWT.BORDER);
 		millisToWaitTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -154,6 +154,8 @@ public class SettingsDialog extends Dialog {
 		monitoringFreqTextField = new Text(dialog, SWT.BORDER);
 		monitoringFreqTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringFreq()));
+		monitoringFreqTextField.setToolTipText(
+				"The frequency at which the simulation should be monitored. This is used to determine how often the simulation should update the GUI (e.g. 0.5 means show a table row every 0.5 simulation time)");
 	}
 
 	/**
@@ -163,7 +165,7 @@ public class SettingsDialog extends Dialog {
 	 */
 	private void addTextFieldsForTimeRange(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
-		label.setText("Simulation time range (from, to):");
+		label.setText("Simulation time range (from, to in seconds):");
 
 		Composite timeRangeComposite = new Composite(dialog, SWT.NONE);
 		timeRangeComposite.setLayout(new GridLayout(2, false));
@@ -175,6 +177,6 @@ public class SettingsDialog extends Dialog {
 		simulationTimeRangeToTextField = new Text(timeRangeComposite, SWT.BORDER);
 		simulationTimeRangeToTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		simulationTimeRangeToTextField.setText(String.valueOf(userPreferences.getSimulationTimeRangeTo()));
-
 	}
+
 }

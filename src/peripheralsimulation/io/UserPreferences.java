@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import peripheralsimulation.model.PeripheralModel;
-import peripheralsimulation.views.SimulationGuiChoice;
+import peripheralsimulation.ui.SimulationGuiChoice;
 
 public final class UserPreferences {
 

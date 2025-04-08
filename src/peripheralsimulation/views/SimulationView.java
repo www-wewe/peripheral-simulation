@@ -22,6 +22,10 @@ import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.model.SCTimerModel;
 import peripheralsimulation.model.SysTickTimerModel;
+import peripheralsimulation.ui.SettingsDialog;
+import peripheralsimulation.ui.SimulationChart;
+import peripheralsimulation.ui.SimulationGUI;
+import peripheralsimulation.ui.SimulationTable;
 import peripheralsimulation.model.CounterModel;
 
 import org.eclipse.swt.layout.GridData;
@@ -51,7 +55,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	/** The combo box for selecting the peripheral to simulate. */
 	private Combo combo;
 	/** User preferences for the simulation. */
-	private UserPreferences userPreferences = UserPreferences.getInstance();;
+	private UserPreferences userPreferences = UserPreferences.getInstance();
 	/** The GUI for the simulation. */
 	private SimulationGUI simulationGUI;
 	/** Text for the status label when no simulation is running. */
@@ -192,9 +196,11 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		Thread simulationThread = new Thread(() -> {
 			try {
 				simulationCore.initSimulation();
-				simulationCore.startSimulation(Integer.MAX_VALUE);
+				simulationCore.startSimulation(userPreferences.getSimulationTimeRangeTo());
 				if (!simulationCore.isSimulationRunning()) {
 					Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
+//					stopSimulationButton.setEnabled(false);
+//					clearSimulationButton.setEnabled(true);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -205,12 +211,12 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		simulationThread.start();
 		runSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(true);
-		clearSimulationButton.setEnabled(true);
+		clearSimulationButton.setEnabled(false);
 	}
 
 	private void stopSimulation() {
 		simulationCore.stopSimulation();
-		runSimulationButton.setEnabled(true);
+		runSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(false);
 		clearSimulationButton.setEnabled(true);
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia zastavená."));
@@ -221,14 +227,16 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		statusLabel.setText(EMPTY_SIMULATION);
 		runSimulationButton.setEnabled(true);
 		stopSimulationButton.setEnabled(false);
+		clearSimulationButton.setEnabled(false);
 	}
 
 	private void updateGUI(double timeValue, Map<String, Object> outputs) {
+		double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
 	    Display.getDefault().asyncExec(() -> {
-			if (!simulationCore.isSimulationRunning()) {
+	    	if (!simulationCore.isSimulationRunning()) {
 				return;
 			}
-			simulationGUI.update(timeValue, outputs);
+			simulationGUI.update(scaledTime, outputs);
 		});
 	}
 
@@ -250,7 +258,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	@Override
 	public void dispose() {
 		userPreferences.removeListener(this);
-		//simulationGUI.dispose();
 		super.dispose();
 	}
 }

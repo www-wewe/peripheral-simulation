@@ -1,4 +1,4 @@
-package peripheralsimulation.views;
+package peripheralsimulation.ui;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -50,10 +50,7 @@ public class SimulationTable implements SimulationGUI {
 		int colCount = table.getColumnCount();
 		assert colCount >= 1 : "Table must have at least one column";
 		String[] rowText = new String[colCount];
-		double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
-	    String prettyTime = userPreferences.getTimeFormat().format(scaledTime) + " " + userPreferences.getTimeUnits();
-
-		rowText[0] = prettyTime;
+		rowText[0] = userPreferences.getTimeFormat().format(timeValue) + " " + userPreferences.getTimeUnits();
 		// true if at least one output changed (for the onlyChanges mode)
 		boolean anyChange = false;
 
@@ -71,9 +68,9 @@ public class SimulationTable implements SimulationGUI {
 			outputsMap.putIfAbsent(output, new LinkedHashMap<>());
 			// mapa zmien outputu <time, output value>
 			Map<Double, Object> outputMap = outputsMap.get(output);
-			Object lastVal = outputMap.isEmpty() ? null : outputMap.values().toArray()[outputMap.size() - 1];
+			Object lastValue = outputMap.isEmpty() ? null : outputMap.values().toArray()[outputMap.size() - 1];
 
-			if (lastVal == null || !lastVal.equals(outputValue)) {
+			if (lastValue == null || !lastValue.equals(outputValue)) {
 				outputMap.put(timeValue, outputValue);
 				anyChange = true;
 			}

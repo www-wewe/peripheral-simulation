@@ -1,6 +1,7 @@
-package peripheralsimulation.views;
+package peripheralsimulation.ui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.SWT;
@@ -30,7 +31,7 @@ public class SimulationChart implements SimulationGUI {
 		chart = new Chart(parent, SWT.NONE);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 		chart.getTitle().setText("Simulation Chart");
-		chart.getAxisSet().getXAxis(0).getTitle().setText("Time");
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in microseconds");
 		chart.getAxisSet().getYAxis(0).getTitle().setText("Output Value");
 		chart.getLegend().setVisible(true);
 
@@ -56,6 +57,7 @@ public class SimulationChart implements SimulationGUI {
 				outputData.series.setXSeries(new double[0]);
 				outputData.series.setYSeries(new double[0]);
 			}
+			seriesMap.clear();
 			chart.getAxisSet().adjustRange(); // TODO: Adjust axis range ?
 			chart.redraw();
 		}
@@ -81,13 +83,16 @@ public class SimulationChart implements SimulationGUI {
 			Object outputValue = outputs.get(output);
 			double numericVal = convertToDouble(outputValue);
 
-			// Compare with last y-value
-			if (outputData.outputValues.isEmpty()
-					|| outputData.outputValues.get(outputData.outputValues.size() - 1) != numericVal) {
+			List<Double> outputValues = outputData.outputValues;
+			Object lastValue = outputValues.isEmpty() ? null
+					: outputValues.get(outputValues.size() - 1);
+			if (lastValue == null || !lastValue.equals(numericVal)) {
 				// Output changed => add new data point for the new time
 				outputData.timeValues.add(timeValue);
-				outputData.outputValues.add(numericVal);
+				outputValues.add(numericVal);
 				anyChange = true;
+				System.out.println("Time: " + timeValue);
+				System.out.println("Output " + output + " changed to " + numericVal);
 			}
 
 		}
@@ -104,10 +109,12 @@ public class SimulationChart implements SimulationGUI {
 	private double convertToDouble(Object outputValue) {
 		if (outputValue instanceof Number) {
 			return ((Number) outputValue).doubleValue();
-		} else if ("true".equals(outputValue)) {
-			return 1.0;
-		} else if ("false".equals(outputValue)) {
-			return 0.0;
+		} else if (outputValue instanceof Boolean) {
+			if ((Boolean) outputValue) {
+				return 1.0;
+			} else {
+				return 0.0;
+			}
 		} else {
 			try {
 				return Double.parseDouble(String.valueOf(outputValue));

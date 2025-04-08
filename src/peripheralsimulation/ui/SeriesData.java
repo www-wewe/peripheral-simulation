@@ -1,4 +1,4 @@
-package peripheralsimulation.views;
+package peripheralsimulation.ui;
 
 import java.util.ArrayList;
 import java.util.List;

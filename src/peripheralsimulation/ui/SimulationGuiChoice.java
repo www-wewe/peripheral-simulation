@@ -1,4 +1,4 @@
-package peripheralsimulation.views;
+package peripheralsimulation.ui;
 
 public enum SimulationGuiChoice {
 

@@ -39,11 +39,21 @@ public class SimulationEngine {
 	private final List<PeripheralModel> modules = new ArrayList<>();
 
 	/**
-	 * A consumer to handle simulation output (e.g., display in a view).
-	 * Key: current time, Value: map of peripheral outputs with their values.
+	 * A consumer to handle simulation output (e.g., display in a view). Key:
+	 * current time, Value: map of peripheral outputs with their values.
 	 */
 	private BiConsumer<Double, Map<String, Object>> outputHandler;
 
+	/**
+	 * User preferences for the simulation.
+	 */
+	private UserPreferences userPreferences = UserPreferences.getInstance();
+
+	/**
+	 * Constructor for the simulation engine.
+	 * 
+	 * @param outputHandler A consumer to handle simulation output.
+	 */
 	public SimulationEngine(BiConsumer<Double, Map<String, Object>> outputHandler) {
 		this.outputHandler = outputHandler;
 		this.currentTime = 0.0;
@@ -51,8 +61,8 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Initializes or resets the simulation.
-	 * Clears the event queue and sets time to zero.
+	 * Initializes or resets the simulation. Clears the event queue and sets time to
+	 * zero.
 	 */
 	public void initSimulation() {
 		eventQueue.clear();
@@ -89,20 +99,25 @@ public class SimulationEngine {
 			next.run();
 
 			// Poslanie výstupu do SimulationView
-			for (PeripheralModel model : modules) {
-				if (outputHandler != null) {
-					Map<String, Object> outputs = model.getOutputValues();
-					outputHandler.accept(getCurrentTime(), outputs);
+			boolean isInMonitoringInterval = userPreferences.getMonitoringFreq() == 0 ? true
+					: Math.abs(currentTime % userPreferences.getMonitoringFreq()) < 1e-9;
+			if (currentTime >= userPreferences.getSimulationTimeRangeFrom() && isInMonitoringInterval) {
+				for (PeripheralModel model : modules) {
+					if (outputHandler != null) {
+						Map<String, Object> outputs = model.getOutputValues();
+						outputHandler.accept(currentTime, outputs);
+					}
 				}
 			}
 			try {
-				Thread.sleep(UserPreferences.getMillisToWait()); // TODO: parametrize
+				Thread.sleep(userPreferences.getMillisToWait());
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		running = false;
-		System.out.println("[SimulationCore] Simulácia ukončená, žiadne ďalšie udalosti.");
+		stopSimulation();
+		System.out.println("[SimulationEngine] Simulácia ukončená, žiadne ďalšie udalosti.");
 	}
 
 	/**
@@ -129,7 +144,7 @@ public class SimulationEngine {
 		running = false;
 		eventQueue.clear();
 		currentTime = 0.0;
-		System.out.println("[SimulationCore] Simulácia zastavená.");
+		System.out.println("[SimulationEngine] Simulácia zastavená.");
 	}
 
 	public double getCurrentTime() {
@@ -138,6 +153,14 @@ public class SimulationEngine {
 
 	public boolean isSimulationRunning() {
 		return running;
+	}
+
+	public BiConsumer<Double, Map<String, Object>> getOutputHandler() {
+		return outputHandler;
+	}
+
+	public void setOutputHandler(BiConsumer<Double, Map<String, Object>> outputHandler) {
+		this.outputHandler = outputHandler;
 	}
 
 }
