@@ -1,9 +1,5 @@
 package peripheralsimulation.ui;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -13,20 +9,23 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
 import peripheralsimulation.io.UserPreferences;
+import peripheralsimulation.model.PeripheralModel;
 
 public class SimulationTable implements SimulationGUI {
 
 	/** The table in which the simulation results are displayed. Graph later. */
 	private Table table;
 	/** User preferences for the simulation. */
-	private UserPreferences userPreferences = UserPreferences.getInstance();;
+	private UserPreferences userPreferences = UserPreferences.getInstance();
+	/** The simulation model. */
+	private PeripheralModel peripheralModel;
 	/**
 	 * Map of output values when output changes e.g. "INTERRUPT_LINE" -> [time and
 	 * value, 0.5 false, 1.0 true, ...]
 	 */
-	private Map<String, Map<Double, Object>> outputsMap = new HashMap<>();
-	/** Mapping of output names to column indices in the table. */
-	private Map<String, Integer> outputToColumnIndex = new HashMap<>();
+	// private Map<String, Map<Double, Object>> outputsMap = new HashMap<>();
+	/** The last output values for each selected output. */
+	private Object[] lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
 
 	public SimulationTable(Composite parent) {
 		table = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
@@ -34,6 +33,7 @@ public class SimulationTable implements SimulationGUI {
 		table.setLinesVisible(true);
 		GridData tableGridData = new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1);
 		table.setLayoutData(tableGridData);
+		lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
 	}
 
 	@Override
@@ -41,37 +41,37 @@ public class SimulationTable implements SimulationGUI {
 		if (table != null && !table.isDisposed()) {
 			table.removeAll();
 		}
-		outputsMap.clear();
+		// outputsMap.clear();
+		lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
 	}
 
 	@Override
-	public void update(double timeValue, Map<String, Object> outputs) {
+	public void update(double timeValue, Object[] outputs) {
 		// Build an array of strings for the row (one per column)
 		int colCount = table.getColumnCount();
-		assert colCount >= 1 : "Table must have at least one column";
 		String[] rowText = new String[colCount];
-		rowText[0] = userPreferences.getTimeFormat().format(timeValue) + " " + userPreferences.getTimeUnits();
+		rowText[0] = formatTime(timeValue);
 		// true if at least one output changed (for the onlyChanges mode)
 		boolean anyChange = false;
 
 		// fill the user-chosen outputs
-		for (String output : userPreferences.getSelectedOutputs()) {
-			Integer colIndex = outputToColumnIndex.get(output);
-			if (colIndex == null) {
-				// output not mapped to a column => skip
-				System.out.println("Output " + output + " not found in outputToColumnIndex");
-				continue;
-			}
-			Object outputValue = outputs.get(output);
-			rowText[colIndex] = (outputValue == null) ? "" : outputValue.toString();
+		int[] selectedIndices = userPreferences.getSelectedOutputsIndices();
+		for (int i = 0; i < selectedIndices.length; i++) {
+			int outputIndex = selectedIndices[i];
+			Object outputValue = outputs[outputIndex];
+			rowText[i + 1] = (outputValue == null) ? "" : outputValue.toString();
 
-			outputsMap.putIfAbsent(output, new LinkedHashMap<>());
-			// mapa zmien outputu <time, output value>
-			Map<Double, Object> outputMap = outputsMap.get(output);
-			Object lastValue = outputMap.isEmpty() ? null : outputMap.values().toArray()[outputMap.size() - 1];
+			// output =
+			// userPreferences.getPeripheralModel().getOutputName(selectedOutputsIndices.get(i));
+			// outputsMap.putIfAbsent(output, new LinkedHashMap<>());
+			// Map<Double, Object> outputMap = outputsMap.get(output);
+			// Object lastValue = outputMap.isEmpty() ? null :
+			// outputMap.values().toArray()[outputMap.size() - 1];
+			Object lastValue = lastOutputValues[i];
 
 			if (lastValue == null || !lastValue.equals(outputValue)) {
-				outputMap.put(timeValue, outputValue);
+				// outputMap.put(timeValue, outputValue);
+				lastOutputValues[i] = outputValue;
 				anyChange = true;
 			}
 
@@ -84,18 +84,28 @@ public class SimulationTable implements SimulationGUI {
 	}
 
 	/**
+	 * Format the time value to a string using the user's preferred format.
+	 * 
+	 * @param timeValue the time value to format
+	 * @return the formatted time string
+	 */
+	private String formatTime(double timeValue) {
+		return userPreferences.getTimeFormat().format(timeValue) + " " + userPreferences.getTimeUnits();
+	}
+
+	/**
 	 * Create a new row in the table with the given text.
 	 * 
 	 * @param rowText
 	 */
-	private void createTableItem(Map<String, Object> outputs, String[] rowText) {
+	private void createTableItem(Object[] outputs, String[] rowText) {
 		TableItem item = new TableItem(table, SWT.NONE);
 		item.setText(rowText);
 
 		// If an interrupt is "true", highlight the row
 		String output = "INTERRUPT_LINE";
 		if (userPreferences.getSelectedOutputs().contains(output)) {
-			String interruptVal = outputs.getOrDefault(output, "").toString();
+			String interruptVal = outputs[peripheralModel.getOutputIndex(output)].toString();
 			if (interruptVal.equals("true")) {
 				item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_YELLOW));
 			}
@@ -121,9 +131,6 @@ public class SimulationTable implements SimulationGUI {
 		TableColumn newCol = new TableColumn(table, SWT.NONE);
 		newCol.setText(output);
 		newCol.setWidth(100);
-		// The index is the current total number of columns - 1
-		int index = table.getColumnCount() - 1;
-		outputToColumnIndex.put(output, index);
 	}
 
 	@Override
@@ -133,11 +140,11 @@ public class SimulationTable implements SimulationGUI {
 
 	public void onSelectedOutputsChanged() {
 		Display.getDefault().syncExec(() -> {
-			clear();
-			outputToColumnIndex.clear();
 			for (TableColumn column : table.getColumns()) {
 				column.dispose();
 			}
+			lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
+			peripheralModel = userPreferences.getPeripheralModel();
 			createColumnsInTable();
 		});
 	}

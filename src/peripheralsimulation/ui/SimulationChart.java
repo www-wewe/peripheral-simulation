@@ -1,9 +1,7 @@
 package peripheralsimulation.ui;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -24,8 +22,8 @@ public class SimulationChart implements SimulationGUI {
 	private Chart chart;
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();;
-	/** Map of series data for charting. output name -> SeriesData */
-	private Map<String, SeriesData> seriesMap = new HashMap<>();
+	/** List of series data for charting. */
+	private List<SeriesData> seriesList = new ArrayList<>();
 
 	public SimulationChart(Composite parent) {
 		chart = new Chart(parent, SWT.NONE);
@@ -51,13 +49,13 @@ public class SimulationChart implements SimulationGUI {
 	@Override
 	public void clear() {
 		if (chart != null && !chart.isDisposed()) {
-			for (SeriesData outputData : seriesMap.values()) {
+			for (SeriesData outputData : seriesList) {
 				outputData.timeValues.clear();
 				outputData.outputValues.clear();
 				outputData.series.setXSeries(new double[0]);
 				outputData.series.setYSeries(new double[0]);
 			}
-			seriesMap.clear();
+			seriesList.clear();
 			chart.getAxisSet().adjustRange(); // TODO: Adjust axis range ?
 			chart.redraw();
 		}
@@ -67,32 +65,28 @@ public class SimulationChart implements SimulationGUI {
 	 * Updates the chart with the latest data.
 	 */
 	@Override
-	public void update(double timeValue, Map<String, Object> outputs) {
+	public void update(double timeValue, Object[] outputs) {
 		// true if at least one output changed (for the onlyChanges mode)
 		boolean anyChange = false;
+		int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
 		// For each user-selected output:
-		for (String output : userPreferences.getSelectedOutputs()) {
-			SeriesData outputData = seriesMap.get(output);
-			if (outputData == null) {
-				// We have not created a series for this output yet, do so
-				createSeriesForOutput(output);
-				outputData = seriesMap.get(output);
+		for (int outputIndex : selectedOutputsIndices) {
+			if (outputIndex >= seriesList.size()) {
+				createSeriesForOutput(outputIndex);
 			}
-
-			// Convert the 'Object' output to a numeric
-			Object outputValue = outputs.get(output);
+			SeriesData outputData = seriesList.get(outputIndex);
+			Object outputValue = outputs[outputIndex];
 			double numericVal = convertToDouble(outputValue);
 
 			List<Double> outputValues = outputData.outputValues;
-			Object lastValue = outputValues.isEmpty() ? null
-					: outputValues.get(outputValues.size() - 1);
+			Object lastValue = outputValues.isEmpty() ? null : outputValues.get(outputValues.size() - 1);
 			if (lastValue == null || !lastValue.equals(numericVal)) {
 				// Output changed => add new data point for the new time
 				outputData.timeValues.add(timeValue);
 				outputValues.add(numericVal);
 				anyChange = true;
 				System.out.println("Time: " + timeValue);
-				System.out.println("Output " + output + " changed to " + numericVal);
+				System.out.println("Output " + outputIndex + " changed to " + numericVal);
 			}
 
 		}
@@ -128,9 +122,7 @@ public class SimulationChart implements SimulationGUI {
 	 * Redraws all series in the chart.
 	 */
 	private void redrawAllSeries() {
-		for (Map.Entry<String, SeriesData> entry : seriesMap.entrySet()) {
-			SeriesData outputData = entry.getValue();
-
+		for (SeriesData outputData : seriesList) {
 			// Convert the xVals and yVals to arrays
 			double[] xs = new double[outputData.timeValues.size()];
 			double[] ys = new double[outputData.outputValues.size()];
@@ -156,15 +148,16 @@ public class SimulationChart implements SimulationGUI {
 	 * 
 	 * @param output
 	 */
-	private void createSeriesForOutput(String outputName) {
+	private void createSeriesForOutput(int outputIndex) {
 		// create a new line series in the chart
+		String outputName = userPreferences.getPeripheralModel().getOutputName(outputIndex);
 		ILineSeries<?> lineSeries = (ILineSeries<?>) chart.getSeriesSet().createSeries(SeriesType.LINE, outputName);
 		lineSeries.setLineStyle(LineStyle.SOLID);
 		lineSeries.setSymbolType(PlotSymbolType.NONE);
 
 		SeriesData outputData = new SeriesData();
 		outputData.series = lineSeries;
-		seriesMap.put(outputName, outputData);
+		seriesList.add(outputData);
 	}
 
 	@Override
@@ -177,13 +170,13 @@ public class SimulationChart implements SimulationGUI {
 		Display.getDefault().syncExec(() -> {
 			// Clear the chart
 			clear();
-
-			// Recreate series for the selected outputs
-//			for (String output : userPreferences.getSelectedOutputs()) {
-//				if (!seriesMap.containsKey(output)) {
-//					createSeriesForOutput(output);
-//				}
-//			}
+			int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
+			// For each user-selected output:
+			for (int outputIndex : selectedOutputsIndices) {
+				if (outputIndex >= seriesList.size()) {
+					createSeriesForOutput(outputIndex);
+				}
+			}
 			// Redraw the chart
 			redrawAllSeries();
 		});
@@ -200,7 +193,7 @@ public class SimulationChart implements SimulationGUI {
 		if (chart != null) {
 			chart.dispose();
 		}
-		seriesMap.clear();
+		seriesList.clear();
 	}
 
 }

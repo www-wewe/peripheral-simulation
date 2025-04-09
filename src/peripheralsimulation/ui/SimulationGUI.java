@@ -1,12 +1,10 @@
 package peripheralsimulation.ui;
 
-import java.util.Map;
-
 import org.eclipse.swt.widgets.Composite;
 
 public interface SimulationGUI {
 
-	public void update(double timeValue, Map<String, Object> outputs);
+	public void update(double timeValue, Object[] outputs);
 
 	public void clear();
 

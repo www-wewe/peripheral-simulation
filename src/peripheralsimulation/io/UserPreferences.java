@@ -2,10 +2,7 @@ package peripheralsimulation.io;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.ui.SimulationGuiChoice;
 
@@ -17,7 +14,8 @@ public final class UserPreferences {
 	private static final double MS_SCALE = 1e3;
 	private final DecimalFormat TIME_FORMAT = new DecimalFormat("#.######");
 
-	private Set<String> selectedOutputs = new HashSet<>();
+	private List<String> selectedOutputs = new ArrayList<>();
+	private int[] selectedOutputsIndices = new int[0];
 	private PeripheralModel peripheralModel;
 	private List<UserPreferencesListener> listeners = new ArrayList<>();
 	private boolean onlyChanges = false;
@@ -32,8 +30,8 @@ public final class UserPreferences {
 	/** The range (from, to) of the simulation time */
 	private double simulationTimeRangeFrom;
 	private double simulationTimeRangeTo;
-	private double timeScaleFactor = MICROSECONDS_SCALE; // e.g. scale from seconds to microseconds
-	private String timeUnits = "us";
+	private double timeScaleFactor = MS_SCALE; // e.g. scale from seconds to milliseconds
+	private String timeUnits = "ms";
 
 	private UserPreferences() {
 		// Private constructor to prevent instantiation
@@ -59,15 +57,24 @@ public final class UserPreferences {
 		}
 	}
 
-	public Set<String> getSelectedOutputs() {
+	public List<String> getSelectedOutputs() {
 		return selectedOutputs;
 	}
 
-	public void setSelectedOutputs(Set<String> selectedOutputs) {
+	public void setSelectedOutputs(List<String> selectedOutputs) {
 		if (this.selectedOutputs.equals(selectedOutputs)) {
 			return;
 		}
 		this.selectedOutputs = selectedOutputs;
+		notifyListenersWhenSelectedOutputsChanged();
+	}
+
+	public int[] getSelectedOutputsIndices() {
+		return selectedOutputsIndices;
+	}
+
+	public void setSelectedOutputsIndices(int[] selectedOutputsIndices) {
+		this.selectedOutputsIndices = selectedOutputsIndices;
 		notifyListenersWhenSelectedOutputsChanged();
 	}
 

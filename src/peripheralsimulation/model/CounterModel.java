@@ -1,9 +1,5 @@
 package peripheralsimulation.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import peripheralsimulation.engine.SimulationEngine;
 
 /**
@@ -63,15 +59,54 @@ public class CounterModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputValues() {
-		Map<String, Object> out = new HashMap<>();
-		out.put("CURRENT_VALUE", currentValue);
-		out.put("OVERFLOW_OCCURRED", (currentValue == 0) && justOverflowed);
-		return out;
+	public int getOutputCount() {
+		return 2; // CURRENT_VALUE, OVERFLOW_OCCURRED
 	}
 
 	@Override
-	public Set<String> getOutputs() {
-		return Set.of("CURRENT_VALUE", "OVERFLOW_OCCURRED");
+	public String getOutputName(int index) {
+		switch (index) {
+		case 0:
+			return "CURRENT_VALUE";
+		case 1:
+			return "OVERFLOW_OCCURRED";
+		default:
+			throw new IllegalArgumentException("Invalid output index");
+		}
 	}
+
+	@Override
+	public String[] getOutputNames() {
+		return new String[] { "CURRENT_VALUE", "OVERFLOW_OCCURRED" };
+	}
+
+	@Override
+	public Object[] getOutputs() {
+		return new Object[] { currentValue, (currentValue == 0) && justOverflowed };
+	}
+
+	@Override
+	public int getOutputIndex(String name) {
+		switch (name) {
+		case "CURRENT_VALUE":
+			return 0;
+		case "OVERFLOW_OCCURRED":
+			return 1;
+		default:
+			throw new IllegalArgumentException("Invalid output name: " + name);
+		}
+	}
+
+//	@Override
+//	public Map<String, Object> getOutputValues() {
+//		Map<String, Object> out = new HashMap<>();
+//		out.put("CURRENT_VALUE", currentValue);
+//		out.put("OVERFLOW_OCCURRED", (currentValue == 0) && justOverflowed);
+//		return out;
+//	}
+//
+//	@Override
+//	public Set<String> getOutputs() {
+//		return Set.of("CURRENT_VALUE", "OVERFLOW_OCCURRED");
+//	}
 }

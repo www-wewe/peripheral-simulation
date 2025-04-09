@@ -6,8 +6,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.*;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -168,7 +166,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	}
 
 	private SimulationGUI updateSimulationGUI(Composite parent) {
-		//TODO: Tu to ešte robí problémy a niekedy nevytvorí nové GUI
+		// TODO: Tu to ešte robí problémy a niekedy nevytvorí nové GUI
 		if (simulationGUI != null) {
 			simulationGUI.dispose();
 		}
@@ -198,9 +196,11 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 				simulationCore.initSimulation();
 				simulationCore.startSimulation(userPreferences.getSimulationTimeRangeTo());
 				if (!simulationCore.isSimulationRunning()) {
-					Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia dokončená."));
-//					stopSimulationButton.setEnabled(false);
-//					clearSimulationButton.setEnabled(true);
+					Display.getDefault().asyncExec(() -> {
+						statusLabel.setText("Simulácia dokončená.");
+						stopSimulationButton.setEnabled(false);
+						clearSimulationButton.setEnabled(true);
+					});
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -230,10 +230,11 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 	}
 
-	private void updateGUI(double timeValue, Map<String, Object> outputs) {
-		double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
-	    Display.getDefault().asyncExec(() -> {
-	    	if (!simulationCore.isSimulationRunning()) {
+	private void updateGUI(double timeValue, Object[] outputs) {
+		// TODO: predam iba selected outputs?
+		Display.getDefault().asyncExec(() -> {
+			double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
+			if (!simulationCore.isSimulationRunning()) {
 				return;
 			}
 			simulationGUI.update(scaledTime, outputs);
@@ -247,11 +248,13 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 	@Override
 	public void onSelectedOutputsChanged() {
+		clearGUI();
 		simulationGUI.onSelectedOutputsChanged();
 	}
 
 	@Override
 	public void onSelectedSimulationGUIChanged() {
+		clearGUI();
 		simulationGUI = updateSimulationGUI(simulationGUI.getParent());
 	}
 

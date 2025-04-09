@@ -1,9 +1,5 @@
 package peripheralsimulation.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.io.systick.SysTickTimerConfig;
 
@@ -13,6 +9,12 @@ import peripheralsimulation.io.systick.SysTickTimerConfig;
  * (Current Value) - SYST_CALIB (optional read-only info)
  */
 public class SysTickTimerModel implements PeripheralModel {
+
+	public static final int IDX_CURRENT = 0;
+	public static final int IDX_INTERRUPT_LINE = 1;
+	public static final int IDX_COUNTFLAG = 2;
+
+	private static final String[] OUTPUT_NAMES = { "CURRENT", "INTERRUPT_LINE", "COUNTFLAG" };
 
 	/* The configuration object with all the "register" bits */
 	private final SysTickTimerConfig config;
@@ -161,17 +163,37 @@ public class SysTickTimerModel implements PeripheralModel {
 	}
 
 	@Override
-	public Map<String, Object> getOutputValues() {
-		Map<String, Object> out = new HashMap<>();
-		out.put("CURRENT", readCVR());
-		out.put("INTERRUPT_LINE", isInterruptLine());
-		out.put("COUNTFLAG", readCountFlag());
-		return out;
+	public int getOutputCount() {
+		return OUTPUT_NAMES.length;
 	}
 
 	@Override
-	public Set<String> getOutputs() {
-		return Set.of("CURRENT", "INTERRUPT_LINE", "COUNTFLAG");
+	public String getOutputName(int index) {
+		return OUTPUT_NAMES[index];
+	}
+
+	@Override
+	public Object[] getOutputs() {
+		return new Object[] { readCVR(), isInterruptLine(), readCountFlag() };
+	}
+
+	@Override
+	public String[] getOutputNames() {
+		return OUTPUT_NAMES;
+	}
+
+	@Override
+	public int getOutputIndex(String name) {
+		switch (name) {
+		case "CURRENT":
+			return IDX_CURRENT;
+		case "INTERRUPT_LINE":
+			return IDX_INTERRUPT_LINE;
+		case "COUNTFLAG":
+			return IDX_COUNTFLAG;
+		default:
+			throw new IllegalArgumentException("Invalid output name: " + name);
+		}
 	}
 
 }

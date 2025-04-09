@@ -1,8 +1,5 @@
 package peripheralsimulation.model;
 
-import java.util.Map;
-import java.util.Set;
-
 import peripheralsimulation.engine.SimulationEngine;
 
 /**
@@ -27,24 +24,41 @@ public interface PeripheralModel {
 	void initialize(SimulationEngine engine);
 
 	/**
-	 * Called by the SimulationEngine at each time step.
-	 * Schedule next increment only if the simulation is running.
-	 * Use {@link SimulationEngine.isSimulationRunning()}.
+	 * Called by the SimulationEngine at each time step. Schedule next increment
+	 * only if the simulation is running. Use
+	 * {@link SimulationEngine.isSimulationRunning()}.
 	 * 
 	 * @param engine The core simulation engine controlling scheduling and time
 	 */
 	void update(SimulationEngine engine);
 
 	/**
-     * Returns a map of named outputs so the UI can select which to display.
-     * The keys can be e.g. "CURRENT", "INTERRUPT", etc.
-     * The values can be integers, booleans, strings, or whatever is relevant.
-     */
-    Map<String, Object> getOutputValues();
+	 * Returns the total number of outputs this peripheral exposes. 
+	 * e.g. for SysTick => 3 outputs (CURRENT, INTERRUPT_LINE, COUNTFLAG)
+	 */
+	int getOutputCount();
 
-    /**
-     * Returns the set of output names that the peripheral can provide.
-     * @return a set of output names
-     */
-    Set<String> getOutputs();
+	/**
+	 * Returns the name for a given output index.
+	 * e.g. 0 -> "CURRENT", 1 -> "INTERRUPT_LINE", 2 -> "COUNTFLAG"
+	 */
+	String getOutputName(int index);
+
+	/**
+	 * Returns the index of a given output name. e.g. "CURRENT" -> 0,
+	 * "INTERRUPT_LINE" -> 1, "COUNTFLAG" -> 2
+	 */
+	int getOutputIndex(String name);
+
+	/**
+	 * Returns an array of objects representing the current state of the peripheral.
+	 * @return an array of peripheral outputs
+	 */
+	Object[] getOutputs();
+
+	/**
+	 * Returns the names of all outputs for this peripheral.
+	 * @return an array of output names
+	 */
+	String[] getOutputNames();
 }

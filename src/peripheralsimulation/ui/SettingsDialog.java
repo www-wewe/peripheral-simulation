@@ -1,10 +1,7 @@
 package peripheralsimulation.ui;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -66,13 +63,19 @@ public class SettingsDialog extends Dialog {
 			break;
 		}
 		userPreferences.setSelectedSimulationGUI(selectedGui);
-		Set<String> selectedOutputs = new HashSet<>();
+
+		PeripheralModel peripheralModel = userPreferences.getPeripheralModel();
+		List<String> selectedOutputs = new ArrayList<>();
+		List<Integer> selectedOutputsIndices = new ArrayList<>();
 		for (Button checkbox : checkboxes) {
 			if (checkbox.getSelection()) {
-				selectedOutputs.add(checkbox.getText());
+				String output = checkbox.getText();
+				selectedOutputs.add(output);
+				selectedOutputsIndices.add(peripheralModel.getOutputIndex(output));
 			}
 		}
 		userPreferences.setSelectedOutputs(selectedOutputs);
+		userPreferences.setSelectedOutputsIndices(selectedOutputsIndices.stream().mapToInt(i -> i).toArray());
 		userPreferences.setOnlyChanges(onlyChanges.getSelection());
 
 		String millisToWait = millisToWaitTextField.getText();
@@ -100,7 +103,7 @@ public class SettingsDialog extends Dialog {
 	private void addCheckboxes(Composite dialog) {
 		PeripheralModel selectedPeripheral = userPreferences.getPeripheralModel();
 		if (selectedPeripheral != null) {
-			Set<String> outputs = selectedPeripheral.getOutputs();
+			String[] outputs = selectedPeripheral.getOutputNames();
 			for (String output : outputs) {
 				Button checkbox = new Button(dialog, SWT.CHECK);
 				checkbox.setText(output);

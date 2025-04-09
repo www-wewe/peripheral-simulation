@@ -3,7 +3,6 @@ package peripheralsimulation.engine;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.function.BiConsumer;
@@ -42,7 +41,7 @@ public class SimulationEngine {
 	 * A consumer to handle simulation output (e.g., display in a view). Key:
 	 * current time, Value: map of peripheral outputs with their values.
 	 */
-	private BiConsumer<Double, Map<String, Object>> outputHandler;
+	private BiConsumer<Double, Object[]> outputHandler;
 
 	/**
 	 * User preferences for the simulation.
@@ -54,7 +53,7 @@ public class SimulationEngine {
 	 * 
 	 * @param outputHandler A consumer to handle simulation output.
 	 */
-	public SimulationEngine(BiConsumer<Double, Map<String, Object>> outputHandler) {
+	public SimulationEngine(BiConsumer<Double, Object[]> outputHandler) {
 		this.outputHandler = outputHandler;
 		this.currentTime = 0.0;
 		this.running = false;
@@ -103,8 +102,9 @@ public class SimulationEngine {
 					: Math.abs(currentTime % userPreferences.getMonitoringFreq()) < 1e-9;
 			if (currentTime >= userPreferences.getSimulationTimeRangeFrom() && isInMonitoringInterval) {
 				for (PeripheralModel model : modules) {
+					// TODO: posielať len selectedOutputs?
+					Object[] outputs = model.getOutputs();
 					if (outputHandler != null) {
-						Map<String, Object> outputs = model.getOutputValues();
 						outputHandler.accept(currentTime, outputs);
 					}
 				}
@@ -155,11 +155,11 @@ public class SimulationEngine {
 		return running;
 	}
 
-	public BiConsumer<Double, Map<String, Object>> getOutputHandler() {
+	public BiConsumer<Double, Object[]> getOutputHandler() {
 		return outputHandler;
 	}
 
-	public void setOutputHandler(BiConsumer<Double, Map<String, Object>> outputHandler) {
+	public void setOutputHandler(BiConsumer<Double, Object[]> outputHandler) {
 		this.outputHandler = outputHandler;
 	}
 
