@@ -41,7 +41,12 @@ public class SimulationChart implements SimulationGUI {
 		chart.getAxisSet().getYAxis(0).getTitle().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
 		chart.getLegend().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
 
-		// Initial axis range // TODO: according the user preferences
+		// axis tick color
+		chart.getAxisSet().getXAxis(0).getTick()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
+		chart.getAxisSet().getYAxis(0).getTick()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
+
 		chart.getAxisSet().getXAxis(0).setRange(new Range(0, 10));
 		chart.getAxisSet().getYAxis(0).setRange(new Range(0, 10));
 	}
@@ -56,7 +61,7 @@ public class SimulationChart implements SimulationGUI {
 				outputData.series.setYSeries(new double[0]);
 			}
 			seriesList.clear();
-			chart.getAxisSet().adjustRange(); // TODO: Adjust axis range ?
+			chart.getAxisSet().adjustRange();
 			chart.redraw();
 		}
 	}
@@ -149,11 +154,11 @@ public class SimulationChart implements SimulationGUI {
 	 * @param output
 	 */
 	private void createSeriesForOutput(int outputIndex) {
-		// create a new line series in the chart
 		String outputName = userPreferences.getPeripheralModel().getOutputName(outputIndex);
 		ILineSeries<?> lineSeries = (ILineSeries<?>) chart.getSeriesSet().createSeries(SeriesType.LINE, outputName);
 		lineSeries.setLineStyle(LineStyle.SOLID);
 		lineSeries.setSymbolType(PlotSymbolType.NONE);
+		lineSeries.setLineColor(ColorsUtils.getNextColor());
 
 		SeriesData outputData = new SeriesData();
 		outputData.series = lineSeries;
@@ -168,18 +173,15 @@ public class SimulationChart implements SimulationGUI {
 	@Override
 	public void onSelectedOutputsChanged() {
 		Display.getDefault().syncExec(() -> {
-			// Clear the chart
 			clear();
-			// TODO: legenda ostane
+			// TODO: legenda ostane ?
 			int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
-			// For each user-selected output:
-			for (int outputIndex : selectedOutputsIndices) {
-				if (outputIndex >= seriesList.size()) {
+			if (selectedOutputsIndices.length > seriesList.size()) {
+				for (int outputIndex : selectedOutputsIndices) {
 					createSeriesForOutput(outputIndex);
 				}
 			}
-			// Redraw the chart
-			redrawAllSeries();
+			chart.redraw();
 		});
 	}
 
