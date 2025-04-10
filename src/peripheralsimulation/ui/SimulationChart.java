@@ -29,7 +29,7 @@ public class SimulationChart implements SimulationGUI {
 		chart = new Chart(parent, SWT.NONE);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 		chart.getTitle().setText("Simulation Chart");
-		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in microseconds");
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in milliseconds");
 		chart.getAxisSet().getYAxis(0).getTitle().setText("Output Value");
 		chart.getLegend().setVisible(true);
 
@@ -170,6 +170,7 @@ public class SimulationChart implements SimulationGUI {
 		Display.getDefault().syncExec(() -> {
 			// Clear the chart
 			clear();
+			// TODO: legenda ostane
 			int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
 			// For each user-selected output:
 			for (int outputIndex : selectedOutputsIndices) {

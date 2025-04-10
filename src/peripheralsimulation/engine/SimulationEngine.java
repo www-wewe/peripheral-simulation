@@ -49,6 +49,11 @@ public class SimulationEngine {
 	private UserPreferences userPreferences = UserPreferences.getInstance();
 
 	/**
+	 * The time at which the next output should be produced.
+	 */
+	private double nextMonitorTime = 0.0;
+
+	/**
 	 * Constructor for the simulation engine.
 	 * 
 	 * @param outputHandler A consumer to handle simulation output.
@@ -82,6 +87,11 @@ public class SimulationEngine {
 	 */
 	public void startSimulation(double maxTime) {
 		running = true;
+		double freq = userPreferences.getMonitoringFreq();
+		double startRange = userPreferences.getSimulationTimeRangeFrom();
+
+		nextMonitorTime = startRange;
+
 		while (running && !eventQueue.isEmpty()) {
 			SimulationEvent next = eventQueue.peek();
 			if (next.time() > maxTime) {
@@ -98,15 +108,10 @@ public class SimulationEngine {
 			next.run();
 
 			// Poslanie výstupu do SimulationView
-			boolean isInMonitoringInterval = userPreferences.getMonitoringFreq() == 0 ? true
-					: Math.abs(currentTime % userPreferences.getMonitoringFreq()) < 1e-9;
-			if (currentTime >= userPreferences.getSimulationTimeRangeFrom() && isInMonitoringInterval) {
-				for (PeripheralModel model : modules) {
-					// TODO: posielať len selectedOutputs?
-					Object[] outputs = model.getOutputs();
-					if (outputHandler != null) {
-						outputHandler.accept(currentTime, outputs);
-					}
+			if (currentTime >= nextMonitorTime) {
+				produceOutputs();
+				if (freq > 0) {
+					nextMonitorTime += freq;
 				}
 			}
 			try {
@@ -118,6 +123,16 @@ public class SimulationEngine {
 		running = false;
 		stopSimulation();
 		System.out.println("[SimulationEngine] Simulácia ukončená, žiadne ďalšie udalosti.");
+	}
+
+	private void produceOutputs() {
+		for (PeripheralModel model : modules) {
+			// TODO: posielať len selectedOutputs?
+			if (outputHandler != null) {
+				Object[] outputs = model.getOutputs();
+				outputHandler.accept(currentTime, outputs);
+			}
+		}
 	}
 
 	/**

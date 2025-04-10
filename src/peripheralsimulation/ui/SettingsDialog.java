@@ -152,13 +152,13 @@ public class SettingsDialog extends Dialog {
 	 */
 	private void addTextFieldMonitoringFreq(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
-		label.setText("Monitoring frequency:");
+		label.setText("Monitoring frequency in seconds:");
 
 		monitoringFreqTextField = new Text(dialog, SWT.BORDER);
 		monitoringFreqTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringFreq()));
 		monitoringFreqTextField.setToolTipText(
-				"The frequency at which the simulation should be monitored. This is used to determine how often the simulation should update the GUI (e.g. 0.5 means show a table row every 0.5 simulation time)");
+				"The frequency at which the simulation should be monitored. This is used to determine how often the simulation should update the GUI (e.g. 0.5 means show a table row every 0.5 seconds).");
 	}
 
 	/**

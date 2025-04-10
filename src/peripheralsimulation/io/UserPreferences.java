@@ -24,7 +24,7 @@ public final class UserPreferences {
 	/**
 	 * The frequency at which the simulation should be monitored. This is used to
 	 * determine how often the simulation should update the GUI (e.g. 0.5 means show
-	 * a table row every 0.5 simulation time)
+	 * a table row every 0.5 seconds).
 	 */
 	private double monitoringFreq;
 	/** The range (from, to) of the simulation time */
