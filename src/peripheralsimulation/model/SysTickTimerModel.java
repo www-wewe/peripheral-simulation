@@ -60,19 +60,19 @@ public class SysTickTimerModel implements PeripheralModel {
 	 * @param config
 	 */
 	private double calculateTickPeriod() {
-		double freq = config.useCpuClock ? config.cpuClockFreq : config.externalFreq;
+		double freq = config.isUseCpuClock() ? config.getMainClk() : config.getExternalClk();
 		return (freq <= 0) ? 1.0 : (1.0 / freq);
 	}
 
 	@Override
 	public void initialize(SimulationEngine engine) {
 		// Writing to SYST_CVR sets it to 0 and clears COUNTFLAG
-		currentValue = config.reloadValue & RegisterUtils.BIT_MASK;
+		currentValue = config.getRVR();
 		countFlag = false;
 		isInterrupt = false;
 
 		// If the timer is enabled, schedule the first decrement
-		if (config.enable) {
+		if (config.isEnabled()) {
 			scheduleNextDecrement(engine, engine.getCurrentTime() + tickPeriod);
 		}
 	}
@@ -80,17 +80,18 @@ public class SysTickTimerModel implements PeripheralModel {
 	@Override
 	public void update(SimulationEngine engine) {
 		// Decrement only if enabled
-		if (config.enable) {
+		if (config.isEnabled()) {
 			currentValue--; // 24-bit down counter
 			if (currentValue < 0) {
 				// Underflow => reload from SYST_RVR
-				currentValue = config.reloadValue & RegisterUtils.BIT_MASK;
+				currentValue = config.getRVR();
+				;
 
 				// COUNTFLAG bit => set to true once we underflow
 				countFlag = true;
 
 				// If TICKINT=1 => raise interrupt
-				if (config.tickInt) {
+				if (config.isTickInt()) {
 					isInterrupt = true;
 				}
 			} else {
@@ -140,9 +141,9 @@ public class SysTickTimerModel implements PeripheralModel {
 	 * @param clksource
 	 */
 	public void writeCSR(boolean enable, boolean tickInt, boolean clksource) {
-		config.enable = enable;
-		config.tickInt = tickInt;
-		config.useCpuClock = clksource;
+		config.setEnabled(enable);
+		config.setTickInt(tickInt);
+		config.setUseCpuClock(clksource);
 
 		// re-calculate tickPeriod
 		this.tickPeriod = calculateTickPeriod();
@@ -203,13 +204,15 @@ public class SysTickTimerModel implements PeripheralModel {
 	public void setRegisterValue(int registerAddress, int value) {
 		switch (registerAddress) {
 		case SYST_CSR_ADDR:
-			writeCSR((value & 0x1) != 0, (value & 0x2) != 0, (value & 0x4) != 0);
+			config.setCSR(value);
+			this.tickPeriod = calculateTickPeriod();
 			break;
 		case SYST_RVR_ADDR:
-			config.reloadValue = value & RegisterUtils.BIT_MASK;
+			config.setRVR(value);
 			break;
 		case SYST_CVR_ADDR:
 			writeCVR(value);
+			config.setCVR(value);
 			break;
 		case SYST_CALIB_ADDR:
 			throw new UnsupportedOperationException("Cannot write to read-only register: " + registerAddress);
@@ -222,13 +225,13 @@ public class SysTickTimerModel implements PeripheralModel {
 	public Integer getRegisterValue(int registerAddress) {
 		switch (registerAddress) {
 		case SYST_CSR_ADDR:
-			return config.getSYST_CSR();
+			return config.getCSR();
 		case SYST_RVR_ADDR:
-			return config.getSYST_RVR();
+			return config.getRVR();
 		case SYST_CVR_ADDR:
 			return readCVR();
 		case SYST_CALIB_ADDR:
-			return config.getSYST_CALIB();
+			return config.getCALIB();
 		default:
 			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
 		}

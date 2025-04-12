@@ -4,99 +4,111 @@ import peripheralsimulation.utils.RegisterUtils;
 
 public class SysTickTimerConfig {
 
-	// SYST_CVR
-	public int currentValue = 0;
+	// Register addresses for clarity
+	public static final int SYST_CSR_ADDR = 0xE000E010;
+	public static final int SYST_RVR_ADDR = 0xE000E014;
+	public static final int SYST_CVR_ADDR = 0xE000E018;
+	public static final int SYST_CALIB_ADDR = 0xE000E01C;
 
-	// SYST_CSR bits
-	public boolean enable; // ENABLE bit (CSR bit 0)
-	public boolean tickInt; // TICKINT bit (CSR bit 1)
-	public boolean useCpuClock; // CLKSOURCE bit (CSR bit 2)
-	public boolean countFlag; // COUNTFLAG bit (CSR bit 16) (auto-clear on read or reload)
+	// CPU frequency or external frequencies
+	private double mainClk; // e.g. 48e6
+	private double externalClk; // e.g. 12e6
 
-	// 24-bit reload from SYST_RVR
-	public int reloadValue; // 0 to 0xFFFFFF
+	private int SYST_CSR; // Control and Status Register
+	private int SYST_RVR; // Reload Value Register
+	private int SYST_CVR; // Current Value Register
+	private int SYST_CALIB; // Calibration Value Register (optional, read-only)
 
-	// SYST_CALIB fields
-	public int tenms; // TENMS from CALIB (bits [23:0])
-	public boolean skew; // SKEW bit (bit 30)
-	public boolean noRef; // NOREF bit (bit 31)
+	public SysTickTimerConfig(int systCSR, int systRVR, int systCVR, int systCALIB, double mainClk,
+			double externalClk) {
+		this.SYST_CSR = systCSR;
+		this.SYST_RVR = systRVR & RegisterUtils.BIT_MASK;
+		this.SYST_CVR = systCVR & RegisterUtils.BIT_MASK;
+		this.SYST_CALIB = systCALIB; // read-only
 
-	// Final clock/prescaler for the simulation
-	public double cpuClockFreq; // e.g. if useCpuClock = true
-	public double externalFreq; // e.g. if useCpuClock = false
+		this.mainClk = mainClk;
+		this.externalClk = externalClk;
+	}
 
-	public SysTickTimerConfig(SysTickRegisterDump dump) {
-		currentValue = dump.getSYST_CVR();
+	// -------------- GET/SET for SYST_CSR bits --------------
+	public int getCSR() {
+		return SYST_CSR;
+	}
 
-		// 1) SYST_CSR bits
-		setSYST_CSR(dump.getSYST_CSR());
+	public void setCSR(int val) {
+		SYST_CSR = val;
+	}
 
-		// 2) Reload value (24-bit)
-		setSYST_RVR(dump.getSYST_RVR());
+	public boolean isEnabled() {
+		return ((SYST_CSR >> 0) & 1) == 1;
+	}
 
-		// 3) SYST_CALIB
-		setSYST_CALIB(dump.getSYST_CALIB());
+	public boolean isTickInt() {
+		return ((SYST_CSR >> 1) & 1) == 1;
+	}
 
-		// 4) Decide final clock freq from MCUXpresso
-		// e.g. if useCpuClock => pick mainClk
-		// else => pick externalClk
-		// clock settings from SYSTICKCLKDIVn, SYSTICKCLKSELn ???
-		double freq = 0.0;
+	public boolean isUseCpuClock() {
+		return ((SYST_CSR >> 2) & 1) == 1;
+	}
 
-		if (useCpuClock) {
-			freq = dump.getMainClk();
+	public void setEnabled(boolean enable) {
+		if (enable) {
+			SYST_CSR |= (1 << 0);
 		} else {
-			freq = dump.getExternalClk();
+			SYST_CSR &= ~(1 << 0);
 		}
-
-		// store in config
-		cpuClockFreq = useCpuClock ? freq : 0;
-		externalFreq = useCpuClock ? 0 : freq;
 	}
 
-	public int getSYST_CSR() {
-		int value = 0;
-		value |= (enable ? 1 : 0) << 0; // ENABLE
-		value |= (tickInt ? 1 : 0) << 1; // TICKINT
-		value |= (useCpuClock ? 1 : 0) << 2; // CLKSOURCE
-		return value;
-	}
-	
-	public void setSYST_CSR(int value) {
-		enable = ((value >> 0) & 1) == 1;
-		tickInt = ((value >> 1) & 1) == 1;
-		useCpuClock = ((value >> 2) & 1) == 1;
+	public void setTickInt(boolean tickInt) {
+		if (tickInt) {
+			SYST_CSR |= (1 << 1);
+		} else {
+			SYST_CSR &= ~(1 << 1);
+		}
 	}
 
-	public int getSYST_RVR() {
-		return reloadValue & RegisterUtils.BIT_MASK;
+	public void setUseCpuClock(boolean use) {
+		if (use) {
+			SYST_CSR |= (1 << 2);
+		} else {
+			SYST_CSR &= ~(1 << 2);
+		}
 	}
 
-	public void setSYST_RVR(int value) {
-		reloadValue = value & RegisterUtils.BIT_MASK;
+	// -------------- GET/SET for SYST_RVR --------------
+	public int getRVR() {
+		return SYST_RVR & RegisterUtils.BIT_MASK;
 	}
 
-	public int getSYST_CVR() {
-		return currentValue & RegisterUtils.BIT_MASK;
+	public void setRVR(int value) {
+		SYST_RVR = value & RegisterUtils.BIT_MASK;
 	}
 
-	public void setSYST_CVR(int value) {
-		currentValue = 0;
-		countFlag = false;
+	// -------------- GET/SET for SYST_CVR --------------
+	public int getCVR() {
+		return SYST_CVR & RegisterUtils.BIT_MASK;
 	}
 
-	public int getSYST_CALIB() {
-		int value = 0;
-		value |= (tenms & RegisterUtils.BIT_MASK); // TENMS
-		value |= (skew ? 1 : 0) << 30; // SKEW
-		value |= (noRef ? 1 : 0) << 31; // NOREF
-		return value;
+	public void setCVR(int value) {
+		// writing any value => sets CVR=0, clears COUNTFLAG
+		SYST_CVR = 0;
+		// If your code sets a separate bit for countFlag in SYST_CSR, you might clear
+		// it here
+		// e.g. SYST_CSR &= ~(1<<16)
 	}
 
-	public void setSYST_CALIB(int value) {
-		tenms = value & RegisterUtils.BIT_MASK;
-		skew = ((value >> 30) & 1) == 1;
-		noRef = ((value >> 31) & 1) == 1;
+	// -------------- GET/SET for SYST_CALIB --------------
+	public int getCALIB() {
+		return SYST_CALIB;
+	}
+	// read-only? If so, no setCALIB
+
+	// -------------- Frequencies --------------
+	public double getMainClk() {
+		return mainClk;
 	}
 
+	public double getExternalClk() {
+		return externalClk;
+	}
 }

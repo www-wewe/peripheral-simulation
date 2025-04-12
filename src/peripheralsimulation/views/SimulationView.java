@@ -19,7 +19,6 @@ import peripheralsimulation.io.UserPreferencesListener;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.model.SysTickTimerModel;
-import peripheralsimulation.model.systick.SysTickRegisterDump;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.ui.SettingsDialog;
 import peripheralsimulation.ui.SimulationChart;
@@ -116,7 +115,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		combo = new Combo(parent, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		combo.add(Peripheral.SYSTICKTIMER.toString());
-		combo.add(Peripheral.SCTIMER.toString());
 		combo.add(Peripheral.COUNTER.toString());
 		combo.addSelectionListener(new SelectionListener() {
 			@Override
@@ -144,9 +142,14 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		PeripheralModel simulationModel;
 		switch (combo.getText()) {
 		case "System Tick Timer":
-			SysTickRegisterDump dump = new SysTickRegisterDump();
 			// fill in the fields from your exported data or from code
-			SysTickTimerConfig config = new SysTickTimerConfig(dump);
+			SysTickTimerConfig config = new SysTickTimerConfig(0x3, // SYST_CSR
+					0x0001D4BF, // SYST_RVR
+					0, // SYST_CVR
+					0, // SYST_CALIB
+					48e6, // mainClk
+					12e6 // externalClk
+			);
 			simulationModel = new SysTickTimerModel(config);
 			break;
 		case "Counter":
@@ -187,8 +190,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.addPeripheral(simulationModel);
-		UserEventDefinition userEvent = new UserEventDefinition(
-				0.010, // start time
+		UserEventDefinition userEvent = new UserEventDefinition(0.010, // start time
 				0.010, // period, means every 10ms
 				5, // repeat count (0 means infinite)
 				simulationModel, // target peripheral
