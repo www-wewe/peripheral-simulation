@@ -1,7 +1,9 @@
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
-import peripheralsimulation.io.systick.SysTickTimerConfig;
+import peripheralsimulation.model.systick.SysTickOutputs;
+import peripheralsimulation.model.systick.SysTickTimerConfig;
+import peripheralsimulation.utils.RegisterUtils;
 
 /**
  * Simulates an ARM SysTick Timer (24-bit), with basic registers: - SYST_CSR
@@ -10,11 +12,19 @@ import peripheralsimulation.io.systick.SysTickTimerConfig;
  */
 public class SysTickTimerModel implements PeripheralModel {
 
+	/* Register addresses */
+	private static final int SYST_CSR_ADDR = 0xE000E010;
+	private static final int SYST_RVR_ADDR = 0xE000E014;
+	private static final int SYST_CVR_ADDR = 0xE000E018;
+	private static final int SYST_CALIB_ADDR = 0xE000E01C;
+
+	/* Output indices */
 	public static final int IDX_CURRENT = 0;
-	public static final int IDX_INTERRUPT_LINE = 1;
+	public static final int IDX_INTERRUPT = 1;
 	public static final int IDX_COUNTFLAG = 2;
 
-	private static final String[] OUTPUT_NAMES = { "CURRENT", "INTERRUPT_LINE", "COUNTFLAG" };
+	/* Output names */
+	private static final String[] OUTPUT_NAMES = SysTickOutputs.getOutputNames();
 
 	/* The configuration object with all the "register" bits */
 	private final SysTickTimerConfig config;
@@ -26,7 +36,7 @@ public class SysTickTimerModel implements PeripheralModel {
 	private boolean countFlag;
 
 	/* For highlighting "interrupt triggered" in UI */
-	private boolean interruptLine;
+	private boolean isInterrupt;
 
 	/* Derived field (time per tick). Could be re-computed if config changes */
 	private double tickPeriod;
@@ -38,7 +48,7 @@ public class SysTickTimerModel implements PeripheralModel {
 		this.config = config;
 		this.currentValue = 0; // will get set in initialize() or on write
 		this.countFlag = false;
-		this.interruptLine = false;
+		this.isInterrupt = false;
 
 		// Pre-calculate your tickPeriod once (or each time config changes):
 		this.tickPeriod = calculateTickPeriod();
@@ -51,17 +61,15 @@ public class SysTickTimerModel implements PeripheralModel {
 	 */
 	private double calculateTickPeriod() {
 		double freq = config.useCpuClock ? config.cpuClockFreq : config.externalFreq;
-		int prescaler = (config.prescalerDiv <= 0) ? 1 : config.prescalerDiv;
-		freq = (freq <= 0) ? 1 : freq;
-		return 1.0 / (freq / prescaler);
+		return (freq <= 0) ? 1.0 : (1.0 / freq);
 	}
 
 	@Override
 	public void initialize(SimulationEngine engine) {
 		// Writing to SYST_CVR sets it to 0 and clears COUNTFLAG
-		currentValue = config.reloadValue & 0x00FFFFFF;
+		currentValue = config.reloadValue & RegisterUtils.BIT_MASK;
 		countFlag = false;
-		interruptLine = false;
+		isInterrupt = false;
 
 		// If the timer is enabled, schedule the first decrement
 		if (config.enable) {
@@ -76,14 +84,14 @@ public class SysTickTimerModel implements PeripheralModel {
 			currentValue--; // 24-bit down counter
 			if (currentValue < 0) {
 				// Underflow => reload from SYST_RVR
-				currentValue = config.reloadValue & 0x00FFFFFF;
+				currentValue = config.reloadValue & RegisterUtils.BIT_MASK;
 
 				// COUNTFLAG bit => set to true once we underflow
 				countFlag = true;
 
 				// If TICKINT=1 => raise interrupt
 				if (config.tickInt) {
-					interruptLine = true;
+					isInterrupt = true;
 				}
 			} else {
 				countFlag = false;
@@ -108,7 +116,7 @@ public class SysTickTimerModel implements PeripheralModel {
 	 */
 	public int readCVR() {
 		// reading SYST_CVR doesn't clear it in real SysTick
-		return currentValue & 0x00FFFFFF;
+		return currentValue & RegisterUtils.BIT_MASK;
 	}
 
 	/**
@@ -156,15 +164,10 @@ public class SysTickTimerModel implements PeripheralModel {
 	 * 
 	 * @return true if interrupt
 	 */
-	public boolean isInterruptLine() {
-		boolean temp = interruptLine;
-		interruptLine = false; // clear after reading for next cycle
+	public boolean isInterruptGenerated() {
+		boolean temp = isInterrupt;
+		isInterrupt = false; // clear after reading for next cycle
 		return temp;
-	}
-
-	@Override
-	public int getOutputCount() {
-		return OUTPUT_NAMES.length;
 	}
 
 	@Override
@@ -174,7 +177,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public Object[] getOutputs() {
-		return new Object[] { readCVR(), isInterruptLine(), readCountFlag() };
+		return new Object[] { readCVR(), isInterruptGenerated(), readCountFlag() };
 	}
 
 	@Override
@@ -187,12 +190,47 @@ public class SysTickTimerModel implements PeripheralModel {
 		switch (name) {
 		case "CURRENT":
 			return IDX_CURRENT;
-		case "INTERRUPT_LINE":
-			return IDX_INTERRUPT_LINE;
+		case "INTERRUPT":
+			return IDX_INTERRUPT;
 		case "COUNTFLAG":
 			return IDX_COUNTFLAG;
 		default:
 			throw new IllegalArgumentException("Invalid output name: " + name);
+		}
+	}
+
+	@Override
+	public void setRegisterValue(int registerAddress, int value) {
+		switch (registerAddress) {
+		case SYST_CSR_ADDR:
+			writeCSR((value & 0x1) != 0, (value & 0x2) != 0, (value & 0x4) != 0);
+			break;
+		case SYST_RVR_ADDR:
+			config.reloadValue = value & RegisterUtils.BIT_MASK;
+			break;
+		case SYST_CVR_ADDR:
+			writeCVR(value);
+			break;
+		case SYST_CALIB_ADDR:
+			throw new UnsupportedOperationException("Cannot write to read-only register: " + registerAddress);
+		default:
+			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
+		}
+	}
+
+	@Override
+	public Integer getRegisterValue(int registerAddress) {
+		switch (registerAddress) {
+		case SYST_CSR_ADDR:
+			return config.getSYST_CSR();
+		case SYST_RVR_ADDR:
+			return config.getSYST_RVR();
+		case SYST_CVR_ADDR:
+			return readCVR();
+		case SYST_CALIB_ADDR:
+			return config.getSYST_CALIB();
+		default:
+			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
 		}
 	}
 

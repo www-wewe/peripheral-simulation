@@ -156,7 +156,7 @@ public class SettingsDialog extends Dialog {
 
 		monitoringFreqTextField = new Text(dialog, SWT.BORDER);
 		monitoringFreqTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringFreq()));
+		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringPeriod()));
 		monitoringFreqTextField.setToolTipText(
 				"The frequency at which the simulation should be monitored. This is used to determine how often the simulation should update the GUI (e.g. 0.5 means show a table row every 0.5 seconds).");
 	}

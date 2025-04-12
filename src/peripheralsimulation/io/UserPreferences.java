@@ -8,7 +8,6 @@ import peripheralsimulation.ui.SimulationGuiChoice;
 
 public final class UserPreferences {
 
-
 	private static UserPreferences instance;
 	private static final double MICROSECONDS_SCALE = 1e6;
 	private static final double MS_SCALE = 1e3;
@@ -21,12 +20,14 @@ public final class UserPreferences {
 	private boolean onlyChanges = false;
 	private long millisToWait = 0;
 	private SimulationGuiChoice selectedSimulationGUI = SimulationGuiChoice.TABLE;
+
 	/**
 	 * The frequency at which the simulation should be monitored. This is used to
 	 * determine how often the simulation should update the GUI (e.g. 0.5 means show
 	 * a table row every 0.5 seconds).
 	 */
-	private double monitoringFreq;
+	private double monitoringPeriod;
+
 	/** The range (from, to) of the simulation time */
 	private double simulationTimeRangeFrom;
 	private double simulationTimeRangeTo;
@@ -114,12 +115,12 @@ public final class UserPreferences {
 		notifyListenersWhenSelectedSimulationGUIChanged();
 	}
 
-	public double getMonitoringFreq() {
-		return monitoringFreq;
+	public double getMonitoringPeriod() {
+		return monitoringPeriod;
 	}
 
 	public void setMonitoringFreq(double monitoringFreq) {
-		this.monitoringFreq = monitoringFreq;
+		this.monitoringPeriod = monitoringFreq;
 	}
 
 	public double getSimulationTimeRangeFrom() {

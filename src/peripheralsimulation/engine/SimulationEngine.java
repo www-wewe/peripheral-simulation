@@ -35,7 +35,7 @@ public class SimulationEngine {
 	 * List of simulation models (peripherals, generators) managed by this
 	 * simulation engine.
 	 */
-	private final List<PeripheralModel> modules = new ArrayList<>();
+	private final List<PeripheralModel> models = new ArrayList<>();
 
 	/**
 	 * A consumer to handle simulation output (e.g., display in a view). Key:
@@ -52,6 +52,11 @@ public class SimulationEngine {
 	 * The time at which the next output should be produced.
 	 */
 	private double nextMonitorTime = 0.0;
+
+	/**
+	 * The user event generator responsible for scheduling user events.
+	 */
+	private UserEventGenerator userEventGenerator = new UserEventGenerator();
 
 	/**
 	 * Constructor for the simulation engine.
@@ -74,9 +79,11 @@ public class SimulationEngine {
 		running = false;
 
 		// Let each peripheral initialize itself.
-		for (PeripheralModel pm : modules) {
-			pm.initialize(this);
+		for (PeripheralModel peripheralModel : models) {
+			peripheralModel.initialize(this);
 		}
+
+		userEventGenerator.scheduleAll(this);
 	}
 
 	/**
@@ -87,10 +94,8 @@ public class SimulationEngine {
 	 */
 	public void startSimulation(double maxTime) {
 		running = true;
-		double freq = userPreferences.getMonitoringFreq();
-		double startRange = userPreferences.getSimulationTimeRangeFrom();
-
-		nextMonitorTime = startRange;
+		nextMonitorTime = userPreferences.getSimulationTimeRangeFrom();
+		double period = userPreferences.getMonitoringPeriod();
 
 		while (running && !eventQueue.isEmpty()) {
 			SimulationEvent next = eventQueue.peek();
@@ -107,11 +112,14 @@ public class SimulationEngine {
 			// Execute event logic
 			next.run();
 
-			// Poslanie výstupu do SimulationView
-			if (currentTime >= nextMonitorTime) {
-				produceOutputs();
-				if (freq > 0) {
-					nextMonitorTime += freq;
+			for (PeripheralModel model : models) {
+				Object[] outputs = model.getOutputs();
+				if (currentTime >= nextMonitorTime && outputHandler != null) {
+					// Poslanie výstupu do SimulationView
+					outputHandler.accept(currentTime, outputs);
+					if (period > 0) {
+						nextMonitorTime += period;
+					}
 				}
 			}
 			try {
@@ -123,16 +131,6 @@ public class SimulationEngine {
 		running = false;
 		stopSimulation();
 		System.out.println("[SimulationEngine] Simulácia ukončená, žiadne ďalšie udalosti.");
-	}
-
-	private void produceOutputs() {
-		for (PeripheralModel model : modules) {
-			// TODO: posielať len selectedOutputs?
-			if (outputHandler != null) {
-				Object[] outputs = model.getOutputs();
-				outputHandler.accept(currentTime, outputs);
-			}
-		}
 	}
 
 	/**
@@ -152,7 +150,17 @@ public class SimulationEngine {
 	 * @param peripheral The peripheral model implementing {@link PeripheralModel}.
 	 */
 	public void addPeripheral(PeripheralModel peripheral) {
-		modules.add(peripheral);
+		models.add(peripheral);
+	}
+
+	/**
+	 * Adds a user event definition to the simulation. This allows for scheduling
+	 * user-defined events that can be triggered at specific times.
+	 * 
+	 * @param event The user event definition to add.
+	 */
+	public void addUserEvent(UserEventDefinition event) {
+		userEventGenerator.addEvent(event);
 	}
 
 	public void stopSimulation() {

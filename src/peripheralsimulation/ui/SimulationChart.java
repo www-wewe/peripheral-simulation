@@ -16,6 +16,12 @@ import peripheralsimulation.io.UserPreferences;
 import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
 
+/**
+ * Class for displaying a simulation chart using SWT Chart.
+ * 
+ * This class implements the SimulationGUI interface and provides methods to
+ * update and clear the chart.
+ */
 public class SimulationChart implements SimulationGUI {
 
 	/** The chart in which the simulation results are displayed. */
@@ -98,7 +104,7 @@ public class SimulationChart implements SimulationGUI {
 
 		// Only redraw if user doesn't want "only changes" or if at least one changed
 		if (!userPreferences.isOnlyChanges() || anyChange) {
-			redrawAllSeries();
+//			redrawAllSeries();
 		}
 	}
 
@@ -126,7 +132,7 @@ public class SimulationChart implements SimulationGUI {
 	/**
 	 * Redraws all series in the chart.
 	 */
-	private void redrawAllSeries() {
+	public void redrawAllSeries() {
 		for (SeriesData outputData : seriesList) {
 			// Convert the xVals and yVals to arrays
 			double[] xs = new double[outputData.timeValues.size()];

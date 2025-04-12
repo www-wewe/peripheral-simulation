@@ -20,8 +20,8 @@ public class SimulationTable implements SimulationGUI {
 	/** The simulation model. */
 	private PeripheralModel peripheralModel;
 	/**
-	 * Map of output values when output changes e.g. "INTERRUPT_LINE" -> [time and
-	 * value, 0.5 false, 1.0 true, ...]
+	 * Map of output values when output changes e.g. "INTERRUPT" -> [time and value,
+	 * 0.5 false, 1.0 true, ...]
 	 */
 	// private Map<String, Map<Double, Object>> outputsMap = new HashMap<>();
 	/** The last output values for each selected output. */
@@ -103,7 +103,7 @@ public class SimulationTable implements SimulationGUI {
 		item.setText(rowText);
 
 		// If an interrupt is "true", highlight the row
-		String output = "INTERRUPT_LINE";
+		String output = "INTERRUPT";
 		if (userPreferences.getSelectedOutputs().contains(output)) {
 			String interruptVal = outputs[peripheralModel.getOutputIndex(output)].toString();
 			if (interruptVal.equals("true")) {
@@ -138,7 +138,11 @@ public class SimulationTable implements SimulationGUI {
 		table.setFocus();
 	}
 
+	@Override
 	public void onSelectedOutputsChanged() {
+		if (table == null || table.isDisposed()) {
+			return;
+		}
 		Display.getDefault().syncExec(() -> {
 			for (TableColumn column : table.getColumns()) {
 				column.dispose();

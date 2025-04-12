@@ -1,8 +1,8 @@
-package peripheralsimulation.io.systick;
+package peripheralsimulation.model.systick;
+
+import peripheralsimulation.utils.RegisterUtils;
 
 public class SysTickTimerConfig {
-
-	private SysTickRegisterDump registers;
 
 	// SYST_CVR
 	public int currentValue = 0;
@@ -24,51 +24,60 @@ public class SysTickTimerConfig {
 	// Final clock/prescaler for the simulation
 	public double cpuClockFreq; // e.g. if useCpuClock = true
 	public double externalFreq; // e.g. if useCpuClock = false
-	public int prescalerDiv; // from SYSTICKCLKDIVn ?
 
 	public SysTickTimerConfig(SysTickRegisterDump dump) {
-		registers = dump;
 		currentValue = dump.getSYST_CVR();
 
 		// 1) SYST_CSR bits
-		setSYST_CSR(registers.getSYST_CSR());
+		setSYST_CSR(dump.getSYST_CSR());
 
 		// 2) Reload value (24-bit)
-		setSYST_RVR(registers.getSYST_RVR());
+		setSYST_RVR(dump.getSYST_RVR());
 
 		// 3) SYST_CALIB
-		setSYST_CALIB(registers.getSYST_CALIB());
+		setSYST_CALIB(dump.getSYST_CALIB());
 
 		// 4) Decide final clock freq from MCUXpresso
 		// e.g. if useCpuClock => pick mainClk
 		// else => pick externalClk
 		// clock settings from SYSTICKCLKDIVn, SYSTICKCLKSELn ???
 		double freq = 0.0;
-		int prescaler = 1;
 
 		if (useCpuClock) {
-			freq = registers.getMainClk();
+			freq = dump.getMainClk();
 		} else {
-			freq = registers.getExternalClk();
+			freq = dump.getExternalClk();
 		}
-
-		// Prescaler division from SYSTICKCLKDIVn ?
-		prescaler = registers.getSYSTICKCLKDIV0();
 
 		// store in config
 		cpuClockFreq = useCpuClock ? freq : 0;
 		externalFreq = useCpuClock ? 0 : freq;
-		prescalerDiv = prescaler;
 	}
 
+	public int getSYST_CSR() {
+		int value = 0;
+		value |= (enable ? 1 : 0) << 0; // ENABLE
+		value |= (tickInt ? 1 : 0) << 1; // TICKINT
+		value |= (useCpuClock ? 1 : 0) << 2; // CLKSOURCE
+		return value;
+	}
+	
 	public void setSYST_CSR(int value) {
 		enable = ((value >> 0) & 1) == 1;
 		tickInt = ((value >> 1) & 1) == 1;
 		useCpuClock = ((value >> 2) & 1) == 1;
 	}
 
+	public int getSYST_RVR() {
+		return reloadValue & RegisterUtils.BIT_MASK;
+	}
+
 	public void setSYST_RVR(int value) {
-		reloadValue = value & 0x00FFFFFF;
+		reloadValue = value & RegisterUtils.BIT_MASK;
+	}
+
+	public int getSYST_CVR() {
+		return currentValue & RegisterUtils.BIT_MASK;
 	}
 
 	public void setSYST_CVR(int value) {
@@ -76,8 +85,16 @@ public class SysTickTimerConfig {
 		countFlag = false;
 	}
 
+	public int getSYST_CALIB() {
+		int value = 0;
+		value |= (tenms & RegisterUtils.BIT_MASK); // TENMS
+		value |= (skew ? 1 : 0) << 30; // SKEW
+		value |= (noRef ? 1 : 0) << 31; // NOREF
+		return value;
+	}
+
 	public void setSYST_CALIB(int value) {
-		tenms = value & 0x00FFFFFF;
+		tenms = value & RegisterUtils.BIT_MASK;
 		skew = ((value >> 30) & 1) == 1;
 		noRef = ((value >> 31) & 1) == 1;
 	}

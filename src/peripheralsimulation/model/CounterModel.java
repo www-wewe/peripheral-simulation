@@ -59,11 +59,6 @@ public class CounterModel implements PeripheralModel {
 	}
 
 	@Override
-	public int getOutputCount() {
-		return 2; // CURRENT_VALUE, OVERFLOW_OCCURRED
-	}
-
-	@Override
 	public String getOutputName(int index) {
 		switch (index) {
 		case 0:
@@ -97,16 +92,16 @@ public class CounterModel implements PeripheralModel {
 		}
 	}
 
-//	@Override
-//	public Map<String, Object> getOutputValues() {
-//		Map<String, Object> out = new HashMap<>();
-//		out.put("CURRENT_VALUE", currentValue);
-//		out.put("OVERFLOW_OCCURRED", (currentValue == 0) && justOverflowed);
-//		return out;
-//	}
-//
-//	@Override
-//	public Set<String> getOutputs() {
-//		return Set.of("CURRENT_VALUE", "OVERFLOW_OCCURRED");
-//	}
+	@Override
+	public void setRegisterValue(int registerAddress, int value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Integer getRegisterValue(int registerAddress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

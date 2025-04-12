@@ -12,14 +12,15 @@ import org.eclipse.swt.events.SelectionListener;
 
 import jakarta.inject.Inject;
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.engine.UserEventDefinition;
+import peripheralsimulation.engine.UserEventType;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.io.UserPreferencesListener;
-import peripheralsimulation.io.systick.SysTickRegisterDump;
-import peripheralsimulation.io.systick.SysTickTimerConfig;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
-import peripheralsimulation.model.SCTimerModel;
 import peripheralsimulation.model.SysTickTimerModel;
+import peripheralsimulation.model.systick.SysTickRegisterDump;
+import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.ui.SettingsDialog;
 import peripheralsimulation.ui.SimulationChart;
 import peripheralsimulation.ui.SimulationGUI;
@@ -148,9 +149,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			SysTickTimerConfig config = new SysTickTimerConfig(dump);
 			simulationModel = new SysTickTimerModel(config);
 			break;
-		case "SCTimer":
-			simulationModel = new SCTimerModel();
-			break;
 		case "Counter":
 			simulationModel = new CounterModel(255, // overflow value
 					0, // initial value
@@ -189,6 +187,17 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.addPeripheral(simulationModel);
+		UserEventDefinition userEvent = new UserEventDefinition(
+				0.010, // start time
+				0.010, // period, means every 10ms
+				5, // repeat count (0 means infinite)
+				simulationModel, // target peripheral
+				UserEventType.TOGGLE_BIT, // event type
+				0xE000E010, // register address - SYST_CSR
+				1, // bit position - toggling bit #3 - enable
+				0 // write value, not used for toggle
+		);
+		simulationEngine.addUserEvent(userEvent);
 
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia beží..."));
 		Thread simulationThread = new Thread(() -> {
@@ -197,6 +206,9 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 				simulationEngine.startSimulation(userPreferences.getSimulationTimeRangeTo());
 				if (!simulationEngine.isSimulationRunning()) {
 					Display.getDefault().asyncExec(() -> {
+						if (simulationGUI instanceof SimulationChart) {
+							((SimulationChart) simulationGUI).redrawAllSeries();
+						}
 						statusLabel.setText("Simulácia dokončená.");
 						stopSimulationButton.setEnabled(false);
 						clearSimulationButton.setEnabled(true);
@@ -234,9 +246,9 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// TODO: predam iba selected outputs?
 		Display.getDefault().asyncExec(() -> {
 			double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
-			if (!simulationEngine.isSimulationRunning()) {
-				return;
-			}
+//			if (!simulationEngine.isSimulationRunning()) {
+//				return;
+//			}
 			simulationGUI.update(scaledTime, outputs);
 		});
 	}
