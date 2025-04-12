@@ -8,30 +8,52 @@ import peripheralsimulation.ui.SimulationGuiChoice;
 
 public final class UserPreferences {
 
+	/** Singleton instance of UserPreferences */
 	private static UserPreferences instance;
-	private static final double MICROSECONDS_SCALE = 1e6;
-	private static final double MS_SCALE = 1e3;
+
+	/** Time format for displaying time values */
 	private final DecimalFormat TIME_FORMAT = new DecimalFormat("#.######");
 
+	/** The list of selected outputs to be monitored */
 	private List<String> selectedOutputs = new ArrayList<>();
+
+	/** The indices of the selected outputs */
 	private int[] selectedOutputsIndices = new int[0];
+
+	/** The peripheral model associated with the user preferences */
 	private PeripheralModel peripheralModel;
+
+	/** The list of listeners for user preferences changes */
 	private List<UserPreferencesListener> listeners = new ArrayList<>();
+
+	/** The flag indicating whether to show only changes in the output */
 	private boolean onlyChanges = false;
+
+	/** The time to wait in milliseconds (used with sleep for simulation pauses) */
 	private long millisToWait = 0;
+
+	/** The selected simulation GUI choice */
 	private SimulationGuiChoice selectedSimulationGUI = SimulationGuiChoice.TABLE;
 
-	/**
-	 * The frequency at which the simulation should be monitored. This is used to
-	 * determine how often the simulation should update the GUI (e.g. 0.5 means show
-	 * a table row every 0.5 seconds).
-	 */
+	/** The monitoring period in seconds */
 	private double monitoringPeriod;
 
-	/** The range (from, to) of the simulation time */
+	/** The simulation time range from which to start monitoring */
 	private double simulationTimeRangeFrom;
+
+	/** The simulation time range to which to stop monitoring */
 	private double simulationTimeRangeTo;
-	private double timeScaleFactor = MS_SCALE; // e.g. scale from seconds to milliseconds
+
+	/** Constant value for converting time to microseconds */
+	private static final double MICROSECONDS_SCALE = 1e6;
+
+	/** Constant value for converting time to milliseconds */
+	private static final double MS_SCALE = 1e3;
+
+	/** The time scale factor for converting simulation time to display time */
+	private double timeScaleFactor = MS_SCALE;
+
+	/** The time units for displaying time values */
 	private String timeUnits = "ms";
 
 	private UserPreferences() {
@@ -119,8 +141,8 @@ public final class UserPreferences {
 		return monitoringPeriod;
 	}
 
-	public void setMonitoringFreq(double monitoringFreq) {
-		this.monitoringPeriod = monitoringFreq;
+	public void setMonitoringPeriod(double monitoringPeriod) {
+		this.monitoringPeriod = monitoringPeriod;
 	}
 
 	public double getSimulationTimeRangeFrom() {

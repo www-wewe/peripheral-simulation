@@ -58,7 +58,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	/** The GUI for the simulation. */
 	private SimulationGUI simulationGUI;
 	/** Text for the status label when no simulation is running. */
-	private static final String EMPTY_SIMULATION = "Kliknite na tlačidlo na spustenie simulácie...";
+	private static final String EMPTY_SIMULATION = "Click 'Run simulation' button to start simulation...";
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -81,7 +81,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	private void createButtons(Composite parent) {
 		// Start simulation button
 		runSimulationButton = new Button(parent, SWT.PUSH);
-		runSimulationButton.setText("Spustiť simuláciu");
+		runSimulationButton.setText("Run simulation");
 		runSimulationButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
 		if (simulationEngine == null || !simulationEngine.isSimulationRunning()) {
@@ -92,7 +92,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 		// Stop simulation button
 		stopSimulationButton = new Button(parent, SWT.PUSH);
-		stopSimulationButton.setText("Zastaviť simuláciu");
+		stopSimulationButton.setText("Stop simulation");
 		stopSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		stopSimulationButton.addListener(SWT.Selection, event -> stopSimulation());
 		if (simulationEngine != null && simulationEngine.isSimulationRunning()) {
@@ -103,7 +103,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 		// Clear simulation button
 		clearSimulationButton = new Button(parent, SWT.PUSH);
-		clearSimulationButton.setText("Vymazať simuláciu");
+		clearSimulationButton.setText("Clear simulation");
 		clearSimulationButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 		clearSimulationButton.addListener(SWT.Selection, event -> clearGUI());
 
@@ -157,7 +157,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			);
 			break;
 		default:
-			throw new IllegalArgumentException("Neznáma periféria.");
+			throw new IllegalArgumentException("Unknown peripheral.");
 		}
 		userPreferences.setPeripheralModel(simulationModel);
 		return simulationModel;
@@ -199,7 +199,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		);
 		simulationEngine.addUserEvent(userEvent);
 
-		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia beží..."));
+		Display.getDefault().asyncExec(() -> statusLabel.setText("Running simulation..."));
 		Thread simulationThread = new Thread(() -> {
 			try {
 				simulationEngine.initSimulation();
@@ -209,14 +209,14 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 						if (simulationGUI instanceof SimulationChart) {
 							((SimulationChart) simulationGUI).redrawAllSeries();
 						}
-						statusLabel.setText("Simulácia dokončená.");
+						statusLabel.setText("Simulation finished.");
 						stopSimulationButton.setEnabled(false);
 						clearSimulationButton.setEnabled(true);
 					});
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				Display.getDefault().asyncExec(() -> statusLabel.setText("Chyba počas simulácie."));
+				Display.getDefault().asyncExec(() -> statusLabel.setText("Failure during simulation."));
 			}
 		});
 
@@ -231,7 +231,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		runSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(false);
 		clearSimulationButton.setEnabled(true);
-		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulácia zastavená."));
+		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulation stopped."));
 	}
 
 	private void clearGUI() {

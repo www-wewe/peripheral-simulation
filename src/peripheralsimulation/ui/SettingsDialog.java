@@ -24,7 +24,7 @@ public class SettingsDialog extends Dialog {
 	private Button onlyChanges;
 	private Text millisToWaitTextField;
 	private Combo visualizationSelectionCombo;
-	private Text monitoringFreqTextField;
+	private Text monitoringPeriodTextField;
 	private Text simulationTimeRangeFromTextField;
 	private Text simulationTimeRangeToTextField;
 
@@ -89,7 +89,7 @@ public class SettingsDialog extends Dialog {
 		}
 		userPreferences.setMillisToWait(Long.parseLong(millisToWait));
 		// TODO: verify inputs
-		userPreferences.setMonitoringFreq(Double.parseDouble(monitoringFreqTextField.getText()));
+		userPreferences.setMonitoringPeriod(Double.parseDouble(monitoringPeriodTextField.getText()));
 		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
 		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
 		super.okPressed();
@@ -152,13 +152,13 @@ public class SettingsDialog extends Dialog {
 	 */
 	private void addTextFieldMonitoringFreq(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
-		label.setText("Monitoring frequency in seconds:");
+		label.setText("Monitoring period in seconds:");
 
-		monitoringFreqTextField = new Text(dialog, SWT.BORDER);
-		monitoringFreqTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-		monitoringFreqTextField.setText(String.valueOf(userPreferences.getMonitoringPeriod()));
-		monitoringFreqTextField.setToolTipText(
-				"The frequency at which the simulation should be monitored. This is used to determine how often the simulation should update the GUI (e.g. 0.5 means show a table row every 0.5 seconds).");
+		monitoringPeriodTextField = new Text(dialog, SWT.BORDER);
+		monitoringPeriodTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		monitoringPeriodTextField.setText(String.valueOf(userPreferences.getMonitoringPeriod()));
+		monitoringPeriodTextField.setToolTipText(
+				"Monitoring period in seconds. The simulation will be updated every X seconds.");
 	}
 
 	/**
