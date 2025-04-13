@@ -159,7 +159,7 @@ public class SimulationEngine {
 	 * 
 	 * @param event The user event definition to add.
 	 */
-	public void addUserEvent(UserEventDefinition event) {
+	public void addUserEvent(UserEvent event) {
 		userEventGenerator.addEvent(event);
 	}
 

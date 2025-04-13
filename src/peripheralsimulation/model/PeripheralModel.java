@@ -1,7 +1,7 @@
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
-import peripheralsimulation.engine.UserEventDefinition;
+import peripheralsimulation.engine.UserEvent;
 import peripheralsimulation.engine.UserEventType;
 
 /**
@@ -81,7 +81,7 @@ public interface PeripheralModel {
 	 * 
 	 * @param event to apply
 	 */
-	default public void applyUserEvent(UserEventDefinition event) {
+	default public void applyUserEvent(UserEvent event) {
 		if (event.eventType == UserEventType.WRITE_VALUE) {
 			setRegisterValue(event.registerAddress, event.value);
 		} else {
@@ -96,7 +96,7 @@ public interface PeripheralModel {
 	 * @param bitPosition The position of the bit to set (0-31).
 	 * @param newVal      The new value for the bit (true for set, false for clear).
 	 */
-	private void setBit(UserEventDefinition event) {
+	private void setBit(UserEvent event) {
 		Integer registerValue = getRegisterValue(event.registerAddress);
 		if (registerValue != null) {
 			int mask = 1 << event.bitPosition;

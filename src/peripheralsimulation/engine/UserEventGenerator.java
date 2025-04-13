@@ -14,7 +14,7 @@ public class UserEventGenerator {
 	 * List of user events to be scheduled. Each event is defined by a
 	 * UserEventDefinition object.
 	 */
-	private List<UserEventDefinition> userEvents = new ArrayList<>();
+	private List<UserEvent> userEvents = new ArrayList<>();
 
 	/**
 	 * Adds a user event definition to the list of user events.
@@ -22,7 +22,7 @@ public class UserEventGenerator {
 	 * @param eventDefinition The UserEventDefinition object representing the event
 	 *                        to be scheduled.
 	 */
-	public void addEvent(UserEventDefinition eventDefinition) {
+	public void addEvent(UserEvent eventDefinition) {
 		userEvents.add(eventDefinition);
 	}
 
@@ -30,7 +30,7 @@ public class UserEventGenerator {
 	 * Called from SimulationEngine's initSimulation() to schedule these events.
 	 */
 	public void scheduleAll(SimulationEngine engine) {
-		for (UserEventDefinition event : userEvents) {
+		for (UserEvent event : userEvents) {
 			scheduleOne(engine, event, event.startTime, event.repeatCount);
 		}
 	}
@@ -44,7 +44,7 @@ public class UserEventGenerator {
 	 * @param remaining The number of times to repeat the event. If <= 0, it will
 	 *                  repeat indefinitely.
 	 */
-	private void scheduleOne(SimulationEngine engine, UserEventDefinition event, double eventTime, int remaining) {
+	private void scheduleOne(SimulationEngine engine, UserEvent event, double eventTime, int remaining) {
 		engine.scheduleEvent(eventTime, () -> {
 			// apply the user event
 			event.targetPeripheral.applyUserEvent(event);

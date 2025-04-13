@@ -12,7 +12,7 @@ import org.eclipse.swt.events.SelectionListener;
 
 import jakarta.inject.Inject;
 import peripheralsimulation.engine.SimulationEngine;
-import peripheralsimulation.engine.UserEventDefinition;
+import peripheralsimulation.engine.UserEvent;
 import peripheralsimulation.engine.UserEventType;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.io.UserPreferencesListener;
@@ -190,7 +190,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.addPeripheral(simulationModel);
-		UserEventDefinition userEvent = new UserEventDefinition(0.010, // start time
+		UserEvent userEvent = new UserEvent(0.010, // start time
 				0.010, // period, means every 10ms
 				5, // repeat count (0 means infinite)
 				simulationModel, // target peripheral

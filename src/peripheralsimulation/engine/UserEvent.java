@@ -7,7 +7,7 @@ import peripheralsimulation.model.PeripheralModel;
  * Contains information about the event's timing, target peripheral, action to
  * perform, and other relevant parameters.
  */
-public class UserEventDefinition {
+public class UserEvent {
 	/**
 	 * The time at which the first event fires.
 	 */
@@ -48,7 +48,7 @@ public class UserEventDefinition {
 	 */
 	public int value;
 
-	public UserEventDefinition(double startTime, double period, int repeatCount, PeripheralModel targetPeripheral,
+	public UserEvent(double startTime, double period, int repeatCount, PeripheralModel targetPeripheral,
 			UserEventType eventType, int registerAddress, int bitPosition, int value) {
 		this.startTime = startTime;
 		this.period = period;
