@@ -13,7 +13,6 @@ import org.eclipse.swt.events.SelectionListener;
 import jakarta.inject.Inject;
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.engine.UserEvent;
-import peripheralsimulation.engine.UserEventType;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.io.UserPreferencesListener;
 import peripheralsimulation.model.Peripheral;
@@ -24,6 +23,7 @@ import peripheralsimulation.ui.SettingsDialog;
 import peripheralsimulation.ui.SimulationChart;
 import peripheralsimulation.ui.SimulationGUI;
 import peripheralsimulation.ui.SimulationTable;
+import peripheralsimulation.ui.UserEventDialog;
 import peripheralsimulation.model.CounterModel;
 
 import org.eclipse.swt.layout.GridData;
@@ -136,6 +136,15 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			SettingsDialog dialog = new SettingsDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
 		});
+
+		// button which opens the UserEventDialog
+		Button userEventButton = new Button(parent, SWT.PUSH);
+		userEventButton.setText("User Events...");
+		userEventButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		userEventButton.addListener(SWT.Selection, event -> {
+			UserEventDialog dialog = new UserEventDialog(workbench.getActiveWorkbenchWindow().getShell());
+			dialog.open();
+		});
 	}
 
 	private PeripheralModel updateSelectedPeripheralModel() {
@@ -190,16 +199,20 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.addPeripheral(simulationModel);
-		UserEvent userEvent = new UserEvent(0.010, // start time
-				0.010, // period, means every 10ms
-				5, // repeat count (0 means infinite)
-				simulationModel, // target peripheral
-				UserEventType.TOGGLE_BIT, // event type
-				0xE000E010, // register address - SYST_CSR
-				1, // bit position - toggling bit #3 - enable
-				0 // write value, not used for toggle
-		);
-		simulationEngine.addUserEvent(userEvent);
+//		UserEvent userEvent = new UserEvent(0.010, // start time
+//				0.010, // period, means every 10ms
+//				5, // repeat count (0 means infinite)
+//				simulationModel, // target peripheral
+//				UserEventType.TOGGLE_BIT, // event type
+//				0xE000E010, // register address - SYST_CSR
+//				1, // bit position - toggling bit #3 - enable
+//				0 // write value, not used for toggle
+//		);
+//		simulationEngine.addUserEvent(userEvent);
+
+		for (UserEvent userEvent : userPreferences.getUserEvents()) {
+			simulationEngine.addUserEvent(userEvent);
+		}
 
 		Display.getDefault().asyncExec(() -> statusLabel.setText("Running simulation..."));
 		Thread simulationThread = new Thread(() -> {

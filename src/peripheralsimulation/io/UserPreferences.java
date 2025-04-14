@@ -3,6 +3,8 @@ package peripheralsimulation.io;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import peripheralsimulation.engine.UserEvent;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.ui.SimulationGuiChoice;
 
@@ -55,6 +57,8 @@ public final class UserPreferences {
 
 	/** The time units for displaying time values */
 	private String timeUnits = "ms";
+
+	private List<UserEvent> userEvents = new ArrayList<>();
 
 	private UserPreferences() {
 		// Private constructor to prevent instantiation
@@ -179,6 +183,14 @@ public final class UserPreferences {
 
 	public DecimalFormat getTimeFormat() {
 		return TIME_FORMAT;
+	}
+
+	public List<UserEvent> getUserEvents() {
+		return userEvents;
+	}
+
+	public void setUserEvents(List<UserEvent> userEvents) {
+		this.userEvents = userEvents;
 	}
 
 	public static UserPreferences getInstance() {
