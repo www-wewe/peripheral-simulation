@@ -82,8 +82,8 @@ public interface PeripheralModel {
 	 * @param event to apply
 	 */
 	default public void applyUserEvent(UserEvent event) {
-		if (event.eventType == UserEventType.WRITE_VALUE) {
-			setRegisterValue(event.registerAddress, event.value);
+		if (event.getEventType() == UserEventType.WRITE_VALUE) {
+			setRegisterValue(event.getRegisterAddress(), event.getValue());
 		} else {
 			setBit(event);
 		}
@@ -97,10 +97,10 @@ public interface PeripheralModel {
 	 * @param newVal      The new value for the bit (true for set, false for clear).
 	 */
 	private void setBit(UserEvent event) {
-		Integer registerValue = getRegisterValue(event.registerAddress);
+		Integer registerValue = getRegisterValue(event.getRegisterAddress());
 		if (registerValue != null) {
-			int mask = 1 << event.bitPosition;
-			switch (event.eventType) {
+			int mask = 1 << event.getBitPosition();
+			switch (event.getEventType()) {
 			case SET_BIT:
 				registerValue |= mask; // Set the bit
 				break;
@@ -111,11 +111,11 @@ public interface PeripheralModel {
 				registerValue ^= mask; // Toggle the bit
 				break;
 			default:
-				throw new IllegalArgumentException("Invalid event type for setting bit: " + event.eventType);
+				throw new IllegalArgumentException("Invalid event type for setting bit: " + event.getEventType());
 			}
-			setRegisterValue(event.registerAddress, registerValue);
+			setRegisterValue(event.getRegisterAddress(), registerValue);
 		} else {
-			throw new IllegalArgumentException("Register not found for address: " + event.registerAddress);
+			throw new IllegalArgumentException("Register not found for address: " + event.getRegisterAddress());
 		}
 	}
 

@@ -31,7 +31,7 @@ public class UserEventGenerator {
 	 */
 	public void scheduleAll(SimulationEngine engine) {
 		for (UserEvent event : userEvents) {
-			scheduleOne(engine, event, event.startTime, event.repeatCount);
+			scheduleOne(engine, event, event.getStartTime(), event.getRepeatCount());
 		}
 	}
 
@@ -47,14 +47,14 @@ public class UserEventGenerator {
 	private void scheduleOne(SimulationEngine engine, UserEvent event, double eventTime, int remaining) {
 		engine.scheduleEvent(eventTime, () -> {
 			// apply the user event
-			event.targetPeripheral.applyUserEvent(event);
+			event.getTargetPeripheral().applyUserEvent(event);
 
 			// if repeating, schedule again
-			if (event.period > 0) {
+			if (event.getPeriod() > 0) {
 				int newCount = (remaining <= 0) ? remaining : remaining - 1;
 				// if newCount=0 => infinite
 				if (newCount == 0 || newCount > 0) {
-					double nextTime = eventTime + event.period;
+					double nextTime = eventTime + event.getPeriod();
 					// schedule the next
 					scheduleOne(engine, event, nextTime, newCount);
 				}
