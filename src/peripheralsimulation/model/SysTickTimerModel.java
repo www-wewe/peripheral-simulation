@@ -85,7 +85,6 @@ public class SysTickTimerModel implements PeripheralModel {
 			if (currentValue < 0) {
 				// Underflow => reload from SYST_RVR
 				currentValue = config.getRVR();
-				;
 
 				// COUNTFLAG bit => set to true once we underflow
 				countFlag = true;

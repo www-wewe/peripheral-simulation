@@ -61,4 +61,12 @@ public class UserEventGenerator {
 			}
 		});
 	}
+
+	/**
+	 * Clears all scheduled user events.
+	 */
+	public void clearEvents() {
+		userEvents.clear();
+	}
+
 }

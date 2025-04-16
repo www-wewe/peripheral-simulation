@@ -186,4 +186,12 @@ public class SimulationEngine {
 		this.outputHandler = outputHandler;
 	}
 
+	/**
+	 * Clears list of peripheral models and all scheduled user events.
+	 */
+	public void cleanSimulation() {
+		models.clear();
+		userEventGenerator.clearEvents();
+	}
+
 }

@@ -81,7 +81,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// Start simulation button
 		runSimulationButton = new Button(parent, SWT.PUSH);
 		runSimulationButton.setText("Run simulation");
-		runSimulationButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		runSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
 		if (simulationEngine == null || !simulationEngine.isSimulationRunning()) {
 			runSimulationButton.setEnabled(true);
@@ -103,7 +103,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// Clear simulation button
 		clearSimulationButton = new Button(parent, SWT.PUSH);
 		clearSimulationButton.setText("Clear simulation");
-		clearSimulationButton.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		clearSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		clearSimulationButton.addListener(SWT.Selection, event -> clearGUI());
 
 		// label ku comboboxu
@@ -131,7 +131,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// button which opens the SelectOutputsDialog
 		Button settingsButton = new Button(parent, SWT.PUSH);
 		settingsButton.setText("Settings...");
-		settingsButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		settingsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		settingsButton.addListener(SWT.Selection, event -> {
 			SettingsDialog dialog = new SettingsDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
@@ -140,7 +140,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// button which opens the UserEventDialog
 		Button userEventButton = new Button(parent, SWT.PUSH);
 		userEventButton.setText("User Events...");
-		userEventButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+		userEventButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		userEventButton.addListener(SWT.Selection, event -> {
 			UserEventDialog dialog = new UserEventDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
@@ -183,9 +183,11 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		switch (userPreferences.getSelectedSimulationGUI()) {
 		case TABLE:
 			simulationGUI = new SimulationTable(parent);
+			parent.layout(true, true);
 			return simulationGUI;
 		case GRAPH:
 			simulationGUI = new SimulationChart(parent);
+			parent.layout(true, true);
 			return simulationGUI;
 		default:
 			return simulationGUI;
@@ -197,6 +199,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	 */
 	private void runSimulation() {
 		clearSimulationButton.setEnabled(false);
+		simulationEngine.cleanSimulation();
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.addPeripheral(simulationModel);
 //		UserEvent userEvent = new UserEvent(0.010, // start time
