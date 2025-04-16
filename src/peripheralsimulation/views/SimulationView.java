@@ -114,8 +114,9 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		// combobox na výber periférie
 		combo = new Combo(parent, SWT.READ_ONLY);
 		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
-		combo.add(Peripheral.SYSTICKTIMER.toString());
-		combo.add(Peripheral.COUNTER.toString());
+		for (Peripheral peripheral : Peripheral.values()) {
+			combo.add(peripheral.toString());
+		}
 		combo.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -149,8 +150,9 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 	private PeripheralModel updateSelectedPeripheralModel() {
 		PeripheralModel simulationModel;
-		switch (combo.getText()) {
-		case "System Tick Timer":
+		Peripheral selectedPeripheral = Peripheral.fromDisplayName(combo.getText());
+		switch (selectedPeripheral) {
+		case SYSTICKTIMER:
 			// fill in the fields from your exported data or from code
 			SysTickTimerConfig config = new SysTickTimerConfig(0x3, // SYST_CSR
 					0x0001D4BF, // SYST_RVR
@@ -161,7 +163,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			);
 			simulationModel = new SysTickTimerModel(config);
 			break;
-		case "Counter":
+		case COUNTER:
 			simulationModel = new CounterModel(255, // overflow value
 					0, // initial value
 					1000, // 1 kHz clock
@@ -176,7 +178,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	}
 
 	private SimulationGUI updateSimulationGUI(Composite parent) {
-		// TODO: Tu to ešte robí problémy a niekedy nevytvorí nové GUI
 		if (simulationGUI != null) {
 			simulationGUI.dispose();
 		}

@@ -53,15 +53,7 @@ public class SettingsDialog extends Dialog {
 
 	@Override
 	protected void okPressed() {
-		SimulationGuiChoice selectedGui;
-		switch (visualizationSelectionCombo.getText()) {
-		case "Graph": // TODO: make graph default
-			selectedGui = SimulationGuiChoice.GRAPH;
-			break;
-		default:
-			selectedGui = SimulationGuiChoice.TABLE;
-			break;
-		}
+		SimulationGuiChoice selectedGui = SimulationGuiChoice.fromDisplayName(visualizationSelectionCombo.getText());
 		userPreferences.setSelectedSimulationGUI(selectedGui);
 
 		PeripheralModel peripheralModel = userPreferences.getPeripheralModel();
@@ -157,8 +149,8 @@ public class SettingsDialog extends Dialog {
 		monitoringPeriodTextField = new Text(dialog, SWT.BORDER);
 		monitoringPeriodTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		monitoringPeriodTextField.setText(String.valueOf(userPreferences.getMonitoringPeriod()));
-		monitoringPeriodTextField.setToolTipText(
-				"Monitoring period in seconds. The simulation will be updated every X seconds.");
+		monitoringPeriodTextField
+				.setToolTipText("Monitoring period in seconds. The simulation will be updated every X seconds.");
 	}
 
 	/**
