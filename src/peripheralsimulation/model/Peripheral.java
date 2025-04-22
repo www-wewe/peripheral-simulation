@@ -3,7 +3,8 @@ package peripheralsimulation.model;
 public enum Peripheral {
 
 	SYSTICKTIMER("System Tick Timer"),
-	COUNTER("Counter");
+	COUNTER("Counter"),
+	FLEXIO("FlexIO");
 
 	private final String displayName;
 
