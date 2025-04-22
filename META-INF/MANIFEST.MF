@@ -7,8 +7,9 @@ Import-Package: jakarta.inject;version="2.0.1"
 Bundle-Activator: peripheralsimulation.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
+ org.junit,
  org.eclipse.swtchart;bundle-version="0.14.0",
- org.junit
+ org.eclipse.swtchart.extensions;bundle-version="0.14.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: PeripheralSimulation
 Bundle-ActivationPolicy: lazy

@@ -6,12 +6,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swtchart.Chart;
 import org.eclipse.swtchart.ILineSeries;
 import org.eclipse.swtchart.LineStyle;
 import org.eclipse.swtchart.Range;
-
+import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 import peripheralsimulation.io.UserPreferences;
+import peripheralsimulation.utils.ColorsUtils;
 
 import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
 import org.eclipse.swtchart.ISeries.SeriesType;
@@ -25,14 +25,14 @@ import org.eclipse.swtchart.ISeries.SeriesType;
 public class SimulationChart implements SimulationGUI {
 
 	/** The chart in which the simulation results are displayed. */
-	private Chart chart;
+	private InteractiveChart chart;
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();;
 	/** List of series data for charting. */
 	private List<SeriesData> seriesList = new ArrayList<>();
 
 	public SimulationChart(Composite parent) {
-		chart = new Chart(parent, SWT.NONE);
+		chart = new InteractiveChart(parent, SWT.NONE);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 		chart.getTitle().setText("Simulation Chart");
 		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in milliseconds");
@@ -92,7 +92,12 @@ public class SimulationChart implements SimulationGUI {
 			List<Double> outputValues = outputData.outputValues;
 			Object lastValue = outputValues.isEmpty() ? null : outputValues.get(outputValues.size() - 1);
 			if (lastValue == null || !lastValue.equals(numericVal)) {
-				// Output changed => add new data point for the new time
+				if (lastValue != null) {
+					// Add the last value again (to make horizontal line)
+					outputData.timeValues.add(timeValue);
+					outputValues.add((double) lastValue);
+				}
+				// Add the new value
 				outputData.timeValues.add(timeValue);
 				outputValues.add(numericVal);
 				anyChange = true;
