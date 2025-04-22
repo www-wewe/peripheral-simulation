@@ -187,12 +187,13 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public int getOutputIndex(String name) {
-		switch (name) {
-		case "CURRENT":
+		SysTickOutputs output = SysTickOutputs.valueOf(name);
+		switch (output) {
+		case CURRENT:
 			return IDX_CURRENT;
-		case "INTERRUPT":
+		case INTERRUPT:
 			return IDX_INTERRUPT;
-		case "COUNTFLAG":
+		case COUNTFLAG:
 			return IDX_COUNTFLAG;
 		default:
 			throw new IllegalArgumentException("Invalid output name: " + name);
