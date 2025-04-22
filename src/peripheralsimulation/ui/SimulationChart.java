@@ -14,6 +14,7 @@ import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.utils.ColorsUtils;
 
 import org.eclipse.swtchart.ILineSeries.PlotSymbolType;
+import org.eclipse.swtchart.ISeries;
 import org.eclipse.swtchart.ISeries.SeriesType;
 
 /**
@@ -37,7 +38,7 @@ public class SimulationChart implements SimulationGUI {
 		chart.getTitle().setText("Simulation Chart");
 		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in milliseconds");
 		chart.getAxisSet().getYAxis(0).getTitle().setText("Output Value");
-		chart.getLegend().setVisible(true);
+		chart.getLegend().setVisible(false);
 
 		// Set background color of the chart
 		chart.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
@@ -67,6 +68,9 @@ public class SimulationChart implements SimulationGUI {
 				outputData.series.setYSeries(new double[0]);
 			}
 			seriesList.clear();
+			for (ISeries<?> series : chart.getSeriesSet().getSeries()) {
+                chart.getSeriesSet().deleteSeries(series.getId());
+            }
 			chart.getAxisSet().adjustRange();
 			chart.redraw();
 		}
