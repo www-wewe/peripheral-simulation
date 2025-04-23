@@ -18,6 +18,7 @@ import peripheralsimulation.io.UserPreferencesListener;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.model.SysTickTimerModel;
+import peripheralsimulation.model.flexio.FlexIOConfig;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.ui.SettingsDialog;
 import peripheralsimulation.ui.SimulationChart;
@@ -25,6 +26,7 @@ import peripheralsimulation.ui.SimulationGUI;
 import peripheralsimulation.ui.SimulationTable;
 import peripheralsimulation.ui.UserEventDialog;
 import peripheralsimulation.model.CounterModel;
+import peripheralsimulation.model.FlexIOModel;
 
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,13 +53,34 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	/** The simulation engine. */
 	private SimulationEngine simulationEngine;
 	/** The combo box for selecting the peripheral to simulate. */
-	private Combo combo;
+	private Combo selectPeripheralCombo;
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();
 	/** The GUI for the simulation. */
 	private SimulationGUI simulationGUI;
+	/** Text for the run simulation button. */
+	private static final String RUN_SIMULATION_BTN_TEXT = "Run simulation";
+	/** Text for the stop simulation button. */
+	private static final String STOP_SIMULATION_BTN_TEXT = "Stop simulation";
+	/** Text for the clear simulation button. */
+	private static final String CLEAR_SIMULATION_BTN_TEXT = "Clear simulation";
 	/** Text for the status label when no simulation is running. */
-	private static final String EMPTY_SIMULATION = "Click 'Run simulation' button to start simulation...";
+	private static final String EMPTY_SIMULATION = "Click '" + RUN_SIMULATION_BTN_TEXT
+			+ "' button to start simulation...";
+	/** Text for the user events button. */
+	private static final String USER_EVENTS_BTN_TEXT = "User Events...";
+	/** Text for the settings button. */
+	private static final String SETTINGS_BTN_TEXT = "Settings...";
+	/** Text for selecting the peripheral in the combo box. */
+	private static final String SELECT_PERIPHERAL_TEXT = "Select peripheral: ";
+	/** Status label for simulation stopped. */
+	private static final String STATUS_LABEL_SIMULATION_STOPPED = "Simulation stopped.";
+	/** Status label for simulation failure. */
+	private static final String STATUS_LABEL_SIMULATION_FAILURE = "Failure during simulation.";
+	/** Status label for simulation finished. */
+	private static final String STATUS_LABEL_SIMULATION_FINISHED = "Simulation finished.";
+	/** Status label for running simulation. */
+	private static final String STATUS_LABEL_RUNNING_SIMULATION = "Running simulation...";
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -65,22 +88,32 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		parent.setLayout(layout);
 		createStatusLabel(parent);
 		createButtons(parent);
-		// createTable(parent);
 		userPreferences.addListener(this);
 		simulationGUI = updateSimulationGUI(parent);
 		simulationEngine = new SimulationEngine(this::updateGUI);
 	}
 
+	/**
+	 * Create the status label for the simulation.
+	 * 
+	 * @param parent the parent composite
+	 */
 	private void createStatusLabel(Composite parent) {
 		statusLabel = new Label(parent, SWT.NONE);
 		statusLabel.setText(EMPTY_SIMULATION);
 		statusLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 	}
 
+	/**
+	 * Create the buttons for running, stopping, clearing, selecting the peripheral,
+	 * opening settings dialog and user events dialog.
+	 * 
+	 * @param parent the parent composite
+	 */
 	private void createButtons(Composite parent) {
 		// Start simulation button
 		runSimulationButton = new Button(parent, SWT.PUSH);
-		runSimulationButton.setText("Run simulation");
+		runSimulationButton.setText(RUN_SIMULATION_BTN_TEXT);
 		runSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
 		if (simulationEngine == null || !simulationEngine.isSimulationRunning()) {
@@ -91,7 +124,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 		// Stop simulation button
 		stopSimulationButton = new Button(parent, SWT.PUSH);
-		stopSimulationButton.setText("Stop simulation");
+		stopSimulationButton.setText(STOP_SIMULATION_BTN_TEXT);
 		stopSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		stopSimulationButton.addListener(SWT.Selection, event -> stopSimulation());
 		if (simulationEngine != null && simulationEngine.isSimulationRunning()) {
@@ -102,22 +135,21 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 		// Clear simulation button
 		clearSimulationButton = new Button(parent, SWT.PUSH);
-		clearSimulationButton.setText("Clear simulation");
+		clearSimulationButton.setText(CLEAR_SIMULATION_BTN_TEXT);
 		clearSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		clearSimulationButton.addListener(SWT.Selection, event -> clearGUI());
 
-		// label ku comboboxu
+		// Combobox for selecting the peripheral
 		Label comboLabel = new Label(parent, SWT.NONE);
-		comboLabel.setText("Vyberte perifériu: ");
+		comboLabel.setText(SELECT_PERIPHERAL_TEXT);
 		comboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 
-		// combobox na výber periférie
-		combo = new Combo(parent, SWT.READ_ONLY);
-		combo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		selectPeripheralCombo = new Combo(parent, SWT.READ_ONLY);
+		selectPeripheralCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		for (Peripheral peripheral : Peripheral.values()) {
-			combo.add(peripheral.toString());
+			selectPeripheralCombo.add(peripheral.toString());
 		}
-		combo.addSelectionListener(new SelectionListener() {
+		selectPeripheralCombo.addSelectionListener(new SelectionListener() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				updateSelectedPeripheralModel();
@@ -129,18 +161,18 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			}
 		});
 
-		// button which opens the SelectOutputsDialog
+		// Button which opens the SettingsDialog
 		Button settingsButton = new Button(parent, SWT.PUSH);
-		settingsButton.setText("Settings...");
+		settingsButton.setText(SETTINGS_BTN_TEXT);
 		settingsButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		settingsButton.addListener(SWT.Selection, event -> {
 			SettingsDialog dialog = new SettingsDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
 		});
 
-		// button which opens the UserEventDialog
+		// Button which opens the UserEventDialog
 		Button userEventButton = new Button(parent, SWT.PUSH);
-		userEventButton.setText("User Events...");
+		userEventButton.setText(USER_EVENTS_BTN_TEXT);
 		userEventButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		userEventButton.addListener(SWT.Selection, event -> {
 			UserEventDialog dialog = new UserEventDialog(workbench.getActiveWorkbenchWindow().getShell());
@@ -148,9 +180,15 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		});
 	}
 
+	/**
+	 * Update the selected peripheral model based on the selected peripheral in the
+	 * combo box.
+	 * 
+	 * @return the selected peripheral model
+	 */
 	private PeripheralModel updateSelectedPeripheralModel() {
 		PeripheralModel simulationModel;
-		Peripheral selectedPeripheral = Peripheral.fromDisplayName(combo.getText());
+		Peripheral selectedPeripheral = Peripheral.fromDisplayName(selectPeripheralCombo.getText());
 		switch (selectedPeripheral) {
 		case SYSTICKTIMER:
 			// fill in the fields from your exported data or from code
@@ -170,6 +208,10 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 					1 // prescaler
 			);
 			break;
+		case FLEXIO:
+			FlexIOConfig flexioConfig = new FlexIOConfig();
+			simulationModel = new FlexIOModel(flexioConfig);
+			break;
 		default:
 			throw new IllegalArgumentException("Unknown peripheral.");
 		}
@@ -177,6 +219,13 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		return simulationModel;
 	}
 
+	/**
+	 * Update the simulation GUI based on the selected simulation GUI in user
+	 * preferences.
+	 * 
+	 * @param parent the parent composite
+	 * @return the selected simulation GUI
+	 */
 	private SimulationGUI updateSimulationGUI(Composite parent) {
 		if (simulationGUI != null) {
 			simulationGUI.dispose();
@@ -218,7 +267,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			simulationEngine.addUserEvent(userEvent);
 		}
 
-		Display.getDefault().asyncExec(() -> statusLabel.setText("Running simulation..."));
+		Display.getDefault().asyncExec(() -> statusLabel.setText(STATUS_LABEL_RUNNING_SIMULATION));
 		Thread simulationThread = new Thread(() -> {
 			try {
 				simulationEngine.initSimulation();
@@ -228,14 +277,14 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 						if (simulationGUI instanceof SimulationChart) {
 							((SimulationChart) simulationGUI).redrawAllSeries();
 						}
-						statusLabel.setText("Simulation finished.");
+						statusLabel.setText(STATUS_LABEL_SIMULATION_FINISHED);
 						stopSimulationButton.setEnabled(false);
 						clearSimulationButton.setEnabled(true);
 					});
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				Display.getDefault().asyncExec(() -> statusLabel.setText("Failure during simulation."));
+				Display.getDefault().asyncExec(() -> statusLabel.setText(STATUS_LABEL_SIMULATION_FAILURE));
 			}
 		});
 
@@ -245,14 +294,20 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 	}
 
+	/**
+	 * Stop the simulation.
+	 */
 	private void stopSimulation() {
 		simulationEngine.stopSimulation();
 		runSimulationButton.setEnabled(false);
 		stopSimulationButton.setEnabled(false);
 		clearSimulationButton.setEnabled(true);
-		Display.getDefault().asyncExec(() -> statusLabel.setText("Simulation stopped."));
+		Display.getDefault().asyncExec(() -> statusLabel.setText(STATUS_LABEL_SIMULATION_STOPPED));
 	}
 
+	/**
+	 * Clear the simulation GUI.
+	 */
 	private void clearGUI() {
 		simulationGUI.clear();
 		statusLabel.setText(EMPTY_SIMULATION);
@@ -261,6 +316,12 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 	}
 
+	/**
+	 * Update the GUI with the simulation time and outputs.
+	 * 
+	 * @param timeValue the simulation time
+	 * @param outputs   the simulation outputs
+	 */
 	private void updateGUI(double timeValue, Object[] outputs) {
 		// TODO: predam iba selected outputs?
 		Display.getDefault().asyncExec(() -> {
