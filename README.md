@@ -62,6 +62,7 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 1. **Import Plugin into Eclipse**  
    - Place this project in your Eclipse workspace as a Plug-in Project.  
    - Ensure dependencies (`org.eclipse.swtchart` etc.) are available.
+   - Download SWTChart here -> https://download.eclipse.org/swtchart/releases/0.14.0/repository/
 
 2. **Launch an Eclipse Application**  
    - In Run Configurations, choose “Eclipse Application”.  
@@ -92,7 +93,7 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 
 2. **Adding New User Events**  
    - The engine can handle scheduled `SimulationEvent`s or user-defined triggers (toggle bits, etc.).  
-   - You can let users define these events in a config or UI, then call `engine.scheduleEvent(time, action)`.
+   - You can define these events in a config or UI using "User Events..." button in a simulation view.
 
 3. **Bit/Field Manipulations**  
    - Each peripheral can implement partial writes (like “setBit(...)” or “toggleBit(...)”).  
