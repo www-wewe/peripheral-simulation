@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.ui;
 
 import java.util.ArrayList;
@@ -22,6 +23,8 @@ import org.eclipse.swtchart.ISeries.SeriesType;
  * 
  * This class implements the SimulationGUI interface and provides methods to
  * update and clear the chart.
+ *
+ * @author Veronika Lenková
  */
 public class SimulationChart implements SimulationGUI {
 
@@ -32,6 +35,11 @@ public class SimulationChart implements SimulationGUI {
 	/** List of series data for charting. */
 	private List<SeriesData> seriesList = new ArrayList<>();
 
+	/**
+	 * Constructor for the SimulationChart.
+	 * 
+	 * @param parent The parent composite for the chart.
+	 */
 	public SimulationChart(Composite parent) {
 		chart = new InteractiveChart(parent, SWT.NONE);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
@@ -69,16 +77,13 @@ public class SimulationChart implements SimulationGUI {
 			}
 			seriesList.clear();
 			for (ISeries<?> series : chart.getSeriesSet().getSeries()) {
-                chart.getSeriesSet().deleteSeries(series.getId());
-            }
+				chart.getSeriesSet().deleteSeries(series.getId());
+			}
 			chart.getAxisSet().adjustRange();
 			chart.redraw();
 		}
 	}
 
-	/**
-	 * Updates the chart with the latest data.
-	 */
 	@Override
 	public void update(double timeValue, Object[] outputs) {
 		// true if at least one output changed (for the onlyChanges mode)
@@ -113,7 +118,7 @@ public class SimulationChart implements SimulationGUI {
 
 		// Only redraw if user doesn't want "only changes" or if at least one changed
 		if (!userPreferences.isOnlyChanges() || anyChange) {
-//			redrawAllSeries();
+//			redrawAllSeries(); // Uncomment when you want to see "real-time" updates
 		}
 	}
 
@@ -166,7 +171,7 @@ public class SimulationChart implements SimulationGUI {
 	/**
 	 * Creates a new series for the given output.
 	 * 
-	 * @param output
+	 * @param outputIndex The index of the output for which to create the series.
 	 */
 	private void createSeriesForOutput(int outputIndex) {
 		String outputName = userPreferences.getPeripheralModel().getOutputName(outputIndex);
@@ -189,7 +194,6 @@ public class SimulationChart implements SimulationGUI {
 	public void onSelectedOutputsChanged() {
 		Display.getDefault().syncExec(() -> {
 			clear();
-			// TODO: legenda ostane ?
 			int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
 			if (selectedOutputsIndices.length > seriesList.size()) {
 				for (int outputIndex : selectedOutputsIndices) {

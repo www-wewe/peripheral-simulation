@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
@@ -5,15 +6,32 @@ import peripheralsimulation.engine.SimulationEngine;
 /**
  * Simulates a hardware counter incrementing at a given clock frequency with a
  * prescaler. Once it exceeds 'overflowValue', it resets to zero (overflow).
+ * 
+ * @author Veronika Lenková
  */
 public class CounterModel implements PeripheralModel {
 
-	private int overflowValue; // e.g., 255 for 8-bit
-	private int currentValue; // internal counter
-	private double tickPeriod; // time between increments = 1/(clockFreq/prescaler)
-	private boolean justOverflowed; // flag to indicate overflow
+	/**
+	 * The maximum value the counter can reach before overflowing. For example, if
+	 * overflowValue is 255 (for 8-bit), the counter will count from 0 to 255 and
+	 * then reset to 0.
+	 */
+	private int overflowValue;
+
+	/** The current value of the counter. */
+	private int currentValue;
 
 	/**
+	 * The time period between increments, calculated as 1 / (clockFreq /
+	 * prescaler).
+	 */
+	private double tickPeriod;
+
+	/** Flag to indicate if the counter has just overflowed. */
+	private boolean justOverflowed;
+
+	/**
+	 * Constructor for the CounterModel.
 	 * 
 	 * @param overflowValue Max counter value before overflow (e.g. 255 for 8-bit).
 	 * @param initialValue  Starting value of the counter.
@@ -29,6 +47,16 @@ public class CounterModel implements PeripheralModel {
 		// Each increment occurs every (1 / (clockFreq / prescaler)) time units
 		this.tickPeriod = 1.0 / (clockFreq / prescaler);
 		this.justOverflowed = false;
+	}
+
+	/**
+	 * Schedules the next increment of the counter.
+	 * 
+	 * @param engine    The simulation engine to use for scheduling.
+	 * @param eventTime The time at which the next increment should occur.
+	 */
+	private void scheduleNextIncrement(SimulationEngine engine, double eventTime) {
+		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	@Override
@@ -52,10 +80,6 @@ public class CounterModel implements PeripheralModel {
 		if (engine.isSimulationRunning()) {
 			scheduleNextIncrement(engine, engine.getCurrentTime() + tickPeriod);
 		}
-	}
-
-	private void scheduleNextIncrement(SimulationEngine engine, double eventTime) {
-		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	@Override
@@ -95,7 +119,7 @@ public class CounterModel implements PeripheralModel {
 	@Override
 	public void setRegisterValue(int registerAddress, int value) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

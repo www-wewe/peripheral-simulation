@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
@@ -15,16 +16,22 @@ import peripheralsimulation.model.flexio.FlexIOOutputs;
  *
  * You can extend or refine the state machine later; all helper methods needed
  * by the framework are already in place.
+ *
+ * @author Veronika Lenková
  */
 public class FlexIOModel implements PeripheralModel {
 
 	/* ──────────────────────────────────────────────────────────────────── */
 	/* Output indexes / names */
 	/* ──────────────────────────────────────────────────────────────────── */
-	public static final int IDX_PIN0 = 0;
-	public static final int IDX_SHIFTBUF0 = 1;
-	public static final int IDX_TIMER0_TOGGLE = 2;
 
+	/** Pin-0 level index */
+	public static final int IDX_PIN0 = 0;
+	/** Last value shifted out index */
+	public static final int IDX_SHIFTBUF0 = 1;
+	/** Indicates that timer-0 toggled during last update index */
+	public static final int IDX_TIMER0_TOGGLE = 2;
+	/** Output names (for simulation table) */
 	private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
 
 	/* ──────────────────────────────────────────────────────────────────── */
@@ -44,6 +51,11 @@ public class FlexIOModel implements PeripheralModel {
 	/* derived tick period based on TIMCFG0.PRESCALE */
 	private double tickPeriod;
 
+	/**
+	 * Constructor for FlexIOModel.
+	 *
+	 * @param config The configuration object containing the FlexIO settings.
+	 */
 	public FlexIOModel(FlexIOConfig config) {
 		this.config = config;
 		calculateTickPeriod();
@@ -145,7 +157,11 @@ public class FlexIOModel implements PeripheralModel {
 		tickPeriod = div / fclk; // seconds per timer tick
 	}
 
-	/** Called every time the FlexIO timer toggles */
+	/**
+	 * Called by the simulation engine when the timer is scheduled to tick.
+	 * 
+	 * @param engine The simulation engine instance.
+	 */
 	private void timerTick(SimulationEngine engine) {
 		// Toggle pin, mark flag
 		pin0Level = !pin0Level;

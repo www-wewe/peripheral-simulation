@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.engine;
 
 import java.util.ArrayList;
@@ -7,6 +8,8 @@ import java.util.List;
  * UserEventGenerator is responsible for scheduling user events in a simulation
  * engine. It maintains a list of user events and provides methods to add and
  * schedule them.
+ *
+ * @author Veronika Lenková
  */
 public class UserEventGenerator {
 

@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
@@ -11,9 +12,10 @@ import peripheralsimulation.engine.UserEventType;
  * <p>
  * The goal is to provide a common contract for: 1. Initialization with default
  * or user-defined conditions. 2. Setting up or scheduling any time-based
- * behavior during the simulation. 3. Handling interactions with other
- * peripherals if needed.
+ * behavior during the simulation. 3. Handling user defined events, etc.
  * </p>
+ *
+ * @author Veronika Lenková
  */
 public interface PeripheralModel {
 

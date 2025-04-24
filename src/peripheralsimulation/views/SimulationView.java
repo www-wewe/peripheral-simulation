@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.views;
 
 import org.eclipse.swt.widgets.Button;
@@ -33,7 +34,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.ui.part.ViewPart;
 
 /**
- * View for simulation of peripherals.
+ * Class representing the simulation view in the Eclipse IDE. This class is
+ * responsible for creating the user interface for the simulation, handling user
+ * interactions, and managing the simulation engine.
+ *
+ * This class implements the UserPreferencesListener interface to respond to
+ * changes in user preferences (e.g., selected outputs, simulation GUI).
+ *
+ * @author Veronika Lenková
  */
 public class SimulationView extends ViewPart implements UserPreferencesListener {
 
@@ -45,8 +53,9 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 	/** Label for the status of the simulation. */
 	private Label statusLabel;
-	/** Buttons for running and stopping the simulation. */
+	/** Buttons for running the simulation. */
 	private Button runSimulationButton;
+	/** Button for stopping the simulation. */
 	private Button stopSimulationButton;
 	/** Button for clearing the simulation. */
 	private Button clearSimulationButton;
@@ -323,7 +332,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	 * @param outputs   the simulation outputs
 	 */
 	private void updateGUI(double timeValue, Object[] outputs) {
-		// TODO: predam iba selected outputs?
 		Display.getDefault().asyncExec(() -> {
 			double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
 //			if (!simulationEngine.isSimulationRunning()) {

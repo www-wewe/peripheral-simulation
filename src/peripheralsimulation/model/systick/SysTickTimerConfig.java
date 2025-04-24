@@ -1,24 +1,59 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model.systick;
 
 import peripheralsimulation.utils.RegisterUtils;
 
+/**
+ * SysTickTimerConfig class represents the configuration of the SysTick timer.
+ * It includes methods to get and set various registers and flags, as well as
+ * manage the timer's behavior.
+ *
+ * @author Veronika Lenková
+ */
 public class SysTickTimerConfig {
 
-	// Register addresses for clarity
+	/*
+	 * ------------------------------------------------------------------ *
+	 * 					Register addresses (constants) 					  *
+	 * ------------------------------------------------------------------ *
+	 */
 	public static final int SYST_CSR_ADDR = 0xE000E010;
 	public static final int SYST_RVR_ADDR = 0xE000E014;
 	public static final int SYST_CVR_ADDR = 0xE000E018;
 	public static final int SYST_CALIB_ADDR = 0xE000E01C;
 
-	// CPU frequency or external frequencies
+	/*
+	 * ------------------------------------------------------------------ *
+	 * 						Clock frequencies 		    				  *
+	 * ------------------------------------------------------------------ *
+	 */
 	private double mainClk; // e.g. 48e6
 	private double externalClk; // e.g. 12e6
 
-	private int SYST_CSR; // Control and Status Register
-	private int SYST_RVR; // Reload Value Register
-	private int SYST_CVR; // Current Value Register
-	private int SYST_CALIB; // Calibration Value Register (optional, read-only)
+	/*
+	 * ------------------------------------------------------------------ *
+	 * 							Register values	    					  *
+	 * ------------------------------------------------------------------ *
+	 */
+	/** Control and Status Register */
+	private int SYST_CSR;
+	/** Reload Value Register */
+	private int SYST_RVR;
+	/** Current Value Register */
+	private int SYST_CVR;
+	/** Calibration Value Register (optional, read-only) */
+	private int SYST_CALIB;
 
+	/**
+	 * Constructor for SysTickTimerConfig.
+	 * 
+	 * @param systCSR     Control and Status Register value
+	 * @param systRVR     Reload Value Register value
+	 * @param systCVR     Current Value Register value
+	 * @param systCALIB   Calibration Value Register value (optional, read-only)
+	 * @param mainClk     Main clock frequency
+	 * @param externalClk External clock frequency
+	 */
 	public SysTickTimerConfig(int systCSR, int systRVR, int systCVR, int systCALIB, double mainClk,
 			double externalClk) {
 		this.SYST_CSR = systCSR;
@@ -92,16 +127,14 @@ public class SysTickTimerConfig {
 	public void setCVR(int value) {
 		// writing any value => sets CVR=0, clears COUNTFLAG
 		SYST_CVR = 0;
-		// If your code sets a separate bit for countFlag in SYST_CSR, you might clear
-		// it here
+		// If code sets a separate bit for countFlag in SYST_CSR, clear it here
 		// e.g. SYST_CSR &= ~(1<<16)
 	}
 
-	// -------------- GET/SET for SYST_CALIB --------------
+	// --------- GET for SYST_CALIB (read-only) ---------
 	public int getCALIB() {
 		return SYST_CALIB;
 	}
-	// read-only? If so, no setCALIB
 
 	// -------------- Frequencies --------------
 	public double getMainClk() {

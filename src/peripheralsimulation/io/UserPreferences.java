@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.io;
 
 import java.text.DecimalFormat;
@@ -8,6 +9,11 @@ import peripheralsimulation.engine.UserEvent;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.ui.SimulationGuiChoice;
 
+/**
+ * Singleton class that manages user preferences for the simulation.
+ * 
+ * @author Veronika Lenková
+ */
 public final class UserPreferences {
 
 	/** Singleton instance of UserPreferences */
@@ -58,31 +64,65 @@ public final class UserPreferences {
 	/** The time units for displaying time values */
 	private String timeUnits = "ms";
 
+	/** The list of user events to be scheduled */
 	private List<UserEvent> userEvents = new ArrayList<>();
 
 	private UserPreferences() {
 		// Private constructor to prevent instantiation
 	}
 
+	/**
+	 * Returns the singleton instance of UserPreferences.
+	 * 
+	 * @return The singleton instance of UserPreferences
+	 */
+	public static UserPreferences getInstance() {
+		if (instance == null) {
+			instance = new UserPreferences();
+		}
+		return instance;
+
+	}
+
+	/**
+	 * Adds a listener to the list of listeners for user preferences changes.
+	 * 
+	 * @param listener The listener to be added
+	 */
 	public void addListener(UserPreferencesListener listener) {
 		listeners.add(listener);
 	}
 
+	/**
+	 * Removes a listener from the list of listeners for user preferences changes.
+	 * 
+	 * @param listener The listener to be removed
+	 */
 	public void removeListener(UserPreferencesListener listener) {
 		listeners.remove(listener);
 	}
 
+	/**
+	 * Notifies all listeners when the selected outputs change.
+	 */
 	private void notifyListenersWhenSelectedOutputsChanged() {
 		for (UserPreferencesListener listener : listeners) {
 			listener.onSelectedOutputsChanged();
 		}
 	}
 
+	/**
+	 * Notifies all listeners when the selected simulation GUI changes.
+	 */
 	private void notifyListenersWhenSelectedSimulationGUIChanged() {
 		for (UserPreferencesListener listener : listeners) {
 			listener.onSelectedSimulationGUIChanged();
 		}
 	}
+
+	/* ================================================================== */
+	/* 						Getters and Setters 						  */
+	/* ================================================================== */
 
 	public List<String> getSelectedOutputs() {
 		return selectedOutputs;
@@ -191,13 +231,5 @@ public final class UserPreferences {
 
 	public void setUserEvents(List<UserEvent> userEvents) {
 		this.userEvents = userEvents;
-	}
-
-	public static UserPreferences getInstance() {
-		if (instance == null) {
-			instance = new UserPreferences();
-		}
-		return instance;
-
 	}
 }

@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package test;
 
 import static org.junit.Assert.assertEquals;
@@ -6,6 +7,11 @@ import org.junit.Test;
 
 import peripheralsimulation.engine.SimulationEngine;
 
+/**
+ * Test class for the SimulationEngine.
+ * 
+ * @author Veronika Lenková
+ */
 public class SimulationEngineTest {
 
 	/**

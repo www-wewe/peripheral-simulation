@@ -1,27 +1,30 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model.flexio;
 
 import peripheralsimulation.utils.RegisterUtils;
 
-// asi je tam veľa modov, sprav koľko sa bude dať, nebude vadiť keď nebude všetko, 
+// TODO asi je tam veľa modov, sprav koľko sa bude dať, nebude vadiť keď nebude všetko, 
 // ale vedieť to odvôvodniť ako ľahko to doimplementovať
 
 //MCXN947
 
 /**
  * Holds the raw FlexIO register values and offers typed helpers (get/set of
- * individual bit‑fields). Nothing in here “runs” – the
+ * individual bit-fields). Nothing in here “runs” – the
  * {@link peripheralsimulation.model.FlexIOModel} will read / write through this
  * config object.
  *
  *  ┌──────────────────────── Base address (example NXP K64) ────────────────┐
- *  │ 0x4005_A000  FLEXIO_CTRL                                              │
- *  │ 0x4005_A004  FLEXIO_PIN (optional – not modelled below)               │
- *  │ 0x4005_A080  FLEXIO_SHIFTCTL0                                         │
- *  │ 0x4005_A084  FLEXIO_SHIFTCFG0                                         │
- *  │ 0x4005_A0C0  FLEXIO_TIMCTL0                                           │
- *  │ 0x4005_A0C4  FLEXIO_TIMCFG0                                           │
- *  │ 0x4005_A0C8  FLEXIO_TIMCMP0                                           │
+ *  │ 0x4005_A000  FLEXIO_CTRL                                               │
+ *  │ 0x4005_A004  FLEXIO_PIN (optional – not modelled below)                │
+ *  │ 0x4005_A080  FLEXIO_SHIFTCTL0                                          │
+ *  │ 0x4005_A084  FLEXIO_SHIFTCFG0                                          │
+ *  │ 0x4005_A0C0  FLEXIO_TIMCTL0                                            │
+ *  │ 0x4005_A0C4  FLEXIO_TIMCFG0                                            │
+ *  │ 0x4005_A0C8  FLEXIO_TIMCMP0                                            │
  *  └────────────────────────────────────────────────────────────────────────┘
+ * 
+ * @author Veronika Lenková
  */
 public class FlexIOConfig {
 
@@ -52,7 +55,7 @@ public class FlexIOConfig {
 
 	/*
 	 * ------------------------------------------------------------------ * 
-	 * 				Backing fields holding raw 32‑bit register values 		 	  *
+	 * 				Backing fields holding raw 32‑bit register values 		 	      *
 	 * ------------------------------------------------------------------ *
 	 */
 	private int REG_CTRL;

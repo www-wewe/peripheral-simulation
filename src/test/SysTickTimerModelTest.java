@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,6 +11,14 @@ import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.model.SysTickTimerModel;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 
+/**
+ * Test class for SysTickTimerModel.
+ * 
+ * This class contains unit tests for the SysTickTimerModel class, specifically
+ * testing the underflow condition and the behavior of the CVR register.
+ * 
+ * @author Veronika Lenková
+ */
 public class SysTickTimerModelTest {
 
 	/**

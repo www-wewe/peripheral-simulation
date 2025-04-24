@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.engine;
 
 import peripheralsimulation.model.PeripheralModel;
@@ -6,6 +7,8 @@ import peripheralsimulation.model.PeripheralModel;
  * Represents a user-defined event that can be scheduled in the simulation.
  * Contains information about the event's timing, target peripheral, action to
  * perform, and other relevant parameters.
+ *
+ * @author Veronika Lenková
  */
 public class UserEvent {
 	/**
@@ -48,6 +51,22 @@ public class UserEvent {
 	 */
 	private int value;
 
+	/**
+	 * Constructs a new UserEvent with the specified parameters.
+	 *
+	 * @param startTime        The time at which the first event fires.
+	 * @param period           The period between subsequent events. If <= 0, it's a
+	 *                         one-time event.
+	 * @param repeatCount      The number of times to repeat. If 0 or negative =>
+	 *                         infinite.
+	 * @param targetPeripheral The peripheral we want to act on.
+	 * @param eventType        The kind of action to perform: e.g. toggle bit, set
+	 *                         bit, write register, etc.
+	 * @param registerAddress  The address of the register to act on.
+	 * @param bitPosition      The bit position to act on (toogle/set/clear).
+	 *                         Ignored for write.
+	 * @param value            The value to write to the register.
+	 */
 	public UserEvent(double startTime, double period, int repeatCount, PeripheralModel targetPeripheral,
 			UserEventType eventType, int registerAddress, int bitPosition, int value) {
 		this.startTime = startTime;
@@ -59,6 +78,10 @@ public class UserEvent {
 		this.bitPosition = bitPosition;
 		this.value = value;
 	}
+
+	/* ================================================================== */
+	/*                     Getters and Setters                            */
+	/* ================================================================== */
 
 	public double getStartTime() {
 		return startTime;

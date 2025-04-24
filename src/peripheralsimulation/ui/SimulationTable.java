@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.ui;
 
 import org.eclipse.swt.SWT;
@@ -11,6 +12,14 @@ import org.eclipse.swt.widgets.TableItem;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.PeripheralModel;
 
+/**
+ * Class for displaying a simulation table using SWT.
+ * 
+ * This class implements the SimulationGUI interface and provides methods to
+ * update and clear the table.
+ *
+ * @author Veronika Lenková
+ */
 public class SimulationTable implements SimulationGUI {
 
 	/** The table in which the simulation results are displayed. Graph later. */
@@ -27,6 +36,11 @@ public class SimulationTable implements SimulationGUI {
 	/** The last output values for each selected output. */
 	private Object[] lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
 
+	/**
+	 * Constructor for the SimulationTable.
+	 * 
+	 * @param parent The parent composite for the table.
+	 */
 	public SimulationTable(Composite parent) {
 		table = new Table(parent, SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
 		table.setHeaderVisible(true);
@@ -95,8 +109,9 @@ public class SimulationTable implements SimulationGUI {
 
 	/**
 	 * Create a new row in the table with the given text.
-	 * 
-	 * @param rowText
+	 *
+	 * @param outputs The output values for the row.
+	 * @param rowText The text to display in the row.
 	 */
 	private void createTableItem(Object[] outputs, String[] rowText) {
 		TableItem item = new TableItem(table, SWT.NONE);
@@ -110,13 +125,11 @@ public class SimulationTable implements SimulationGUI {
 				item.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_YELLOW));
 			}
 		}
-		// iné outputy môžu byť tiež rôzne zvýraznené
+		// other outputs can be highlighted as well
 	}
 
 	/**
-	 * Create columns in the table for each output in the given map.
-	 * 
-	 * @param outputs
+	 * Create columns in the table based on the user's selected outputs.
 	 */
 	private void createColumnsInTable() {
 		TableColumn timeColumn = new TableColumn(table, SWT.NONE);
@@ -127,6 +140,11 @@ public class SimulationTable implements SimulationGUI {
 		}
 	}
 
+	/**
+	 * Create a new column in the table for the given output.
+	 *
+	 * @param output The name of the output.
+	 */
 	private void createColumnForOutput(String output) {
 		TableColumn newCol = new TableColumn(table, SWT.NONE);
 		newCol.setText(output);

@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.engine;
 
 import java.util.ArrayList;
@@ -11,7 +12,11 @@ import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.PeripheralModel;
 
 /**
- * Universal simulation core, which is able to simulate any peripheral model.
+ * Universal simulation core, which is able to simulate any peripheral model. It
+ * is responsible for scheduling events, managing simulation time, and handling
+ * outputs.
+ * 
+ * @author Veronika Lenková
  */
 public class SimulationEngine {
 
@@ -20,7 +25,7 @@ public class SimulationEngine {
 	 * ascending event time.
 	 */
 	private final Queue<SimulationEvent> eventQueue = new PriorityQueue<>(
-			Comparator.comparingDouble(SimulationEvent::time));
+			Comparator.comparingDouble(SimulationEvent::getTime));
 	/**
 	 * Current simulation time in arbitrary time units.
 	 */
@@ -99,7 +104,7 @@ public class SimulationEngine {
 
 		while (running && !eventQueue.isEmpty()) {
 			SimulationEvent next = eventQueue.peek();
-			if (next.time() > maxTime) {
+			if (next.getTime() > maxTime) {
 				break;
 			}
 
@@ -107,7 +112,7 @@ public class SimulationEngine {
 			eventQueue.poll();
 
 			// Advance simulation time
-			currentTime = next.time();
+			currentTime = next.getTime();
 
 			// Execute event logic
 			next.run();
@@ -163,6 +168,10 @@ public class SimulationEngine {
 		userEventGenerator.addEvent(event);
 	}
 
+	/**
+	 * Stops the simulation and clears the event queue. The simulation time is set
+	 * to zero.
+	 */
 	public void stopSimulation() {
 		running = false;
 		eventQueue.clear();
@@ -170,20 +179,22 @@ public class SimulationEngine {
 		System.out.println("[SimulationEngine] Simulácia zastavená.");
 	}
 
+	/**
+	 * Returns the current simulation time.
+	 * 
+	 * @return The current simulation time.
+	 */
 	public double getCurrentTime() {
 		return currentTime;
 	}
 
+	/**
+	 * Checks if the simulation is currently running.
+	 * 
+	 * @return True if the simulation is running, false otherwise.
+	 */
 	public boolean isSimulationRunning() {
 		return running;
-	}
-
-	public BiConsumer<Double, Object[]> getOutputHandler() {
-		return outputHandler;
-	}
-
-	public void setOutputHandler(BiConsumer<Double, Object[]> outputHandler) {
-		this.outputHandler = outputHandler;
 	}
 
 	/**

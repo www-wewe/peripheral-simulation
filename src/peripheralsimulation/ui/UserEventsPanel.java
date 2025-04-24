@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.ui;
 
 import java.util.ArrayList;
@@ -20,28 +21,50 @@ import peripheralsimulation.model.PeripheralModel;
  * They can specify start time, period, repeat count, register address, bit pos,
  * value, and event type. The "targetPeripheral" is the currently selected
  * peripheral from userPreferences.
+ *
+ * @author Veronika Lenková
  */
 public class UserEventsPanel extends Composite {
 
+	/** User preferences instance */
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+	/** List of user-defined events */
 	private List<UserEvent> userEvents = new ArrayList<>();
 
+	/** Text field for start time */
 	private Text txtStartTime;
+	/** Text field for period */
 	private Text txtPeriod;
+	/** Text field for repeat count */
 	private Text txtRepeatCount;
+	/** Combo box for event type */
 	private Combo comboEventType;
+	/** Text field for register address */
 	private Text txtRegisterAddress;
+	/** Text field for bit position */
 	private Text txtBitPosition;
+	/** Text field for value */
 	private Text txtValue;
 
+	/** Table to display existing events */
 	private Table tableEvents;
 
+	/**
+	 * Constructor for the UserEventsPanel.
+	 * 
+	 * @param parent The parent composite.
+	 * @param style  The style of the panel.
+	 */
 	public UserEventsPanel(Composite parent, int style) {
 		super(parent, style);
 		userEvents = userPreferences.getUserEvents();
 		createContents();
 	}
 
+	/**
+	 * Creates the contents of the panel with input fields for user events and a
+	 * table to display existing events.
+	 */
 	private void createContents() {
 		GridLayout layout = new GridLayout(2, false);
 		this.setLayout(layout);
@@ -97,7 +120,7 @@ public class UserEventsPanel extends Composite {
 				addEvent();
 			}
 		});
-		
+
 		// ========== "Clear" button ==========
 
 		new Label(this, SWT.NONE); // spacer
@@ -124,7 +147,8 @@ public class UserEventsPanel extends Composite {
 		gdTable.heightHint = 100;
 		tableEvents.setLayoutData(gdTable);
 
-		String[] colNames = { "StartTime", "Period", "Repeat", "Event type", "Register Address", "Bit position", "Value" };
+		String[] colNames = { "StartTime", "Period", "Repeat", "Event type", "Register Address", "Bit position",
+				"Value" };
 		for (String col : colNames) {
 			TableColumn tableCol = new TableColumn(tableEvents, SWT.NONE);
 			tableCol.setText(col);
@@ -143,6 +167,9 @@ public class UserEventsPanel extends Composite {
 		}
 	}
 
+	/**
+	 * Adds a new user event based on the input fields and adds it to the table.
+	 */
 	private void addEvent() {
 		// Parse user input
 		double startTime = parseDouble(txtStartTime.getText(), 0.0);
@@ -165,7 +192,8 @@ public class UserEventsPanel extends Composite {
 		}
 
 		// Create new event
-		UserEvent newEvt = new UserEvent(startTime, period, repeatCount, target, eventType, registerAddress, bitPosition, value);
+		UserEvent newEvt = new UserEvent(startTime, period, repeatCount, target, eventType, registerAddress,
+				bitPosition, value);
 		userEvents.add(newEvt);
 
 		// Add to table
@@ -182,6 +210,13 @@ public class UserEventsPanel extends Composite {
 		userPreferences.setUserEvents(userEvents);
 	}
 
+	/**
+	 * Parses a string to a double, returning a default value if parsing fails.
+	 * 
+	 * @param stringToParse The string to parse.
+	 * @param defaultValue  The default value to return if parsing fails.
+	 * @return The parsed double or the default value.
+	 */
 	private double parseDouble(String stringToParse, double defaultValue) {
 		try {
 			return Double.parseDouble(stringToParse);
@@ -190,6 +225,13 @@ public class UserEventsPanel extends Composite {
 		}
 	}
 
+	/**
+	 * Parses a string to an integer, returning a default value if parsing fails.
+	 * 
+	 * @param stringToParse The string to parse.
+	 * @param defaultValue  The default value to return if parsing fails.
+	 * @return The parsed integer or the default value.
+	 */
 	private int parseInt(String stringToParse, int defaultValue) {
 		try {
 			return Integer.parseInt(stringToParse);
@@ -198,6 +240,14 @@ public class UserEventsPanel extends Composite {
 		}
 	}
 
+	/**
+	 * Parses a string to an integer, interpreting it as hexadecimal if it starts
+	 * with "0x" or "0X". Returns a default value if parsing fails.
+	 * 
+	 * @param stringToParse The string to parse.
+	 * @param defaultValue  The default value to return if parsing fails.
+	 * @return The parsed integer or the default value.
+	 */
 	private int parseHexOrDec(String stringToParse, int defaultValue) {
 		if (stringToParse == null || stringToParse.trim().isEmpty()) {
 			return defaultValue;

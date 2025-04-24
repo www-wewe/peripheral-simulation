@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.ui;
 
 import java.util.ArrayList;
@@ -17,17 +18,34 @@ import org.eclipse.swt.widgets.Text;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.PeripheralModel;
 
+/**
+ * Dialog for setting user preferences for the simulation.
+ * 
+ * @author Veronika Lenková
+ */
 public class SettingsDialog extends Dialog {
-
+	/** The user preferences instance */
 	private UserPreferences userPreferences;
+	/** List of checkboxes for selecting outputs */
 	private List<Button> checkboxes = new ArrayList<>();
+	/** Checkbox for showing only changes */
 	private Button onlyChanges;
+	/** Text field for milliseconds to wait between iterations */
 	private Text millisToWaitTextField;
+	/** Combo box for selecting the simulation visualization */
 	private Combo visualizationSelectionCombo;
+	/** Text field for monitoring period */
 	private Text monitoringPeriodTextField;
+	/** Text field for simulation time range from */
 	private Text simulationTimeRangeFromTextField;
+	/** Text field for simulation time range to */
 	private Text simulationTimeRangeToTextField;
 
+	/**
+	 * Constructor for the SettingsDialog.
+	 * 
+	 * @param parentShell The parent shell for the dialog.
+	 */
 	public SettingsDialog(Shell parentShell) {
 		super(parentShell);
 		this.userPreferences = UserPreferences.getInstance();
@@ -108,6 +126,11 @@ public class SettingsDialog extends Dialog {
 		onlyChanges.setSelection(userPreferences.isOnlyChanges());
 	}
 
+	/**
+	 * Add text field for milliseconds to wait between each simulation step.
+	 * 
+	 * @param dialog The dialog to which the text field will be added.
+	 */
 	private void addTextFieldMillisToWait(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
 		label.setText("Milliseconds to wait between each simulation step:");
@@ -120,7 +143,7 @@ public class SettingsDialog extends Dialog {
 	/**
 	 * Add combo box for selecting the simulation visualization.
 	 * 
-	 * @param dialog
+	 * @param dialog The dialog to which the combo box will be added.
 	 */
 	private void addGuiSelection(Composite dialog) {
 		// label ku comboboxu
@@ -140,7 +163,7 @@ public class SettingsDialog extends Dialog {
 	 * Add text field for monitoring frequency. (How often the simulation should be
 	 * updated)
 	 * 
-	 * @param dialog
+	 * @param dialog The dialog to which the text field will be added.
 	 */
 	private void addTextFieldMonitoringFreq(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
@@ -156,7 +179,7 @@ public class SettingsDialog extends Dialog {
 	/**
 	 * Add text fields (from, to) for time range.
 	 * 
-	 * @param dialog
+	 * @param dialog The dialog to which the text fields will be added.
 	 */
 	private void addTextFieldsForTimeRange(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);

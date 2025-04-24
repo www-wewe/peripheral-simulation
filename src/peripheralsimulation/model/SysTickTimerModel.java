@@ -1,3 +1,4 @@
+/** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
@@ -9,6 +10,9 @@ import peripheralsimulation.utils.RegisterUtils;
  * Simulates an ARM SysTick Timer (24-bit), with basic registers: - SYST_CSR
  * (ENABLE, TICKINT, CLKSOURCE, COUNTFLAG) - SYST_RVR (Reload Value) - SYST_CVR
  * (Current Value) - SYST_CALIB (optional read-only info)
+ *
+ * @author Veronika Lenková
+ * TODO: refactor with SysTickTimerConfig
  */
 public class SysTickTimerModel implements PeripheralModel {
 
