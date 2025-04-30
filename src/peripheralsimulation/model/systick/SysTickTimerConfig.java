@@ -17,10 +17,11 @@ public class SysTickTimerConfig {
 	 * 					Register addresses (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	public static final int SYST_CSR_ADDR = 0xE000E010;
-	public static final int SYST_RVR_ADDR = 0xE000E014;
-	public static final int SYST_CVR_ADDR = 0xE000E018;
-	public static final int SYST_CALIB_ADDR = 0xE000E01C;
+	public static final int SYST_BASE = 0xE000E000;
+	public static final int SYST_CSR_ADDR = SYST_BASE + 0x010;
+	public static final int SYST_RVR_ADDR = SYST_BASE + 0x014;
+	public static final int SYST_CVR_ADDR = SYST_BASE + 0x018;
+	public static final int SYST_CALIB_ADDR = SYST_BASE + 0x01C;
 
 	/*
 	 * ------------------------------------------------------------------ *

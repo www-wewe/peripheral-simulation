@@ -16,12 +16,6 @@ import peripheralsimulation.utils.RegisterUtils;
  */
 public class SysTickTimerModel implements PeripheralModel {
 
-	/* Register addresses */
-	private static final int SYST_CSR_ADDR = 0xE000E010;
-	private static final int SYST_RVR_ADDR = 0xE000E014;
-	private static final int SYST_CVR_ADDR = 0xE000E018;
-	private static final int SYST_CALIB_ADDR = 0xE000E01C;
-
 	/* Output indices */
 	public static final int IDX_CURRENT = 0;
 	public static final int IDX_INTERRUPT = 1;
@@ -207,18 +201,18 @@ public class SysTickTimerModel implements PeripheralModel {
 	@Override
 	public void setRegisterValue(int registerAddress, int value) {
 		switch (registerAddress) {
-		case SYST_CSR_ADDR:
+		case SysTickTimerConfig.SYST_CSR_ADDR:
 			config.setCSR(value);
 			this.tickPeriod = calculateTickPeriod();
 			break;
-		case SYST_RVR_ADDR:
+		case SysTickTimerConfig.SYST_RVR_ADDR:
 			config.setRVR(value);
 			break;
-		case SYST_CVR_ADDR:
+		case SysTickTimerConfig.SYST_CVR_ADDR:
 			writeCVR(value);
 			config.setCVR(value);
 			break;
-		case SYST_CALIB_ADDR:
+		case SysTickTimerConfig.SYST_CALIB_ADDR:
 			throw new UnsupportedOperationException("Cannot write to read-only register: " + registerAddress);
 		default:
 			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
@@ -228,13 +222,13 @@ public class SysTickTimerModel implements PeripheralModel {
 	@Override
 	public Integer getRegisterValue(int registerAddress) {
 		switch (registerAddress) {
-		case SYST_CSR_ADDR:
+		case SysTickTimerConfig.SYST_CSR_ADDR:
 			return config.getCSR();
-		case SYST_RVR_ADDR:
+		case SysTickTimerConfig.SYST_RVR_ADDR:
 			return config.getRVR();
-		case SYST_CVR_ADDR:
+		case SysTickTimerConfig.SYST_CVR_ADDR:
 			return readCVR();
-		case SYST_CALIB_ADDR:
+		case SysTickTimerConfig.SYST_CALIB_ADDR:
 			return config.getCALIB();
 		default:
 			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
