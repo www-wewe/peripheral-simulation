@@ -260,7 +260,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		clearSimulationButton.setEnabled(false);
 		simulationEngine.cleanSimulation();
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
-		simulationEngine.addPeripheral(simulationModel);
+		simulationEngine.setPeripheralModel(simulationModel);
 //		UserEvent userEvent = new UserEvent(0.010, // start time
 //				0.010, // period, means every 10ms
 //				5, // repeat count (0 means infinite)

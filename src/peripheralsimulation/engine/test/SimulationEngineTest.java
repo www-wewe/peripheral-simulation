@@ -115,7 +115,7 @@ public class SimulationEngineTest {
 			}
 		};
 
-		engine.addPeripheral(dummyPeripheral);
+		engine.setPeripheralModel(dummyPeripheral);
 		engine.initSimulation();
 		engine.startSimulation(2);
 
@@ -144,7 +144,7 @@ public class SimulationEngineTest {
 	@Test
 	public void testCleanSimulationClearsModels() {
 		// Minimal stub peripheral
-		engine.addPeripheral(new PeripheralModel() {
+		engine.setPeripheralModel(new PeripheralModel() {
 			@Override
 			public void initialize(SimulationEngine e) {
 			}

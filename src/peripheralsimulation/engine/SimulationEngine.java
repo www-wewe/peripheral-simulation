@@ -1,9 +1,7 @@
 /** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.engine;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.function.BiConsumer;
@@ -37,10 +35,9 @@ public class SimulationEngine {
 	private boolean running;
 
 	/**
-	 * List of simulation models (peripherals, generators) managed by this
-	 * simulation engine.
+	 * Peripheral model simulated by this engine.
 	 */
-	private final List<PeripheralModel> models = new ArrayList<>();
+	private PeripheralModel peripheralModel;
 
 	/**
 	 * A consumer to handle simulation output (e.g., display in a view). Key:
@@ -72,6 +69,7 @@ public class SimulationEngine {
 		this.outputHandler = outputHandler;
 		this.currentTime = 0.0;
 		this.running = false;
+		this.peripheralModel = null;
 	}
 
 	/**
@@ -83,8 +81,7 @@ public class SimulationEngine {
 		currentTime = 0.0;
 		running = false;
 
-		// Let each peripheral initialize itself.
-		for (PeripheralModel peripheralModel : models) {
+		if (peripheralModel != null) {
 			peripheralModel.initialize(this);
 		}
 
@@ -117,8 +114,8 @@ public class SimulationEngine {
 			// Execute event logic
 			next.run();
 
-			for (PeripheralModel model : models) {
-				Object[] outputs = model.getOutputs();
+			if (peripheralModel != null) {
+				Object[] outputs = peripheralModel.getOutputs();
 				if (currentTime >= nextMonitorTime && outputHandler != null) {
 					// Poslanie výstupu do SimulationView
 					outputHandler.accept(currentTime, outputs);
@@ -154,8 +151,8 @@ public class SimulationEngine {
 	 * 
 	 * @param peripheral The peripheral model implementing {@link PeripheralModel}.
 	 */
-	public void addPeripheral(PeripheralModel peripheral) {
-		models.add(peripheral);
+	public void setPeripheralModel(PeripheralModel peripheral) {
+		this.peripheralModel = peripheral;
 	}
 
 	/**
@@ -201,7 +198,7 @@ public class SimulationEngine {
 	 * Clears list of peripheral models and all scheduled user events.
 	 */
 	public void cleanSimulation() {
-		models.clear();
+		this.peripheralModel = null;
 		userEventGenerator.clearEvents();
 	}
 
