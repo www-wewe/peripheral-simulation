@@ -7,6 +7,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.*;
+
+import java.util.HashMap;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -26,6 +29,7 @@ import peripheralsimulation.ui.SimulationChart;
 import peripheralsimulation.ui.SimulationGUI;
 import peripheralsimulation.ui.SimulationTable;
 import peripheralsimulation.ui.UserEventDialog;
+import peripheralsimulation.utils.RegisterMap;
 import peripheralsimulation.model.CounterModel;
 import peripheralsimulation.model.FlexIOModel;
 
@@ -218,7 +222,8 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			);
 			break;
 		case FLEXIO:
-			FlexIOConfig flexioConfig = new FlexIOConfig();
+			RegisterMap registerMap = new RegisterMap(new HashMap<>());
+			FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
 			simulationModel = new FlexIOModel(flexioConfig);
 			break;
 		default:

@@ -1,28 +1,15 @@
 /** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model.flexio;
 
-import peripheralsimulation.utils.RegisterUtils;
+import java.util.Arrays;
 
-// TODO asi je tam veľa modov, sprav koľko sa bude dať, nebude vadiť keď nebude všetko, 
-// ale vedieť to odvôvodniť ako ľahko to doimplementovať
-
-//MCXN947
+import peripheralsimulation.utils.RegisterMap;
 
 /**
  * Holds the raw FlexIO register values and offers typed helpers (get/set of
  * individual bit-fields). Nothing in here “runs” – the
  * {@link peripheralsimulation.model.FlexIOModel} will read / write through this
  * config object.
- *
- *  ┌──────────────────────── Base address (example NXP K64) ────────────────┐
- *  │ 0x4005_A000  FLEXIO_CTRL                                               │
- *  │ 0x4005_A004  FLEXIO_PIN (optional – not modelled below)                │
- *  │ 0x4005_A080  FLEXIO_SHIFTCTL0                                          │
- *  │ 0x4005_A084  FLEXIO_SHIFTCFG0                                          │
- *  │ 0x4005_A0C0  FLEXIO_TIMCTL0                                            │
- *  │ 0x4005_A0C4  FLEXIO_TIMCFG0                                            │
- *  │ 0x4005_A0C8  FLEXIO_TIMCMP0                                            │
- *  └────────────────────────────────────────────────────────────────────────┘
  * 
  * @author Veronika Lenková
  */
@@ -33,53 +20,133 @@ public class FlexIOConfig {
 	 * 					Register addresses (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	public static final int FLEXIO_BASE = 0x4005A000; // example
-	public static final int CTRL_ADDR = FLEXIO_BASE + 0x00;
+	public static final int FLEXIO_BASE = 0x4005_F000; // MCXN444
+
+	public static final int VERID_ADDR = FLEXIO_BASE + 0x000;
+	public static final int PARAM_ADDR = FLEXIO_BASE + 0x004;
+	public static final int CTRL_ADDR = FLEXIO_BASE + 0x008;
+
+	public static final int SHIFTSTAT_ADDR = FLEXIO_BASE + 0x010;
+	public static final int SHIFTERR_ADDR = FLEXIO_BASE + 0x014;
+	public static final int TIMSTAT_ADDR = FLEXIO_BASE + 0x018;
+
+	public static final int SHIFTSIEN_ADDR = FLEXIO_BASE + 0x020;
+	public static final int SHIFTEIEN_ADDR = FLEXIO_BASE + 0x024;
+	public static final int TIMIEN_ADDR = FLEXIO_BASE + 0x028;
+	public static final int SHIFTSDEN_ADDR = FLEXIO_BASE + 0x030;
 
 	// --- First shifter (index 0) ---------------------------------------
 	public static final int SHIFTCTL0_ADDR = FLEXIO_BASE + 0x080;
-	public static final int SHIFTCFG0_ADDR = FLEXIO_BASE + 0x084;
+	public static final int SHIFTCFG0_ADDR = FLEXIO_BASE + 0x100;
+	public static final int SHIFTBUF0_ADDR = FLEXIO_BASE + 0x200;
+	public static final int SHIFTBUFBIS0_ADDR = FLEXIO_BASE + 0x280;
+	public static final int SHIFTBUFBYS0_ADDR = FLEXIO_BASE + 0x300;
+	public static final int SHIFTBUFBBS0_ADDR = FLEXIO_BASE + 0x380;
+	public static final int SHIFTER_STRIDE = 0x004;
 
 	// --- First timer (index 0) -----------------------------------------
-	public static final int TIMCTL0_ADDR = FLEXIO_BASE + 0x0C0;
-	public static final int TIMCFG0_ADDR = FLEXIO_BASE + 0x0C4;
-	public static final int TIMCMP0_ADDR = FLEXIO_BASE + 0x0C8;
-
-	/*
-	 * ------------------------------------------------------------------ *
-	 * 					Clock frequencies 		    					  *
-	 * ------------------------------------------------------------------ *
-	 */
-	private double mainClk; // e.g. 48e6
-	private double externalClk; // e.g. 12e6
+	public static final int TIMCTL0_ADDR = FLEXIO_BASE + 0x400;
+	public static final int TIMCFG0_ADDR = FLEXIO_BASE + 0x480;
+	public static final int TIMCMP0_ADDR = FLEXIO_BASE + 0x500;
+	public static final int TIMER_STRIDE = 0x004;
 
 	/*
 	 * ------------------------------------------------------------------ * 
-	 * 				Backing fields holding raw 32‑bit register values 		 	      *
+	 * 					Number of shifters / timers 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	private int REG_CTRL;
-	private int REG_SHIFTCTL0;
-	private int REG_SHIFTCFG0;
-	private int REG_TIMCTL0;
-	private int REG_TIMCFG0;
-	private int REG_TIMCMP0;
+	public int shiftersCount; // from FLEXIO_PARAM
+	public int timersCount;
+	public int pinCount;
 
 	/*
-	 * ------------------------------------------------------------------ *
-	 * 				Constructor – supply optional reset values 			  *
+	 * ------------------------------------------------------------------ * 
+	 * 				Register values 		 							  *
 	 * ------------------------------------------------------------------ *
 	 */
-	public FlexIOConfig() {
-		// Reset values cropped from NXP RM (all zeros is fine for most sims)
-		REG_CTRL = 0x00000000;
-		REG_SHIFTCTL0 = 0x00000000;
-		REG_SHIFTCFG0 = 0x00000000;
-		REG_TIMCTL0 = 0x00000000;
-		REG_TIMCFG0 = 0x00000000;
-		REG_TIMCMP0 = 0x00000000;
-		mainClk = 48e6;
-		externalClk = 12e6;
+	private int PARAM;
+	private int CTRL;
+	private int SHIFTSTAT;
+	private int SHIFTERR;
+	private int TIMSTAT;
+	private int SHIFTEIEN;
+	private int SHIFTSDEN;
+	private int SHIFTSIEN;
+	private int TIMIEN;
+
+	private int[] SHIFTCTL;
+	private int[] SHIFTCFG;
+	private int[] SHIFTBUF;
+	private int[] SHIFTBUFBIS;
+	private int[] SHIFTBUFBYS;
+	private int[] SHIFTBUFBBS;
+
+	private int[] TIMCTL;
+	private int[] TIMCFG;
+	private int[] TIMCMP;
+
+	/** Jednotlivé konfigurácie: index == číslo periférie. */
+	public FlexIOShifter[] shifters;
+	public FlexIOTimer[] timers;
+	public Pin[] pins;
+
+	/** Globálne riadiace bity z CTRL. */
+	public boolean flexEn, swReset, dbgEn, fastAcc;
+
+	/** RegisterMap object to access register values. */
+	private RegisterMap registerMap;
+
+	/**
+	 * Constructor for FlexIOConfig.
+	 *
+	 * @param registerMap The RegisterMap object containing the register values.
+	 */
+	public FlexIOConfig(RegisterMap registerMap) {
+		PARAM = registerMap.getRegisterValue(PARAM_ADDR);
+		shiftersCount = PARAM & 0xFF;
+		timersCount = (PARAM >> 8) & 0xFF;
+		pinCount = (PARAM >> 16) & 0xFF;
+
+		SHIFTCTL = new int[shiftersCount];
+		SHIFTCFG = new int[shiftersCount];
+		SHIFTBUF = new int[shiftersCount];
+		SHIFTBUFBIS = new int[shiftersCount];
+		SHIFTBUFBYS = new int[shiftersCount];
+		SHIFTBUFBBS = new int[shiftersCount];
+		TIMCTL = new int[timersCount];
+		TIMCFG = new int[timersCount];
+		TIMCMP = new int[timersCount];
+
+		CTRL = registerMap.getRegisterValue(CTRL_ADDR);
+		SHIFTSTAT = registerMap.getRegisterValue(SHIFTSTAT_ADDR);
+		SHIFTERR = registerMap.getRegisterValue(SHIFTERR_ADDR);
+		TIMSTAT = registerMap.getRegisterValue(TIMSTAT_ADDR);
+		SHIFTSIEN = registerMap.getRegisterValue(SHIFTSIEN_ADDR);
+		SHIFTEIEN = registerMap.getRegisterValue(SHIFTEIEN_ADDR);
+		TIMIEN = registerMap.getRegisterValue(TIMIEN_ADDR);
+		SHIFTSDEN = registerMap.getRegisterValue(SHIFTSDEN_ADDR);
+
+		for (int i = 0; i < shiftersCount; i++) {
+			SHIFTCTL[i] = registerMap.getRegisterValue(SHIFTCTL0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTCFG[i] = registerMap.getRegisterValue(SHIFTCFG0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTBUF[i] = registerMap.getRegisterValue(SHIFTBUF0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTBUFBIS[i] = registerMap.getRegisterValue(SHIFTBUFBIS0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTBUFBYS[i] = registerMap.getRegisterValue(SHIFTBUFBYS0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTBUFBBS[i] = registerMap.getRegisterValue(SHIFTBUFBBS0_ADDR + i * SHIFTER_STRIDE);
+		}
+
+		for (int i = 0; i < timersCount; i++) {
+			TIMCTL[i] = registerMap.getRegisterValue(TIMCTL0_ADDR + i * TIMER_STRIDE);
+			TIMCFG[i] = registerMap.getRegisterValue(TIMCFG0_ADDR + i * TIMER_STRIDE);
+			TIMCMP[i] = registerMap.getRegisterValue(TIMCMP0_ADDR + i * TIMER_STRIDE);
+		}
+
+		shifters = new FlexIOShifter[shiftersCount];
+		timers = new FlexIOTimer[timersCount];
+		pins = new Pin[pinCount];
+		Arrays.setAll(shifters, i -> new FlexIOShifter(this, i));
+		Arrays.setAll(timers, i -> new FlexIOTimer(this, i));
+		Arrays.setAll(pins, i -> new Pin());
 	}
 
 	/* ================================================================== */
@@ -88,192 +155,260 @@ public class FlexIOConfig {
 
 	/** Whole-register getters & setters */
 	public int getCTRL() {
-		return REG_CTRL;
+		return CTRL;
 	}
 
-	public void setCTRL(int v) {
-		REG_CTRL = v;
+	public void setCTRL(int value) {
+		CTRL = value;
+		flexEn = ((CTRL >> 0) & 1) == 1;
+		swReset = ((CTRL >> 1) & 1) == 1;
+		fastAcc = ((CTRL >> 2) & 1) == 1;
+		dbgEn = ((CTRL >> 30) & 1) == 1;
 	}
 
 	/** Bit-field helpers (only the most common ones) */
 	public boolean isEnable() {
-		return (REG_CTRL & 0x01) != 0;
+		return ((CTRL >> 0) & 1) == 1;
 	}
 
 	public void setEnable(boolean e) {
 		if (e)
-			REG_CTRL |= 0x01;
+			CTRL |= 0x01;
 		else
-			REG_CTRL &= ~0x01;
+			CTRL &= ~0x01;
 	}
 
 	/** DOZEN: Doze-mode enable (bit 1) */
 	public boolean isDozeEnable() {
-		return (REG_CTRL & 0x02) != 0;
+		return (CTRL & 0x02) != 0;
 	}
 
 	public void setDozeEnable(boolean d) {
 		if (d)
-			REG_CTRL |= 0x02;
+			CTRL |= 0x02;
 		else
-			REG_CTRL &= ~0x02;
+			CTRL &= ~0x02;
 	}
 
 	/** DBGE: Debug-enable (bit 2) */
 	public boolean isDebugEnable() {
-		return (REG_CTRL & 0x04) != 0;
+		return ((CTRL >> 30) & 1) == 1;
 	}
 
 	public void setDebugEnable(boolean d) {
 		if (d)
-			REG_CTRL |= 0x04;
+			CTRL |= 0x04;
 		else
-			REG_CTRL &= ~0x04;
+			CTRL &= ~0x04;
 	}
 
 	/* ================================================================== */
-	/* 					SHIFTCTL0 register helpers 						  */
+	/* 						SHIFTSTAT register helpers 					  */
 	/* ================================================================== */
 
-	public int getSHIFTCTL0() {
-		return REG_SHIFTCTL0;
+	public int getShiftStat() {
+		return SHIFTSTAT;
 	}
 
-	public void setSHIFTCTL0(int v) {
-		REG_SHIFTCTL0 = v;
+	public void clearShiftStat(int mask) {
+		SHIFTSTAT &= ~mask;
 	}
 
-	/** TIMSEL (bits 24‑26) – which timer drives this shifter. */
-	public int getShift0TimerSel() {
-		return (REG_SHIFTCTL0 >> 24) & 0x07;
-	}
-
-	public void setShift0TimerSel(int t) {
-		REG_SHIFTCTL0 &= ~(0x07 << 24);
-		REG_SHIFTCTL0 |= (t & 0x07) << 24;
-	}
-
-	/** PINCFG (bits 4‑5) – output pin config */
-	public int getShift0PinCfg() {
-		return (REG_SHIFTCTL0 >> 4) & 0x03;
-	}
-
-	public void setShift0PinCfg(int pc) {
-		REG_SHIFTCTL0 &= ~(0x03 << 4);
-		REG_SHIFTCTL0 |= (pc & 0x03) << 4;
+	public void setShiftStat(int mask) {
+		SHIFTSTAT |= mask;
 	}
 
 	/* ================================================================== */
-	/* 					SHIFTCFG0 register helpers						  */
+	/* 						SHIFTERR register helpers 					  */
 	/* ================================================================== */
-
-	public int getSHIFTCFG0() {
-		return REG_SHIFTCFG0;
+	public int getShiftErr() {
+		return SHIFTERR;
 	}
 
-	public void setSHIFTCFG0(int v) {
-		REG_SHIFTCFG0 = v;
+	public void clearShiftErr(int mask) {
+		SHIFTERR &= ~mask;
 	}
 
-	/** PWIDTH (bits 0‑4) – number of bits in each word minus one. */
-	public int getShift0PWidth() {
-		return REG_SHIFTCFG0 & 0x1F;
-	}
-
-	public void setShift0PWidth(int w) {
-		REG_SHIFTCFG0 &= ~0x1F;
-		REG_SHIFTCFG0 |= (w & 0x1F);
+	public void setShiftErr(int mask) {
+		SHIFTERR |= mask;
 	}
 
 	/* ================================================================== */
-	/* 					Timer-0 helpers (similar idea) 					  */
+	/* 						TIMSTAT register helpers 					  */
 	/* ================================================================== */
 
-	public int getTIMCTL0() {
-		return REG_TIMCTL0;
+	public int getTimStat() {
+		return TIMSTAT;
 	}
 
-	public void setTIMCTL0(int v) {
-		REG_TIMCTL0 = v;
+	public void clearTimStat(int mask) {
+		TIMSTAT &= ~mask;
 	}
 
-	public int getTIMCFG0() {
-		return REG_TIMCFG0;
-	}
-
-	public void setTIMCFG0(int v) {
-		REG_TIMCFG0 = v;
-	}
-
-	public int getTIMCMP0() {
-		return REG_TIMCMP0 & RegisterUtils.BIT_MASK;
-	}
-
-	public void setTIMCMP0(int v) {
-		REG_TIMCMP0 = v & RegisterUtils.BIT_MASK;
+	public void setTimStat(int mask) {
+		TIMSTAT |= mask;
 	}
 
 	/* ================================================================== */
-	/* 	 Address-based access helpers (used by SimulationEngine events)   */
+	/* 						SHIFTSIEN register 		 					  */
 	/* ================================================================== */
 
-	/** Reads any FlexIO register by absolute address */
+	public int getShiftsIEN() {
+		return SHIFTSIEN;
+	}
+
+	public void setShiftsIEN(int value) {
+		SHIFTSIEN = value;
+	}
+
+	/* ================================================================== */
+	/* 						SHIFTEIEN register 		 					  */
+	/* ================================================================== */
+
+	public int getShiftEIEN() {
+		return SHIFTEIEN;
+	}
+
+	public void setShiftEIEN(int value) {
+		SHIFTEIEN = value;
+	}
+
+	/* ================================================================== */
+	/* 						TIMIEN register 		 					  */
+	/* ================================================================== */
+
+	public int getTimIEN() {
+		return TIMIEN;
+	}
+
+	public void setTimIEN(int value) {
+		TIMIEN = value;
+	}
+
+	/* ================================================================== */
+	/* 						SHIFTSDEN register 		 					  */
+	/* ================================================================== */
+
+	public int getShiftSDEN() {
+		return SHIFTSDEN;
+	}
+
+	public void setShiftSDEN(int value) {
+		SHIFTSDEN = value;
+	}
+
+	/* ================================================================== */
+	/* 					SHIFTER registers helpers 						  */
+	/* ================================================================== */
+
+	public int getShiftCtl(int index) {
+		return SHIFTCTL[index];
+	}
+
+	public void setShiftCtl(int index, int value) {
+		SHIFTCTL[index] = value;
+	}
+
+	public int getShiftCfg(int index) {
+		return SHIFTCFG[index];
+	}
+
+	public void setShiftCfg(int index, int value) {
+		SHIFTCFG[index] = value;
+	}
+
+	public int getShiftBuf(int index) {
+		return SHIFTBUF[index];
+	}
+
+	public void setShiftBuf(int index, int value) {
+		SHIFTBUF[index] = value;
+	}
+
+	public int getShiftBufBis(int index) {
+		return SHIFTBUFBIS[index];
+	}
+
+	public void setShiftBufBis(int index, int value) {
+		SHIFTBUFBIS[index] = value;
+	}
+
+	public int getShiftBufBys(int index) {
+		return SHIFTBUFBYS[index];
+	}
+
+	public void setShiftBufBys(int index, int value) {
+		SHIFTBUFBYS[index] = value;
+	}
+
+	public int getShiftBufBbs(int index) {
+		return SHIFTBUFBBS[index];
+	}
+
+	public void setShiftBufBbs(int index, int value) {
+		SHIFTBUFBBS[index] = value;
+	}
+
+	/* ================================================================== */
+	/* 					Timers helpers   								  */
+	/* ================================================================== */
+
+	public int getTimCtl(int index) {
+		return TIMCTL[index];
+	}
+
+	public void setTimCtl(int index, int value) {
+		TIMCTL[index] = value;
+	}
+
+	public int getTimCfg(int index) {
+		return TIMCFG[index];
+	}
+
+	public void setTimCfg(int index, int value) {
+		TIMCFG[index] = value;
+	}
+
+	public int getTimCmp(int index) {
+		return TIMCMP[index]; // & RegisterUtils.BIT_MASK ?
+	}
+
+	public void setTimCmp(int index, int value) {
+		TIMCMP[index] = value; // & RegisterUtils.BIT_MASK ?
+	}
+
+	/* ================================================================== */
+	/* 								Others				 				  */
+	/* ================================================================== */
+
+	public int getShiftersCount() {
+		return shiftersCount;
+	}
+
+	public int getTimersCount() {
+		return timersCount;
+	}
+
+	public RegisterMap getRegisterMap() {
+		return registerMap;
+	}
+
+	public void setRegisterMap(RegisterMap registerMap) {
+		this.registerMap = registerMap;
+	}
+
+	/**
+	 * Reads any FlexIO register by absolute address
+	 */
 	public Integer readByAddress(int addr) {
-		switch (addr) {
-		case CTRL_ADDR:
-			return REG_CTRL;
-		case SHIFTCTL0_ADDR:
-			return REG_SHIFTCTL0;
-		case SHIFTCFG0_ADDR:
-			return REG_SHIFTCFG0;
-		case TIMCTL0_ADDR:
-			return REG_TIMCTL0;
-		case TIMCFG0_ADDR:
-			return REG_TIMCFG0;
-		case TIMCMP0_ADDR:
-			return REG_TIMCMP0;
-		default:
-			return null;
-		}
+		return registerMap.getRegisterValue(addr);
 	}
 
 	/**
 	 * Writes a value to a FlexIO register by absolute address
 	 */
 	public void writeByAddress(int addr, int value) {
-		switch (addr) {
-		case CTRL_ADDR:
-			setCTRL(value);
-			break;
-		case SHIFTCTL0_ADDR:
-			setSHIFTCTL0(value);
-			break;
-		case SHIFTCFG0_ADDR:
-			setSHIFTCFG0(value);
-			break;
-		case TIMCTL0_ADDR:
-			setTIMCTL0(value);
-			break;
-		case TIMCFG0_ADDR:
-			setTIMCFG0(value);
-			break;
-		case TIMCMP0_ADDR:
-			setTIMCMP0(value);
-			break;
-		default:
-			throw new IllegalArgumentException(String.format("FlexIO: illegal write to 0x%08X", addr));
-		}
+		registerMap.setRegisterValue(addr, value);
 	}
 
-	/* ================================================================== */
-	/* 					Clock info (read-only helpers) 					  */
-	/* ================================================================== */
-
-	public double getMainClk() {
-		return mainClk;
-	}
-
-	public double getExternalClk() {
-		return externalClk;
-	}
 }
