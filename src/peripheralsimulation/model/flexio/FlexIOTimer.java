@@ -14,27 +14,52 @@ public class FlexIOTimer {
 	/** Index of the timer */
 	public int index;
 
-	/* TIMCTL */
+	/*****************************************************************/
+	/* 							TIMCTL		    					 */
+	/*****************************************************************/
+
+	/** Mode of the timer (disabled, Dual 8-bit counters baud/bit, PWM, etc.) */
 	public int timod;
-	public int pinSel;
-	public int pinCfg;
+	/** Pin polarity, 0 - Pin is active high, 1 - active low */
 	public int pinPol;
-	public int trgSel;
-	public int trgPol;
+	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
+	public int pinSel;
+	/** Pin configuration (output disabled, open drain, etc.) */
+	public int pinCfg;
+	/** Trigger Source, 0 - external trigger, 1 - internal trigger */
 	public int trgSrc;
+	/** Trigger polarity, 0 - Trigger is active high, 1 - active low */
+	public int trgPol;
+	/**
+	 * Trigger selection (pin 2n input, shifter n status flag, pin 2n+1 input, timer
+	 * n trigger output)
+	 */
+	public int trgSel;
 
-	/* TIMCFG */
+	/*****************************************************************/
+	/* 							TIMCFG		    					 */
+	/*****************************************************************/
+
+	/** Timer output, configures the initial state of the timer output */
 	public int timOut;
+	/**
+	 * Timer decrement, configures the source of the timer decrement and source of
+	 * the shift clock
+	 */
 	public int timDec;
+	/** Timer reset - condition that resets the timer */
 	public int timRst;
+	/** Timer disable - condition that disables the timer */
 	public int timDis;
+	/** Timer enable - condition that enables the timer */
 	public int timEna;
-	public int tStart;
+	/** Timer stop bit */
 	public int tStop;
+	/** Timer start bit */
+	public int tStart;
 
-	/* TIMCMP & bežiaci counter */
+	/* TIMCMP - Timer compare value */
 	public int cmp;
-	public int counter;
 
 	/**
 	 * Constructor for FlexIOTimer.
@@ -44,19 +69,22 @@ public class FlexIOTimer {
 	 */
 	public FlexIOTimer(FlexIOConfig config, int index) {
 		this.index = index;
-		// Initialize timer with default values
-		int timerControlRegister = config.getTimCtl(index);
-		int timerConfigRegister = config.getTimCfg(index);
-		int timerCompareRegister = config.getTimCmp(index);
+		setControlRegister(config.getTimCtl(index));
+		setConfigRegister(config.getTimCfg(index));
+		setCmp(config.getTimCmp(index));
+	}
 
+	public void setControlRegister(int timerControlRegister) {
 		this.timod = timerControlRegister & 3;
 		this.pinPol = (timerControlRegister >> 7) & 1;
 		this.pinSel = (timerControlRegister >> 8) & 7;
 		this.pinCfg = (timerControlRegister >> 16) & 3;
 		this.trgSrc = (timerControlRegister >> 22) & 1;
 		this.trgPol = (timerControlRegister >> 23) & 1;
-		this.trgSel = (timerControlRegister >> 24) & 7;
+		this.trgSel = (timerControlRegister >> 24) & 0xF;
+	}
 
+	public void setConfigRegister(int timerConfigRegister) {
 		this.timOut = (timerConfigRegister >> 24) & 3;
 		this.timDec = (timerConfigRegister >> 20) & 3;
 		this.timRst = (timerConfigRegister >> 16) & 7;
@@ -64,13 +92,6 @@ public class FlexIOTimer {
 		this.timEna = (timerConfigRegister >> 8) & 7;
 		this.tStop = (timerConfigRegister >> 4) & 3;
 		this.tStart = (timerConfigRegister >> 1) & 1;
-
-		this.cmp = timerCompareRegister & 0xFFFF;
-		this.counter = this.cmp;
-	}
-
-	public void reload() {
-		counter = cmp;
 	}
 
 	public int getIndex() {
@@ -198,15 +219,7 @@ public class FlexIOTimer {
 	}
 
 	public void setCmp(int cmp) {
-		this.cmp = cmp;
-	}
-
-	public int getCounter() {
-		return counter;
-	}
-
-	public void setCounter(int counter) {
-		this.counter = counter;
+		this.cmp = cmp & 0xFFFF;
 	}
 
 }

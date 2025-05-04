@@ -14,22 +14,36 @@ public class FlexIOShifter {
 	/** Index of the shifter */
 	private int index;
 
-	/* SHIFTCTL register */
-	private int smod; // 0 disabled, 1 RX, 2 TX, 4 Match store…
-	private int pinSel;
-	private int pinCfg;
-	private int pinPol;
-	private int timSel;
-	private int timPol;
+	/*****************************************************************/
+    /* 							SHIFTCFG		    				 */
+	/*****************************************************************/
 
-	/* SHIFTCFG register */
-	private int sstart; // start-bit config
-	private int sstop; // stop-bit config
+	/** Mode of the shifter (disabled, RX, TX, Match store, etc.) */
+	private int smod;
+	/** Pin polarity, 0 - Pin is active high, 1 - active low */
+	private int pinPol;
+	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
+	private int pinSel;
+	/** Pin configuration (output disabled, open drain, etc.) */
+	private int pinCfg;
+	/** Timer polarity, 0 - Shift on posedge of Shift clock, 1 - on negative edge */
+	private int timPol;
+	/** Timer selection, 0 - Timer 0, 1 - Timer 1, etc. */
+	private int timSel;
+
+	/*****************************************************************/
+	/*							 SHIFTCTL							 */
+	/*****************************************************************/
+
+	/** Start bit, allows automatic start bit insertion */
+	private int sstart;
+	/** Stop bit, allows automatic stop bit insertion */
+	private int sstop;
+	/** Input source, 0 - Pin, 1 - Shifter N+1 output */
 	private int insrc;
 
-	/* SHIFTBUF (TX/RX) + stavový flag */
+	/* SHIFBUF - Shifter buffer */
 	private int buffer;
-	private boolean flag = false;
 
 	/**
 	 * Constructor for FlexIOShifter.
@@ -39,17 +53,31 @@ public class FlexIOShifter {
 	 */
 	public FlexIOShifter(FlexIOConfig config, int index) {
 		this.index = index;
+		setControlRegister(config.getShiftCtl(index));
+		setConfigRegister(config.getShiftCfg(index));
+		setBuffer(config.getShiftBuf(index));
+	}
 
-		int shifterControlRegister = config.getShiftCtl(index);
-		int shifterConfigRegister = config.getShiftCfg(index);
-
+	/**
+	 * Sets the shifter control register.
+	 * 
+	 * @param shifterControlRegister The control register value.
+	 */
+	public void setControlRegister(int shifterControlRegister) {
 		this.smod = shifterControlRegister & 0x07;
 		this.pinPol = (shifterControlRegister >> 7) & 1;
 		this.pinSel = (shifterControlRegister >> 8) & 7;
 		this.pinCfg = (shifterControlRegister >> 16) & 3;
 		this.timPol = (shifterControlRegister >> 23) & 1;
 		this.timSel = (shifterControlRegister >> 24) & 3;
+	}
 
+	/**
+	 * Sets the shifter configuration register.
+	 * 
+	 * @param shifterConfigRegister The configuration register value.
+	 */
+	public void setConfigRegister(int shifterConfigRegister) {
 		this.sstart = (shifterConfigRegister >> 0) & 3;
 		this.sstop = (shifterConfigRegister >> 4) & 3;
 		this.insrc = (shifterConfigRegister >> 8) & 1;
@@ -141,14 +169,6 @@ public class FlexIOShifter {
 
 	public void setBuffer(int buffer) {
 		this.buffer = buffer;
-	}
-
-	public boolean isFlag() {
-		return flag;
-	}
-
-	public void setFlag(boolean flag) {
-		this.flag = flag;
 	}
 
 }

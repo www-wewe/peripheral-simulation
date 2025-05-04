@@ -52,28 +52,29 @@ public class FlexIOConfig {
 
 	/*
 	 * ------------------------------------------------------------------ * 
-	 * 					Number of shifters / timers 					  *
-	 * ------------------------------------------------------------------ *
-	 */
-	public int shiftersCount; // from FLEXIO_PARAM
-	public int timersCount;
-	public int pinCount;
-
-	/*
-	 * ------------------------------------------------------------------ * 
 	 * 				Register values 		 							  *
 	 * ------------------------------------------------------------------ *
 	 */
+	/** FlexIO parameter register - counts of shifters, timers, pins, triggers */
 	private int PARAM;
+	/** FlexIO control register */
 	private int CTRL;
+	/** Shifter status flag, 0 - Status flag is clear, 1 - Status flag is set */
 	private int SHIFTSTAT;
+	/** Shifter error flag, 0 - Error flag is clear, 1 - Error flag is set */
 	private int SHIFTERR;
+	/** Timer status flag, 0 - Status flag is clear, 1 - Status flag is set */
 	private int TIMSTAT;
-	private int SHIFTEIEN;
-	private int SHIFTSDEN;
+    /** Shifter status interrupt enable register, 0 - Interrupt disabled, 1 - Interrupt enabled */	
 	private int SHIFTSIEN;
+	/** Shifter error interrupt enable register, 0 - Interrupt disabled, 1 - Interrupt enabled */
+	private int SHIFTEIEN;
+	/** Shifter status DMA enable register, 0 - DMA request is disabled, 1 - DMA request enabled */
+	private int SHIFTSDEN;
+	/** Timer status interrupt enable register, 0 - Interrupt disabled, 1 - Interrupt enabled */
 	private int TIMIEN;
 
+	/* Shifter specific registers */
 	private int[] SHIFTCTL;
 	private int[] SHIFTCFG;
 	private int[] SHIFTBUF;
@@ -81,17 +82,28 @@ public class FlexIOConfig {
 	private int[] SHIFTBUFBYS;
 	private int[] SHIFTBUFBBS;
 
+	/* Timer specific registers */
 	private int[] TIMCTL;
 	private int[] TIMCFG;
 	private int[] TIMCMP;
 
+	/*
+	 * ------------------------------------------------------------------ * 
+	 * 					Number of shifters / timers 					  *
+	 * ------------------------------------------------------------------ *
+	 */
+	public int shiftersCount;
+	public int timersCount;
+	public int pinCount;
+
 	/** Jednotlivé konfigurácie: index == číslo periférie. */
 	public FlexIOShifter[] shifters;
 	public FlexIOTimer[] timers;
-	public Pin[] pins;
 
 	/** Globálne riadiace bity z CTRL. */
-	public boolean flexEn, swReset, dbgEn, fastAcc;
+	public boolean flexEn, swRst, fastAcc, dbgE, dozen;
+
+	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
 
 	/** RegisterMap object to access register values. */
 	private RegisterMap registerMap;
@@ -102,6 +114,8 @@ public class FlexIOConfig {
 	 * @param registerMap The RegisterMap object containing the register values.
 	 */
 	public FlexIOConfig(RegisterMap registerMap) {
+		this.registerMap = registerMap;
+
 		PARAM = registerMap.getRegisterValue(PARAM_ADDR);
 		shiftersCount = PARAM & 0xFF;
 		timersCount = (PARAM >> 8) & 0xFF;
@@ -117,7 +131,7 @@ public class FlexIOConfig {
 		TIMCFG = new int[timersCount];
 		TIMCMP = new int[timersCount];
 
-		CTRL = registerMap.getRegisterValue(CTRL_ADDR);
+		setCTRL(registerMap.getRegisterValue(CTRL_ADDR));
 		SHIFTSTAT = registerMap.getRegisterValue(SHIFTSTAT_ADDR);
 		SHIFTERR = registerMap.getRegisterValue(SHIFTERR_ADDR);
 		TIMSTAT = registerMap.getRegisterValue(TIMSTAT_ADDR);
@@ -143,10 +157,8 @@ public class FlexIOConfig {
 
 		shifters = new FlexIOShifter[shiftersCount];
 		timers = new FlexIOTimer[timersCount];
-		pins = new Pin[pinCount];
 		Arrays.setAll(shifters, i -> new FlexIOShifter(this, i));
 		Arrays.setAll(timers, i -> new FlexIOTimer(this, i));
-		Arrays.setAll(pins, i -> new Pin());
 	}
 
 	/* ================================================================== */
@@ -161,45 +173,25 @@ public class FlexIOConfig {
 	public void setCTRL(int value) {
 		CTRL = value;
 		flexEn = ((CTRL >> 0) & 1) == 1;
-		swReset = ((CTRL >> 1) & 1) == 1;
+		swRst = ((CTRL >> 1) & 1) == 1;
 		fastAcc = ((CTRL >> 2) & 1) == 1;
-		dbgEn = ((CTRL >> 30) & 1) == 1;
+		dbgE = ((CTRL >> 30) & 1) == 1;
+		dozen = ((CTRL >> 31) & 1) == 1;
 	}
 
-	/** Bit-field helpers (only the most common ones) */
-	public boolean isEnable() {
-		return ((CTRL >> 0) & 1) == 1;
-	}
-
-	public void setEnable(boolean e) {
-		if (e)
-			CTRL |= 0x01;
-		else
-			CTRL &= ~0x01;
+	/** FLEXEN: FlexIO enable (bit 0) */
+	public boolean isEnabled() {
+		return flexEn;
 	}
 
 	/** DOZEN: Doze-mode enable (bit 1) */
-	public boolean isDozeEnable() {
-		return (CTRL & 0x02) != 0;
-	}
-
-	public void setDozeEnable(boolean d) {
-		if (d)
-			CTRL |= 0x02;
-		else
-			CTRL &= ~0x02;
+	public boolean isDozeEnabled() {
+		return dozen;
 	}
 
 	/** DBGE: Debug-enable (bit 2) */
-	public boolean isDebugEnable() {
-		return ((CTRL >> 30) & 1) == 1;
-	}
-
-	public void setDebugEnable(boolean d) {
-		if (d)
-			CTRL |= 0x04;
-		else
-			CTRL &= ~0x04;
+	public boolean isDebugEnabled() {
+		return dbgE;
 	}
 
 	/* ================================================================== */
@@ -298,7 +290,7 @@ public class FlexIOConfig {
 	}
 
 	/* ================================================================== */
-	/* 					SHIFTER registers helpers 						  */
+	/* 					Shifter registers helpers 						  */
 	/* ================================================================== */
 
 	public int getShiftCtl(int index) {
@@ -307,6 +299,7 @@ public class FlexIOConfig {
 
 	public void setShiftCtl(int index, int value) {
 		SHIFTCTL[index] = value;
+		shifters[index].setControlRegister(value);
 	}
 
 	public int getShiftCfg(int index) {
@@ -315,6 +308,7 @@ public class FlexIOConfig {
 
 	public void setShiftCfg(int index, int value) {
 		SHIFTCFG[index] = value;
+		shifters[index].setConfigRegister(value);
 	}
 
 	public int getShiftBuf(int index) {
@@ -323,6 +317,7 @@ public class FlexIOConfig {
 
 	public void setShiftBuf(int index, int value) {
 		SHIFTBUF[index] = value;
+		shifters[index].setBuffer(value);
 	}
 
 	public int getShiftBufBis(int index) {
@@ -359,6 +354,7 @@ public class FlexIOConfig {
 
 	public void setTimCtl(int index, int value) {
 		TIMCTL[index] = value;
+		timers[index].setControlRegister(value);
 	}
 
 	public int getTimCfg(int index) {
@@ -367,14 +363,16 @@ public class FlexIOConfig {
 
 	public void setTimCfg(int index, int value) {
 		TIMCFG[index] = value;
+		timers[index].setConfigRegister(value);
 	}
 
 	public int getTimCmp(int index) {
-		return TIMCMP[index]; // & RegisterUtils.BIT_MASK ?
+		return TIMCMP[index];
 	}
 
 	public void setTimCmp(int index, int value) {
-		TIMCMP[index] = value; // & RegisterUtils.BIT_MASK ?
+		TIMCMP[index] = value;
+		timers[index].setCmp(value);
 	}
 
 	/* ================================================================== */
@@ -389,14 +387,6 @@ public class FlexIOConfig {
 		return timersCount;
 	}
 
-	public RegisterMap getRegisterMap() {
-		return registerMap;
-	}
-
-	public void setRegisterMap(RegisterMap registerMap) {
-		this.registerMap = registerMap;
-	}
-
 	/**
 	 * Reads any FlexIO register by absolute address
 	 */
@@ -409,6 +399,7 @@ public class FlexIOConfig {
 	 */
 	public void writeByAddress(int addr, int value) {
 		registerMap.setRegisterValue(addr, value);
+		// TODO: update the register value in the FlexIOConfig object
 	}
 
 }
