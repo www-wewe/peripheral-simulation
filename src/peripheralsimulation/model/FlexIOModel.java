@@ -69,6 +69,9 @@ public class FlexIOModel implements PeripheralModel {
 	/** Value of the RX */
 	private int uartRxByte;
 
+	/** Seconds per clock cycle */
+	private double secondsPerCycle;
+
 	/**
 	 * Constructor for FlexIOModel.
 	 *
@@ -76,6 +79,7 @@ public class FlexIOModel implements PeripheralModel {
 	 */
 	public FlexIOModel(FlexIOConfig config) {
 		this.config = config;
+		secondsPerCycle = 1.0 / config.getClockFrequency();
 	}
 
 	@Override
@@ -160,8 +164,6 @@ public class FlexIOModel implements PeripheralModel {
 
 		int highCycles = (pwmTimer.getCmp() & 0xFF) + 1; // podľa RM
 		int lowCycles = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
-		double secondsPerCycle = 1.0 / config.getClockFrequency();
-
 		double highTime = highCycles * secondsPerCycle;
 		double lowTime = lowCycles * secondsPerCycle;
 
@@ -192,7 +194,6 @@ public class FlexIOModel implements PeripheralModel {
 
 		int highCycles = (pwmTimer.getCmp() & 0xFF) + 1;
 		int lowCycles = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
-		double secondsPerCycle = 1.0 / config.getClockFrequency();
 
 		double delta = (pwmPin ? lowCycles : highCycles) * secondsPerCycle;
 		nextPwmEdgeTime = now + delta;
@@ -238,7 +239,6 @@ public class FlexIOModel implements PeripheralModel {
 		}
 
 		int baudDiv = ((baudTimer.getCmp() & 0xFF) + 1) * 2; // Dual 8-bit baud/bit mode
-		double secondsPerCycle = 1.0 / config.getClockFrequency();
 		double bitTime = baudDiv * secondsPerCycle;
 
 		uartTxShiftReg = txSh.getBuffer() & 0xFF;
@@ -270,7 +270,6 @@ public class FlexIOModel implements PeripheralModel {
 		}
 
 		int baudDiv = ((baudTimer.getCmp() & 0xFF) + 1) * 2;
-		double secondsPerCycle = 1.0 / config.getClockFrequency();
 		double bitTm = baudDiv * secondsPerCycle;
 
 		switch (uartBitPos) {
