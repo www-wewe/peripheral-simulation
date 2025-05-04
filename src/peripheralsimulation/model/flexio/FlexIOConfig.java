@@ -105,6 +105,9 @@ public class FlexIOConfig {
 
 	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
 
+	/** Clock source frequency */
+	private int clockFrequency = 8_000_000; // 8 MHz
+
 	/** RegisterMap object to access register values. */
 	private RegisterMap registerMap;
 
@@ -400,6 +403,14 @@ public class FlexIOConfig {
 	public void writeByAddress(int addr, int value) {
 		registerMap.setRegisterValue(addr, value);
 		// TODO: update the register value in the FlexIOConfig object
+	}
+
+	public int getClockFrequency() {
+		return clockFrequency;
+	}
+
+	public void setClockFrequency(int clockFrequency) {
+		this.clockFrequency = clockFrequency;
 	}
 
 }
