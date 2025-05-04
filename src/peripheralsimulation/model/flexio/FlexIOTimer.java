@@ -12,54 +12,54 @@ package peripheralsimulation.model.flexio;
 public class FlexIOTimer {
 
 	/** Index of the timer */
-	public int index;
+	private int index;
 
 	/*****************************************************************/
 	/* 							TIMCTL		    					 */
 	/*****************************************************************/
 
 	/** Mode of the timer (disabled, Dual 8-bit counters baud/bit, PWM, etc.) */
-	public int timod;
+	private int timod;
 	/** Pin polarity, 0 - Pin is active high, 1 - active low */
-	public int pinPol;
+	private int pinPol;
 	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
-	public int pinSel;
+	private int pinSel;
 	/** Pin configuration (output disabled, open drain, etc.) */
-	public int pinCfg;
+	private int pinCfg;
 	/** Trigger Source, 0 - external trigger, 1 - internal trigger */
-	public int trgSrc;
+	private int trgSrc;
 	/** Trigger polarity, 0 - Trigger is active high, 1 - active low */
-	public int trgPol;
+	private int trgPol;
 	/**
 	 * Trigger selection (pin 2n input, shifter n status flag, pin 2n+1 input, timer
 	 * n trigger output)
 	 */
-	public int trgSel;
+	private int trgSel;
 
 	/*****************************************************************/
 	/* 							TIMCFG		    					 */
 	/*****************************************************************/
 
 	/** Timer output, configures the initial state of the timer output */
-	public int timOut;
+	private int timOut;
 	/**
 	 * Timer decrement, configures the source of the timer decrement and source of
 	 * the shift clock
 	 */
-	public int timDec;
+	private int timDec;
 	/** Timer reset - condition that resets the timer */
-	public int timRst;
+	private int timRst;
 	/** Timer disable - condition that disables the timer */
-	public int timDis;
+	private int timDis;
 	/** Timer enable - condition that enables the timer */
-	public int timEna;
+	private int timEna;
 	/** Timer stop bit */
-	public int tStop;
+	private int tStop;
 	/** Timer start bit */
-	public int tStart;
+	private int tStart;
 
 	/* TIMCMP - Timer compare value */
-	public int cmp;
+	private int cmp;
 
 	/**
 	 * Constructor for FlexIOTimer.
