@@ -8,7 +8,9 @@ import peripheralsimulation.model.flexio.FlexIOShifter;
 import peripheralsimulation.model.flexio.FlexIOTimer;
 
 /**
- * FlexIOModel – vysokúrovňová simulácia periférie FlexIO (MCX C44x).
+ * FlexIO peripheral model, which can be simulated within the SimulationEngine.
+ * Class implements the PeripheralModel interface and provides methods to
+ * initialize, update, and manage the FlexIO peripheral's configuration
  *
  * <p>
  * Podporované módy:
