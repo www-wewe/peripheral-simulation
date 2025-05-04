@@ -4,52 +4,68 @@ package peripheralsimulation.model;
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.model.flexio.FlexIOConfig;
 import peripheralsimulation.model.flexio.FlexIOOutputs;
+import peripheralsimulation.model.flexio.FlexIOShifter;
+import peripheralsimulation.model.flexio.FlexIOTimer;
 
 /**
- * Extremely small Flex‑I/O behavioural model. It implements PeripheralModel so
- * it can be used by SimulationEngine, SettingsDialog, SimulationTable/Chart,
- * user events, …
+ * FlexIOModel – vysokúrovňová simulácia periférie FlexIO (MCX C44x).
  *
- * • Only TIMCTL0 / TIMCFG0 / TIMCMP0 and SHIFTCTL0 / SHIFTCFG0 are honoured. •
- * Clock source is assumed to be the FlexIO functional clock (cfg.getMainClk()).
- * • Pin direction = output, pin index = 0, one‑bit wide shifter.
+ * <p>
+ * Podporované módy:
+ * </p>
+ * <ul>
+ * <li><b>PWM generator</b> – Timer TIMOD = 10 (dual 8-bit PWM)</li>
+ * <li><b>UART TX/RX</b> – Timer TIMOD = 01 (dual 8-bit baud/bit) + Shifter SMOD
+ * = Transmit/Receive</li>
+ * </ul>
  *
- * You can extend or refine the state machine later; all helper methods needed
- * by the framework are already in place.
+ * <p>
+ * Názvy výstupov (poradie v poliach <code>outputs</code>):
+ * </p>
+ * <ol>
+ * <li>PWM_PIN_STATE (boolean)</li>
+ * <li>UART_TX_PIN (boolean)</li>
+ * <li>UART_RX_READY (boolean)</li>
+ * <li>UART_RX_BYTE (int 0-255)</li>
+ * </ol>
  *
  * @author Veronika Lenková
  */
 public class FlexIOModel implements PeripheralModel {
 
-	/* ──────────────────────────────────────────────────────────────────── */
-	/* Output indexes / names */
-	/* ──────────────────────────────────────────────────────────────────── */
+	/* Output indices */
+	private static final int IDX_PWM_PIN = 0;
+	private static final int IDX_UART_TX_PIN = 1;
+	private static final int IDX_UART_RX_RDY = 2;
+	private static final int IDX_UART_RX_BYTE = 3;
 
-	/** Pin-0 level index */
-	public static final int IDX_PIN0 = 0;
-	/** Last value shifted out index */
-	public static final int IDX_SHIFTBUF0 = 1;
-	/** Indicates that timer-0 toggled during last update index */
-	public static final int IDX_TIMER0_TOGGLE = 2;
-	/** Output names (for simulation table) */
-	private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
+	/** Output names */
+	private static final String[] OUTPUT_NAMES = { "PWM_PIN", "UART_TX_PIN", "UART_RX_READY", "UART_RX_BYTE" };
+	// private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
 
-	/* ──────────────────────────────────────────────────────────────────── */
-	/* Config and internal state */
-	/* ──────────────────────────────────────────────────────────────────── */
+	/** The configuration object with all the "register" bits */
 	private final FlexIOConfig config;
 
-	/* pin-0 level (boolean for easy toggle) */
-	private boolean pin0Level;
+	/*------------- PWM ---------------*/
+	/** Actual state of the output pin */
+	private boolean pwmPin;
+	/** Absolute time of the next change */
+	private double nextPwmEdgeTime;
 
-	/* last value shifted out (shows in SHIFTBUF0 output) */
-	private int shiftBuf0;
+	/*------------- UART --------------*/
+	/** Actual state of the TX pin */
+	private boolean uartTxPin;
+	/** Bit which we are currently sending (0-9: start, 8 data, stop) */
+	private int uartBitPos;
+	/** Value which we are currently sending */
+	private int uartTxShiftReg;
+	/** Time when we will send the next bit */
+	private double nextUartBitTime;
 
-	/* indicates that timer-0 toggled during last update */
-	private boolean timer0Toggle;
-
-	/* derived tick period based on TIMCFG0.PRESCALE */
-	private double tickPeriod;
+	/** Flag indicating that the RX pin is ready to receive data */
+	private boolean uartRxReady;
+	/** Value of the RX */
+	private int uartRxByte;
 
 	/**
 	 * Constructor for FlexIOModel.
@@ -58,33 +74,33 @@ public class FlexIOModel implements PeripheralModel {
 	 */
 	public FlexIOModel(FlexIOConfig config) {
 		this.config = config;
-		calculateTickPeriod();
 	}
-
-	/* =================================================================== */
-	/* PeripheralModel implementation */
-	/* =================================================================== */
 
 	@Override
 	public void initialize(SimulationEngine engine) {
-		pin0Level = false;
-		shiftBuf0 = 0;
-		timer0Toggle = false;
+		// 1) zistíme, ktorý timer/shifter beží v PWM, resp. UART móde
+		initPwm(engine);
+		initUart(engine);
 
-		// schedule first timer event if FlexIO is enabled + timer enabled
-		if (config.isEnable() && isTimer0Enabled()) {
-			engine.scheduleEvent(engine.getCurrentTime() + tickPeriod, () -> timerTick(engine));
-		}
+		// v prípade, že modul nebol povolený, žiadne udalosti neplánujeme
+
 	}
 
 	@Override
 	public void update(SimulationEngine engine) {
-		// TODO
-	}
+		double now = engine.getCurrentTime();
 
-	/* =================================================================== */
-	/* Outputs */
-	/* =================================================================== */
+		/* ---------------- PWM ---------------- */
+		if (nextPwmEdgeTime >= 0 && now + 1e-12 >= nextPwmEdgeTime) {
+			pwmPin = !pwmPin; // toggle
+			scheduleNextPwmEdge(engine, now);
+		}
+
+		/* ---------------- UART TX ------------- */
+		if (nextUartBitTime >= 0 && now + 1e-12 >= nextUartBitTime) {
+			uartAdvanceBit(engine, now);
+		}
+	}
 
 	@Override
 	public String getOutputName(int index) {
@@ -98,35 +114,20 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public Object[] getOutputs() {
-		return new Object[] { pin0Level, shiftBuf0, timer0Toggle };
+		return new Object[] { pwmPin, uartTxPin, uartRxReady, uartRxReady ? uartRxByte : 0 };
 	}
 
 	@Override
 	public int getOutputIndex(String name) {
-		FlexIOOutputs output = FlexIOOutputs.valueOf(name);
-		switch (output) {
-		case PIN0:
-			return IDX_PIN0;
-		case SHIFTBUF0:
-			return IDX_SHIFTBUF0;
-		case TIMER0_TOGGLE:
-			return IDX_TIMER0_TOGGLE;
-		default:
-			throw new IllegalArgumentException("FlexIO: unknown output " + name);
-		}
+		for (int i = 0; i < OUTPUT_NAMES.length; ++i)
+			if (OUTPUT_NAMES[i].equals(name))
+				return i;
+		throw new IllegalArgumentException("Unknown output " + name);
 	}
-
-	/* =================================================================== */
-	/* Register access used by user events */
-	/* =================================================================== */
 
 	@Override
 	public void setRegisterValue(int addr, int value) {
 		config.writeByAddress(addr, value);
-		// If timer/shifter config changed ➜ recompute period:
-		if (addr == FlexIOConfig.TIMCFG0_ADDR) {
-			calculateTickPeriod();
-		}
 	}
 
 	@Override
@@ -135,50 +136,174 @@ public class FlexIOModel implements PeripheralModel {
 	}
 
 	/* =================================================================== */
-	/* Internal helper methods */
+	/* 									PWM								   */
 	/* =================================================================== */
 
-	private boolean isTimer0Enabled() {
-		// TIMCTL.TSTART (bit 0) – very simplified
-		return (config.getTIMCTL0() & 0x01) != 0;
-	}
+	/**
+	 * Initializes the PWM output settings.
+	 *
+	 * @param engine the simulation engine
+	 */
+	private void initPwm(SimulationEngine engine) {
+		FlexIOTimer pwmTimer = null;
+		for (FlexIOTimer timer : config.timers)
+			if (timer.getTimod() == 0b10) { // PWM mode
+				pwmTimer = timer;
+				break;
+			}
+		if (pwmTimer == null) {
+			nextPwmEdgeTime = -1;
+			return;
+		}
 
-	private void calculateTickPeriod() {
-		/*
-		 * TIMCFG0[1:0] PRESCALE selects input clock / (2^(value)) (RM) 0 = /1, 1 = /2,
-		 * 2 = /4, 3 = /8
-		 */
-		int prescaleBits = config.getTIMCFG0() & 0x03;
-		int div = 1 << prescaleBits;
+		int highCycles = (pwmTimer.getCmp() & 0xFF) + 1; // podľa RM
+		int lowCycles = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
+		double secondsPerCycle = 1.0 / config.getClockFrequency();
 
-		double fclk = config.getMainClk(); // assuming main clock
-		if (fclk <= 0)
-			fclk = 1.0; // avoid /0
-		tickPeriod = div / fclk; // seconds per timer tick
+		double highTime = highCycles * secondsPerCycle;
+		double lowTime = lowCycles * secondsPerCycle;
+
+		pwmPin = (pwmTimer.getTimOut() & 0b01) == 0; // init level (00/10 ->1, 01/11 ->0)
+		nextPwmEdgeTime = engine.getCurrentTime() + (pwmPin ? highTime : lowTime);
+
+		engine.scheduleEvent(nextPwmEdgeTime, () -> engine.getCurrentTime()); // “do nothing” placeholder
 	}
 
 	/**
-	 * Called by the simulation engine when the timer is scheduled to tick.
-	 * 
-	 * @param engine The simulation engine instance.
+	 * Schedules the next PWM edge event based on the current state of the PWM
+	 * timer.
+	 *
+	 * @param engine the simulation engine
+	 * @param now    the current simulation time
 	 */
-	private void timerTick(SimulationEngine engine) {
-		// Toggle pin, mark flag
-		pin0Level = !pin0Level;
-		timer0Toggle = true;
-
-		// Very simple shifter: shift MSB first, reload on toggle high -> low
-		if (pin0Level) {
-			// falling edge will shift next bit
-		} else {
-			boolean newBit = ((shiftBuf0 & 0x80) != 0);
-			pin0Level = newBit; // output bit
-			shiftBuf0 = ((shiftBuf0 << 1) & 0xFF) | (newBit ? 1 : 0);
+	private void scheduleNextPwmEdge(SimulationEngine engine, double now) {
+		FlexIOTimer pwmTimer = null;
+		for (FlexIOTimer timer : config.timers)
+			if (timer.getTimod() == 0b10) {
+				pwmTimer = timer;
+				break;
+			}
+		if (pwmTimer == null) {
+			nextPwmEdgeTime = -1;
+			return;
 		}
 
-		// Re-schedule next toggle while simulation is active
-		if (engine.isSimulationRunning() && isTimer0Enabled()) {
-			engine.scheduleEvent(engine.getCurrentTime() + tickPeriod, () -> timerTick(engine));
-		}
+		int highCycles = (pwmTimer.getCmp() & 0xFF) + 1;
+		int lowCycles = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
+		double secondsPerCycle = 1.0 / config.getClockFrequency();
+
+		double delta = (pwmPin ? lowCycles : highCycles) * secondsPerCycle;
+		nextPwmEdgeTime = now + delta;
+		engine.scheduleEvent(nextPwmEdgeTime, () -> engine.getCurrentTime());
 	}
+
+	/* =================================================================== */
+	/*									 UART							   */
+	/* =================================================================== */
+
+	/**
+	 * Initializes the UART transmission settings.
+	 *
+	 * @param engine the simulation engine
+	 */
+	private void initUart(SimulationEngine engine) {
+		// hľadáme dvojicu (timer baud, shifter TX) + (timer baud, shifter RX)
+		FlexIOTimer baudTimer = null;
+		FlexIOShifter txSh = null;
+		FlexIOShifter rxSh = null;
+
+		for (FlexIOTimer timer : config.timers)
+			if (timer.getTimod() == 0b01) { // Dual 8-bit counters baud/bit mode.
+				baudTimer = timer;
+				break;
+			}
+
+		if (baudTimer != null) {
+			for (FlexIOShifter shifter : config.shifters) {
+				if (shifter.getTimSel() == baudTimer.getIndex()) {
+					if (shifter.getSmod() == 0b010) // Transmit
+						txSh = shifter;
+					if (shifter.getSmod() == 0b001) // Receive
+						rxSh = shifter;
+				}
+			}
+		}
+
+		// ak nemáme TX, simulujeme len PWM
+		if (baudTimer == null || txSh == null) {
+			nextUartBitTime = -1;
+			return;
+		}
+
+		int baudDiv = ((baudTimer.getCmp() & 0xFF) + 1) * 2; // Dual 8-bit baud/bit mode
+		double secondsPerCycle = 1.0 / config.getClockFrequency();
+		double bitTime = baudDiv * secondsPerCycle;
+
+		uartTxShiftReg = txSh.getBuffer() & 0xFF;
+		uartBitPos = 0; // vysielame štart bit
+		uartTxPin = true; // iddle = 1 (úroveň stop bitu)
+		nextUartBitTime = engine.getCurrentTime() + bitTime;
+		engine.scheduleEvent(nextUartBitTime, () -> engine.getCurrentTime());
+
+		// Receive nie je plne implementovaný – status flag len simulujeme
+		uartRxReady = false;
+	}
+
+	/**
+	 * Move to the next bit in the UART transmission.
+	 *
+	 * @param engine the simulation engine
+	 * @param now    the current simulation time
+	 */
+	private void uartAdvanceBit(SimulationEngine engine, double now) {
+		FlexIOTimer baudTimer = null;
+		for (FlexIOTimer timer : config.timers)
+			if (timer.getTimod() == 0b01) {
+				baudTimer = timer;
+				break;
+			}
+		if (baudTimer == null) {
+			nextUartBitTime = -1;
+			return;
+		}
+
+		int baudDiv = ((baudTimer.getCmp() & 0xFF) + 1) * 2;
+		double secondsPerCycle = 1.0 / config.getClockFrequency();
+		double bitTm = baudDiv * secondsPerCycle;
+
+		switch (uartBitPos) {
+		case 0 -> uartTxPin = false; // start 0
+		case 9 -> uartTxPin = true; // stop 1
+		default -> { // data 0-7
+			int dataBit = (uartTxShiftReg >> (uartBitPos - 1)) & 1;
+			uartTxPin = (dataBit != 0);
+		}
+		}
+
+		uartBitPos++;
+		if (uartBitPos > 9) { // celý bajt vyslaný
+			uartBitPos = 0;
+			// v praxi by sme načítali ďalší bajt zo SHIFTBUF
+			// (pre demo posielame stále tú istú hodnotu)
+		}
+
+		nextUartBitTime = now + bitTm;
+		engine.scheduleEvent(nextUartBitTime, () -> engine.getCurrentTime());
+	}
+
+	/* =================================================================== */
+	/* Konfiguračné (helper) metódy */
+	/* =================================================================== */
+
+	/** Povolenie/zakázanie PWM výstupu za behu. */
+	public void enablePwm(boolean en) {
+		if (!en)
+			nextPwmEdgeTime = -1;
+	}
+
+	/** Nahraje bajt do UART TX SHIFTBUF. Volajte pred spustením simulácie. */
+	public void loadUartTxByte(int b) {
+		uartTxShiftReg = b & 0xFF;
+	}
+
 }
