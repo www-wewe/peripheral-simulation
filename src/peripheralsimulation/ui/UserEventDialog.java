@@ -27,12 +27,29 @@ public class UserEventDialog extends TitleAreaDialog {
 	 */
 	public UserEventDialog(Shell parentShell) {
 		super(parentShell);
+		setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+	}
+
+	@Override
+	protected void configureShell(Shell newShell) {
+		super.configureShell(newShell);
+		newShell.setText("User Events");
+	}
+
+	@Override
+	protected Control createContents(Composite parent) {
+		Control control = super.createContents(parent);
+		setTitle("User Events");
+		setMessage("User events in the simulation.");
+		setHelpAvailable(false);
+		setDialogHelpAvailable(false);
+		return control;
 	}
 
 	@Override
 	protected Control createDialogArea(Composite parent) {
 		Composite area = (Composite) super.createDialogArea(parent);
-		eventsPanel = new UserEventsPanel(area, SWT.NONE);
+		eventsPanel = new UserEventsPanel(this, area, SWT.NONE);
 		eventsPanel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		return area;
 	}

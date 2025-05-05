@@ -48,16 +48,20 @@ public class UserEventsPanel extends Composite {
 
 	/** Table to display existing events */
 	private Table tableEvents;
+    /** Dialog with this panel. Used for showing messages. */
+	private UserEventDialog userEventDialog;
 
 	/**
 	 * Constructor for the UserEventsPanel.
-	 * 
+	 *
+	 * @param userEventDialog The parent dialog.
 	 * @param parent The parent composite.
 	 * @param style  The style of the panel.
 	 */
-	public UserEventsPanel(Composite parent, int style) {
+	public UserEventsPanel(UserEventDialog userEventDialog, Composite parent, int style) {
 		super(parent, style);
 		userEvents = userPreferences.getUserEvents();
+		this.userEventDialog = userEventDialog;
 		createContents();
 	}
 
@@ -221,6 +225,7 @@ public class UserEventsPanel extends Composite {
 		try {
 			return Double.parseDouble(stringToParse);
 		} catch (NumberFormatException e) {
+			userEventDialog.setErrorMessage("Invalid input: " + stringToParse + ". Please enter a valid double value.");
 			return defaultValue;
 		}
 	}
@@ -236,6 +241,7 @@ public class UserEventsPanel extends Composite {
 		try {
 			return Integer.parseInt(stringToParse);
 		} catch (NumberFormatException e) {
+			userEventDialog.setErrorMessage("Invalid input: " + stringToParse + ". Please enter a valid integer value.");
 			return defaultValue;
 		}
 	}
@@ -258,6 +264,7 @@ public class UserEventsPanel extends Composite {
 			}
 			return Integer.parseInt(stringToParse);
 		} catch (NumberFormatException e) {
+			userEventDialog.setErrorMessage("Invalid input: " + stringToParse + ". Please enter a valid hex or dec value.");
 			return defaultValue;
 		}
 	}
