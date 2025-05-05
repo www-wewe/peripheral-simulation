@@ -110,16 +110,16 @@ public class FlexIOConfig {
 	 * 					Number of shifters / timers 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	public int shiftersCount;
-	public int timersCount;
-	public int pinCount;
+	private int shiftersCount;
+	private int timersCount;
+	private int pinCount;
 
 	/** Jednotlivé konfigurácie: index == číslo periférie. */
-	public FlexIOShifter[] shifters;
-	public FlexIOTimer[] timers;
+	private FlexIOShifter[] shifters;
+	private FlexIOTimer[] timers;
 
 	/** Globálne riadiace bity z CTRL. */
-	public boolean flexEn, swRst, fastAcc, dbgE, dozen;
+	private boolean flexEn, swRst, fastAcc, dbgE, dozen;
 
 	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
 
@@ -404,6 +404,22 @@ public class FlexIOConfig {
 	/* ================================================================== */
 	/* 								Others				 				  */
 	/* ================================================================== */
+
+	public FlexIOShifter[] getShifters() {
+		return shifters;
+	}
+
+	public void setShifters(FlexIOShifter[] shifters) {
+		this.shifters = shifters;
+	}
+
+	public FlexIOTimer[] getTimers() {
+		return timers;
+	}
+
+	public void setTimers(FlexIOTimer[] timers) {
+		this.timers = timers;
+	}
 
 	public int getShiftersCount() {
 		return shiftersCount;
