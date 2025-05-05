@@ -222,8 +222,6 @@ public class SettingsDialog extends Dialog {
 				RegisterMap registerMap = RegisterUtils.convertToFlexIORegisterMap(newRegs);
 				FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
 				userPreferences.setPeripheralModel(new FlexIOModel(flexioConfig));
-				MessageDialog.openInformation(getShell(), "Import Successful",
-						"The registers were successfully imported.");
 			}
 		});
 	}

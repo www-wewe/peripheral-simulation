@@ -56,6 +56,8 @@ public class RegisterUtils {
 				int regValue = (int) Long.parseLong(hexValue, 16);
 				map.put(regName, regValue);
 			});
+			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Import Successful",
+					"The registers were successfully imported.");
 
 		} catch (IOException | NumberFormatException ex) {
 			MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error during import",
