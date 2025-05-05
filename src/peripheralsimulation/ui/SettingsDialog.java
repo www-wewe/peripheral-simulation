@@ -3,7 +3,10 @@ package peripheralsimulation.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -16,7 +19,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import peripheralsimulation.io.UserPreferences;
+import peripheralsimulation.model.FlexIOModel;
 import peripheralsimulation.model.PeripheralModel;
+import peripheralsimulation.model.flexio.FlexIOConfig;
+import peripheralsimulation.utils.RegisterMap;
+import peripheralsimulation.utils.RegisterUtils;
 
 /**
  * Dialog for setting user preferences for the simulation.
@@ -60,6 +67,7 @@ public class SettingsDialog extends Dialog {
 		addTextFieldMonitoringFreq(dialog);
 		addTextFieldsForTimeRange(dialog);
 		addGuiSelection(dialog);
+		addImportButton(dialog);
 		return dialog;
 	}
 
@@ -195,6 +203,29 @@ public class SettingsDialog extends Dialog {
 		simulationTimeRangeToTextField = new Text(timeRangeComposite, SWT.BORDER);
 		simulationTimeRangeToTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		simulationTimeRangeToTextField.setText(String.valueOf(userPreferences.getSimulationTimeRangeTo()));
+	}
+
+	/**
+	 * Add button for importing registers from CSV file.
+	 *
+	 * @param dialog The dialog to which the button will be added.
+	 */
+	private void addImportButton(Composite dialog) {
+		if (!(userPreferences.getPeripheralModel() instanceof FlexIOModel)) {
+			return;
+		}
+		Button importBtn = new Button(dialog, SWT.PUSH);
+		importBtn.setText("Import of registers");
+		importBtn.addListener(SWT.Selection, e -> {
+			Map<String, Integer> newRegs = RegisterUtils.loadRegistersFromCsv();
+			if (!newRegs.isEmpty()) {
+				RegisterMap registerMap = RegisterUtils.convertToFlexIORegisterMap(newRegs);
+				FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
+				userPreferences.setPeripheralModel(new FlexIOModel(flexioConfig));
+				MessageDialog.openInformation(getShell(), "Import Successful",
+						"The registers were successfully imported.");
+			}
+		});
 	}
 
 }

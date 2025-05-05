@@ -2,6 +2,8 @@
 package peripheralsimulation.model.flexio;
 
 import java.util.Arrays;
+import java.util.Map;
+import static java.util.Map.entry;
 
 import peripheralsimulation.utils.RegisterMap;
 
@@ -49,6 +51,22 @@ public class FlexIOConfig {
 	public static final int TIMCFG0_ADDR = FLEXIO_BASE + 0x480;
 	public static final int TIMCMP0_ADDR = FLEXIO_BASE + 0x500;
 	public static final int TIMER_STRIDE = 0x004;
+
+	/** FlexIO register names and their addresses */
+	private static final Map<String,Integer> NAME2ADDR = Map.ofEntries(
+			entry("FLEXIO_PARAM", PARAM_ADDR),
+		    entry("FLEXIO_CTRL", CTRL_ADDR),
+		    entry("FLEXIO_SHIFTCFG0", SHIFTCFG0_ADDR),
+		    entry("FLEXIO_SHIFTCFG1", SHIFTCFG0_ADDR + SHIFTER_STRIDE),
+		    entry("FLEXIO_SHIFTCTL0", SHIFTCTL0_ADDR),
+		    entry("FLEXIO_SHIFTCTL1", SHIFTCTL0_ADDR + SHIFTER_STRIDE),
+		    entry("FLEXIO_TIMCFG0", TIMCFG0_ADDR),
+		    entry("FLEXIO_TIMCFG1", TIMCFG0_ADDR + TIMER_STRIDE),
+		    entry("FLEXIO_TIMCMP0", TIMCMP0_ADDR),
+		    entry("FLEXIO_TIMCMP1", TIMCMP0_ADDR + TIMER_STRIDE),
+		    entry("FLEXIO_TIMCTL0", TIMCTL0_ADDR),
+		    entry("FLEXIO_TIMCTL1", TIMCTL0_ADDR + TIMER_STRIDE)
+	);
 
 	/*
 	 * ------------------------------------------------------------------ * 
@@ -114,15 +132,20 @@ public class FlexIOConfig {
 	/**
 	 * Constructor for FlexIOConfig.
 	 *
-	 * @param registerMap The RegisterMap object containing the register values.
+	 * @param registerMap The RegisterMap object containing the register addresses
+	 *                    and register values.
 	 */
 	public FlexIOConfig(RegisterMap registerMap) {
 		this.registerMap = registerMap;
 
 		PARAM = registerMap.getRegisterValue(PARAM_ADDR);
+		if (PARAM == 0) { // Default value if PARAM is not set (in MCXC444)
+		    PARAM = 0x10080404; // 4 shifters, 4 timers, 8 pins
+		}
 		shiftersCount = PARAM & 0xFF;
 		timersCount = (PARAM >> 8) & 0xFF;
 		pinCount = (PARAM >> 16) & 0xFF;
+		// triggersCount = (PARAM >> 24) & 0xFF;
 
 		SHIFTCTL = new int[shiftersCount];
 		SHIFTCFG = new int[shiftersCount];
@@ -411,6 +434,16 @@ public class FlexIOConfig {
 
 	public void setClockFrequency(int clockFrequency) {
 		this.clockFrequency = clockFrequency;
+	}
+
+	/**
+	 * Returns the address of a register by its name.
+	 *
+	 * @param name The name of the register.
+	 * @return The address of the register, or -1 if not found.
+	 */
+	public static int getRegisterAddress(String name) {
+		return NAME2ADDR.getOrDefault(name, -1);
 	}
 
 }
