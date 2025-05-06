@@ -98,7 +98,7 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public void initialize(SimulationEngine engine) {
-		if (!config.isEnabled()) return;
+		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled()) return;
 
         detectPeripherals();
         initPwm(engine);
@@ -196,13 +196,13 @@ public class FlexIOModel implements PeripheralModel {
 	 * @param engine the simulation engine
 	 */
 	private void initPwm(SimulationEngine engine) {
-		if (pwmTimer == null)
+		if (pwmTimer == null || pwmTimer.getTimod() != 0b10 || pwmTimer.getTimEna() == 0b00)
 			return;
 
-		int high = (pwmTimer.getCmp() & 0xFF) + 1;
-		int low = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
+		int high = (pwmTimer.getCmp() & 0xFF) + 1; // CMP[7:0] + 1
+		int low = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1; // CMP[15:8]+ 1
 
-		pwmPinState = (pwmTimer.getTimOut() & 1) == 0; // podľa RM
+		pwmPinState = (pwmTimer.getTimOut() & 1) == 0; // logic 1 when 00/10
 		nextPwmEdgeTime = engine.getCurrentTime() + (pwmPinState ? high : low) * clkPeriod;
 
 		engine.scheduleEvent(nextPwmEdgeTime, () -> update(engine));
