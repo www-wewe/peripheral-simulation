@@ -88,13 +88,12 @@ public class SimulationTable implements SimulationGUI {
 				lastOutputValues[i] = outputValue;
 				anyChange = true;
 			}
-
 		}
+
 		if (!userPreferences.isOnlyChanges() || anyChange) {
 			createTableItem(outputs, rowText);
 			System.out.println("Row: " + String.join(", ", rowText));
 		}
-		;
 	}
 
 	/**
