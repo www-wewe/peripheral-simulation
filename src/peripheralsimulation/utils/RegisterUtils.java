@@ -76,9 +76,9 @@ public class RegisterUtils {
 	public static RegisterMap convertToFlexIORegisterMap(Map<String, Integer> map) {
 		Map<Integer, Integer> registerMap = new HashMap<>();
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
-			int address = FlexIOConfig.getRegisterAddress(entry.getKey());
-			if (address != -1) {
-				registerMap.put(address, entry.getValue());
+			int offset = FlexIOConfig.getRegisterOffset(entry.getKey());
+			if (offset != -1) {
+				registerMap.put(offset, entry.getValue());
 			}
 		}
 		return new RegisterMap(registerMap);

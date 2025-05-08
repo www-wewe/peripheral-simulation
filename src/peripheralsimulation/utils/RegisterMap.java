@@ -14,46 +14,46 @@ import java.util.Map;
 public class RegisterMap {
 
 	/**
-	 * Map representing the registers. Key = register address, Value = register value.
+	 * Map representing the registers. Key = register offset, Value = register value.
 	 */
 	private Map<Integer, Integer> registerMap;
 
 	/**
 	 * Constructor for RegisterMap.
 	 * 
-	 * @param registerMap A map of register addresses to their values.
+	 * @param registerMap A map of register offsets to their values.
 	 */
 	public RegisterMap(Map<Integer, Integer> registerMap) {
 		this.registerMap = registerMap;
 	}
 
 	/**
-	 * Returns the value of a register at the specified address.
+	 * Returns the value of a register at the specified offset.
 	 * 
-	 * @param addr The address of the register.
+	 * @param addr The offset of the register.
 	 * @return The value of the register. If the register does not exist, returns 0.
 	 */
-	public int getRegisterValue(int address) {
-        return registerMap.getOrDefault(address, 0);
+	public int getRegisterValue(int offset) {
+        return registerMap.getOrDefault(offset, 0);
     }
 
 	/**
-	 * Sets the value of a register at the specified address.
-	 * @param address The address of the register.
+	 * Sets the value of a register at the specified offset.
+	 * @param offset The offset of the register.
 	 * @param value The value to set the register to.
 	 */
-	public void setRegisterValue(int address, int value) {
-		registerMap.put(address, value);
+	public void setRegisterValue(int offset, int value) {
+		registerMap.put(offset, value);
 	}
 
 	/**
 	 * Checks if the specified bit of a register is set.
-	 * @param address The address of the register.
+	 * @param offset The offset of the register.
 	 * @param bit The bit position to check.
 	 * @return True if the bit is set, false otherwise.
 	 */
-    public boolean isBitSet(int address, int bit) {
-        return ((getRegisterValue(address) >> bit) & 1) == 1;
+    public boolean isBitSet(int offset, int bit) {
+        return ((getRegisterValue(offset) >> bit) & 1) == 1;
     }
 
 }

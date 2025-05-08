@@ -2,9 +2,8 @@
 package peripheralsimulation.model.flexio;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import static java.util.Map.entry;
-
 import peripheralsimulation.utils.RegisterMap;
 
 /**
@@ -19,55 +18,64 @@ public class FlexIOConfig {
 
 	/*
 	 * ------------------------------------------------------------------ * 
-	 * 					Register addresses (constants) 					  *
+	 * 					Register offsets (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	// TODO: zmazat base, pouzivat offsety
-	public static final int FLEXIO_BASE = 0x4005_F000; // MCXN444
+	public static final int VERID_OFFSET = 0x000;
+	public static final int PARAM_OFFSET = 0x004;
+	public static final int CTRL_OFFSET = 0x008;
 
-	public static final int VERID_ADDR = FLEXIO_BASE + 0x000;
-	public static final int PARAM_ADDR = FLEXIO_BASE + 0x004;
-	public static final int CTRL_ADDR = FLEXIO_BASE + 0x008;
+	public static final int SHIFTSTAT_OFFSET = 0x010;
+	public static final int SHIFTERR_OFFSET = 0x014;
+	public static final int TIMSTAT_OFFSET = 0x018;
 
-	public static final int SHIFTSTAT_ADDR = FLEXIO_BASE + 0x010;
-	public static final int SHIFTERR_ADDR = FLEXIO_BASE + 0x014;
-	public static final int TIMSTAT_ADDR = FLEXIO_BASE + 0x018;
-
-	public static final int SHIFTSIEN_ADDR = FLEXIO_BASE + 0x020;
-	public static final int SHIFTEIEN_ADDR = FLEXIO_BASE + 0x024;
-	public static final int TIMIEN_ADDR = FLEXIO_BASE + 0x028;
-	public static final int SHIFTSDEN_ADDR = FLEXIO_BASE + 0x030;
+	public static final int SHIFTSIEN_OFFSET = 0x020;
+	public static final int SHIFTEIEN_OFFSET = 0x024;
+	public static final int TIMIEN_OFFSET = 0x028;
+	public static final int SHIFTSDEN_OFFSET = 0x030;
 
 	// --- First shifter (index 0) ---------------------------------------
-	public static final int SHIFTCTL0_ADDR = FLEXIO_BASE + 0x080;
-	public static final int SHIFTCFG0_ADDR = FLEXIO_BASE + 0x100;
-	public static final int SHIFTBUF0_ADDR = FLEXIO_BASE + 0x200;
-	public static final int SHIFTBUFBIS0_ADDR = FLEXIO_BASE + 0x280;
-	public static final int SHIFTBUFBYS0_ADDR = FLEXIO_BASE + 0x300;
-	public static final int SHIFTBUFBBS0_ADDR = FLEXIO_BASE + 0x380;
+	public static final int SHIFTCTL0_OFFSET = 0x080;
+	public static final int SHIFTCFG0_OFFSET = 0x100;
+	public static final int SHIFTBUF0_OFFSET = 0x200;
+	public static final int SHIFTBUFBIS0_OFFSET = 0x280;
+	public static final int SHIFTBUFBYS0_OFFSET = 0x300;
+	public static final int SHIFTBUFBBS0_OFFSET = 0x380;
 	public static final int SHIFTER_STRIDE = 0x004;
 
 	// --- First timer (index 0) -----------------------------------------
-	public static final int TIMCTL0_ADDR = FLEXIO_BASE + 0x400;
-	public static final int TIMCFG0_ADDR = FLEXIO_BASE + 0x480;
-	public static final int TIMCMP0_ADDR = FLEXIO_BASE + 0x500;
+	public static final int TIMCTL0_OFFSET = 0x400;
+	public static final int TIMCFG0_OFFSET = 0x480;
+	public static final int TIMCMP0_OFFSET = 0x500;
 	public static final int TIMER_STRIDE = 0x004;
 
-	/** FlexIO register names and their addresses */
-	private static final Map<String,Integer> NAME2ADDR = Map.ofEntries(
-			entry("FLEXIO_PARAM", PARAM_ADDR),
-		    entry("FLEXIO_CTRL", CTRL_ADDR),
-		    entry("FLEXIO_SHIFTCFG0", SHIFTCFG0_ADDR),
-		    entry("FLEXIO_SHIFTCFG1", SHIFTCFG0_ADDR + SHIFTER_STRIDE),
-		    entry("FLEXIO_SHIFTCTL0", SHIFTCTL0_ADDR),
-		    entry("FLEXIO_SHIFTCTL1", SHIFTCTL0_ADDR + SHIFTER_STRIDE),
-		    entry("FLEXIO_TIMCFG0", TIMCFG0_ADDR),
-		    entry("FLEXIO_TIMCFG1", TIMCFG0_ADDR + TIMER_STRIDE),
-		    entry("FLEXIO_TIMCMP0", TIMCMP0_ADDR),
-		    entry("FLEXIO_TIMCMP1", TIMCMP0_ADDR + TIMER_STRIDE),
-		    entry("FLEXIO_TIMCTL0", TIMCTL0_ADDR),
-		    entry("FLEXIO_TIMCTL1", TIMCTL0_ADDR + TIMER_STRIDE)
-	);
+	private static final Map<String, Integer> NAME2OFFSET = new HashMap<>();
+
+	static {
+		// Pre-fill the NAME2OFFSET map with all registers
+		NAME2OFFSET.put("FLEXIO_VERID", VERID_OFFSET);
+		NAME2OFFSET.put("FLEXIO_PARAM", PARAM_OFFSET);
+		NAME2OFFSET.put("FLEXIO_CTRL", CTRL_OFFSET);
+		NAME2OFFSET.put("FLEXIO_SHIFTSTAT", SHIFTSTAT_OFFSET);
+		NAME2OFFSET.put("FLEXIO_SHIFTERR", SHIFTERR_OFFSET);
+		NAME2OFFSET.put("FLEXIO_TIMSTAT", TIMSTAT_OFFSET);
+		NAME2OFFSET.put("FLEXIO_SHIFTSIEN", SHIFTSIEN_OFFSET);
+		NAME2OFFSET.put("FLEXIO_SHIFTEIEN", SHIFTEIEN_OFFSET);
+		NAME2OFFSET.put("FLEXIO_TIMIEN", TIMIEN_OFFSET);
+		NAME2OFFSET.put("FLEXIO_SHIFTSDEN", SHIFTSDEN_OFFSET);
+
+		for (int i = 0; i < 4; i++) {
+			NAME2OFFSET.put("FLEXIO_SHIFTCFG" + i, SHIFTCFG0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_SHIFTCTL" + i, SHIFTCTL0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_SHIFTBUF" + i, SHIFTBUF0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_SHIFTBUFBIS" + i, SHIFTBUFBIS0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_SHIFTBUFBYS" + i, SHIFTBUFBYS0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_SHIFTBUFBBS" + i, SHIFTBUFBBS0_OFFSET + i * SHIFTER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_TIMCFG" + i, TIMCFG0_OFFSET + i * TIMER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_TIMCMP" + i, TIMCMP0_OFFSET + i * TIMER_STRIDE);
+			NAME2OFFSET.put("FLEXIO_TIMCTL" + i, TIMCTL0_OFFSET + i * TIMER_STRIDE);
+		}
+	}
 
 	/*
 	 * ------------------------------------------------------------------ * 
@@ -130,15 +138,15 @@ public class FlexIOConfig {
 	/**
 	 * Constructor for FlexIOConfig.
 	 *
-	 * @param registerMap The RegisterMap object containing the register addresses
-	 *                    and register values.
+	 * @param registerMap The RegisterMap object containing the register offsets and
+	 *                    register values.
 	 */
 	public FlexIOConfig(RegisterMap registerMap) {
 		this.registerMap = registerMap;
 
-		PARAM = registerMap.getRegisterValue(PARAM_ADDR);
+		PARAM = registerMap.getRegisterValue(PARAM_OFFSET);
 		if (PARAM == 0) { // Default value if PARAM is not set (in MCXC444)
-		    PARAM = 0x10080404; // 4 shifters, 4 timers, 8 pins
+			PARAM = 0x10080404; // 4 shifters, 4 timers, 8 pins
 		}
 		shiftersCount = PARAM & 0xFF;
 		timersCount = (PARAM >> 8) & 0xFF;
@@ -155,28 +163,28 @@ public class FlexIOConfig {
 		TIMCFG = new int[timersCount];
 		TIMCMP = new int[timersCount];
 
-		setCTRL(registerMap.getRegisterValue(CTRL_ADDR));
-		SHIFTSTAT = registerMap.getRegisterValue(SHIFTSTAT_ADDR);
-		SHIFTERR = registerMap.getRegisterValue(SHIFTERR_ADDR);
-		TIMSTAT = registerMap.getRegisterValue(TIMSTAT_ADDR);
-		SHIFTSIEN = registerMap.getRegisterValue(SHIFTSIEN_ADDR);
-		SHIFTEIEN = registerMap.getRegisterValue(SHIFTEIEN_ADDR);
-		TIMIEN = registerMap.getRegisterValue(TIMIEN_ADDR);
-		SHIFTSDEN = registerMap.getRegisterValue(SHIFTSDEN_ADDR);
+		setCTRL(registerMap.getRegisterValue(CTRL_OFFSET));
+		SHIFTSTAT = registerMap.getRegisterValue(SHIFTSTAT_OFFSET);
+		SHIFTERR = registerMap.getRegisterValue(SHIFTERR_OFFSET);
+		TIMSTAT = registerMap.getRegisterValue(TIMSTAT_OFFSET);
+		SHIFTSIEN = registerMap.getRegisterValue(SHIFTSIEN_OFFSET);
+		SHIFTEIEN = registerMap.getRegisterValue(SHIFTEIEN_OFFSET);
+		TIMIEN = registerMap.getRegisterValue(TIMIEN_OFFSET);
+		SHIFTSDEN = registerMap.getRegisterValue(SHIFTSDEN_OFFSET);
 
 		for (int i = 0; i < shiftersCount; i++) {
-			SHIFTCTL[i] = registerMap.getRegisterValue(SHIFTCTL0_ADDR + i * SHIFTER_STRIDE);
-			SHIFTCFG[i] = registerMap.getRegisterValue(SHIFTCFG0_ADDR + i * SHIFTER_STRIDE);
-			SHIFTBUF[i] = registerMap.getRegisterValue(SHIFTBUF0_ADDR + i * SHIFTER_STRIDE);
-			SHIFTBUFBIS[i] = registerMap.getRegisterValue(SHIFTBUFBIS0_ADDR + i * SHIFTER_STRIDE);
-			SHIFTBUFBYS[i] = registerMap.getRegisterValue(SHIFTBUFBYS0_ADDR + i * SHIFTER_STRIDE);
-			SHIFTBUFBBS[i] = registerMap.getRegisterValue(SHIFTBUFBBS0_ADDR + i * SHIFTER_STRIDE);
+			SHIFTCTL[i] = registerMap.getRegisterValue(SHIFTCTL0_OFFSET + i * SHIFTER_STRIDE);
+			SHIFTCFG[i] = registerMap.getRegisterValue(SHIFTCFG0_OFFSET + i * SHIFTER_STRIDE);
+			SHIFTBUF[i] = registerMap.getRegisterValue(SHIFTBUF0_OFFSET + i * SHIFTER_STRIDE);
+			SHIFTBUFBIS[i] = registerMap.getRegisterValue(SHIFTBUFBIS0_OFFSET + i * SHIFTER_STRIDE);
+			SHIFTBUFBYS[i] = registerMap.getRegisterValue(SHIFTBUFBYS0_OFFSET + i * SHIFTER_STRIDE);
+			SHIFTBUFBBS[i] = registerMap.getRegisterValue(SHIFTBUFBBS0_OFFSET + i * SHIFTER_STRIDE);
 		}
 
 		for (int i = 0; i < timersCount; i++) {
-			TIMCTL[i] = registerMap.getRegisterValue(TIMCTL0_ADDR + i * TIMER_STRIDE);
-			TIMCFG[i] = registerMap.getRegisterValue(TIMCFG0_ADDR + i * TIMER_STRIDE);
-			TIMCMP[i] = registerMap.getRegisterValue(TIMCMP0_ADDR + i * TIMER_STRIDE);
+			TIMCTL[i] = registerMap.getRegisterValue(TIMCTL0_OFFSET + i * TIMER_STRIDE);
+			TIMCFG[i] = registerMap.getRegisterValue(TIMCFG0_OFFSET + i * TIMER_STRIDE);
+			TIMCMP[i] = registerMap.getRegisterValue(TIMCMP0_OFFSET + i * TIMER_STRIDE);
 		}
 
 		shifters = new FlexIOShifter[shiftersCount];
@@ -428,46 +436,94 @@ public class FlexIOConfig {
 	}
 
 	/**
-	 * Reads any FlexIO register by absolute address
+	 * Reads any FlexIO register by absolute address.
 	 */
-	public Integer readByAddress(int addr) {
-		return registerMap.getRegisterValue(addr);
+	public Integer readByAddress(int address) {
+		int offset = address & 0xFFFF;
+		return registerMap.getRegisterValue(offset);
 	}
 
 	/**
-	 * Writes a value to a FlexIO register by absolute address
+	 * Writes a value to a FlexIO register by absolute address.
 	 */
-	public void writeByAddress(int addr, int value) {
-		registerMap.setRegisterValue(addr, value);
-		switch (addr) {
-		case CTRL_ADDR -> setCTRL(value);
-		case SHIFTSTAT_ADDR -> setShiftStat(value);
-		case SHIFTERR_ADDR -> setShiftErr(value);
-		case TIMSTAT_ADDR -> setTimStat(value);
-		case SHIFTSIEN_ADDR -> setShiftsIEN(value);
-		case SHIFTEIEN_ADDR -> setShiftEIEN(value);
-		case TIMIEN_ADDR -> setTimIEN(value);
-		case SHIFTSDEN_ADDR -> setShiftSDEN(value);
+	public void writeByAddress(int address, int value) {
+		int offset = address & 0xFFFF;
+		registerMap.setRegisterValue(offset, value);
+		switch (offset) {
+		case CTRL_OFFSET -> setCTRL(value);
+		case SHIFTSTAT_OFFSET -> setShiftStat(value);
+		case SHIFTERR_OFFSET -> setShiftErr(value);
+		case TIMSTAT_OFFSET -> setTimStat(value);
+		case SHIFTSIEN_OFFSET -> setShiftsIEN(value);
+		case SHIFTEIEN_OFFSET -> setShiftEIEN(value);
+		case TIMIEN_OFFSET -> setTimIEN(value);
+		case SHIFTSDEN_OFFSET -> setShiftSDEN(value);
+
 		default -> {
-			if (addr >= SHIFTCTL0_ADDR && addr < SHIFTCTL0_ADDR + shiftersCount * SHIFTER_STRIDE) {
-				int index = (addr - SHIFTCTL0_ADDR) / SHIFTER_STRIDE;
-				setShiftCtl(index, value);
-			} else if (addr >= TIMCTL0_ADDR && addr < TIMCTL0_ADDR + timersCount * TIMER_STRIDE) {
-				int index = (addr - TIMCTL0_ADDR) / TIMER_STRIDE;
-				setTimCtl(index, value);
+			/* ===== SHIFTER blocks =================================== */
+			/* SHIFTCTLn */
+			if (offset >= SHIFTCTL0_OFFSET && offset < SHIFTCFG0_OFFSET) {
+				int idx = (offset - SHIFTCTL0_OFFSET) / SHIFTER_STRIDE;
+				setShiftCtl(idx, value);
+			}
+			/* SHIFTCFGn */
+			else if (offset >= SHIFTCFG0_OFFSET && offset < SHIFTBUF0_OFFSET) {
+				int idx = (offset - SHIFTCFG0_OFFSET) / SHIFTER_STRIDE;
+				setShiftCfg(idx, value);
+			}
+			/* SHIFTBUFn */
+			else if (offset >= SHIFTBUF0_OFFSET && offset < SHIFTBUFBIS0_OFFSET) {
+				int idx = (offset - SHIFTBUF0_OFFSET) / SHIFTER_STRIDE;
+				setShiftBuf(idx, value);
+			}
+			/* SHIFTBUFBISn */
+			else if (offset >= SHIFTBUFBIS0_OFFSET && offset < SHIFTBUFBYS0_OFFSET) {
+				int idx = (offset - SHIFTBUFBIS0_OFFSET) / SHIFTER_STRIDE;
+				setShiftBufBis(idx, value);
+			}
+			/* SHIFTBUFBYSn */
+			else if (offset >= SHIFTBUFBYS0_OFFSET && offset < SHIFTBUFBBS0_OFFSET) {
+				int idx = (offset - SHIFTBUFBYS0_OFFSET) / SHIFTER_STRIDE;
+				setShiftBufBys(idx, value);
+			}
+			/* SHIFTBUFBBSn */
+			else if (offset >= SHIFTBUFBBS0_OFFSET && offset < TIMCTL0_OFFSET) {
+				int idx = (offset - SHIFTBUFBBS0_OFFSET) / SHIFTER_STRIDE;
+				setShiftBufBbs(idx, value);
+			}
+
+			/* ===== TIMER blocks =================================== */
+			/* TIMCTLn */
+			else if (offset >= TIMCTL0_OFFSET && offset < TIMCFG0_OFFSET) {
+				int idx = (offset - TIMCTL0_OFFSET) / TIMER_STRIDE;
+				setTimCtl(idx, value);
+			}
+			/* TIMCFGn */
+			else if (offset >= TIMCFG0_OFFSET && offset < TIMCMP0_OFFSET) {
+				int idx = (offset - TIMCFG0_OFFSET) / TIMER_STRIDE;
+				setTimCfg(idx, value);
+			}
+			/* TIMCMPn */
+			else if (offset >= TIMCMP0_OFFSET && offset < TIMCMP0_OFFSET + timersCount * TIMER_STRIDE) {
+				int idx = (offset - TIMCMP0_OFFSET) / TIMER_STRIDE;
+				setTimCmp(idx, value);
+			}
+
+			else {
+				// Not supported register
 			}
 		}
 		}
 	}
 
 	/**
-	 * Returns the address of a register by its name.
+	 * Returns the offset of a register by its name.
 	 *
 	 * @param name The name of the register.
-	 * @return The address of the register, or -1 if not found.
+	 * @return The offset of the register, or -1 if not found.
 	 */
-	public static int getRegisterAddress(String name) {
-		return NAME2ADDR.getOrDefault(name, -1);
+	public static int getRegisterOffset(String name) {
+		return NAME2OFFSET.getOrDefault(name, -1);
 	}
 
 }
