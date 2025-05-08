@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -47,6 +46,8 @@ public class SettingsDialog extends Dialog {
 	private Text simulationTimeRangeFromTextField;
 	/** Text field for simulation time range to */
 	private Text simulationTimeRangeToTextField;
+	/** Text field for clock frequency */
+	private Text clockFrequencyTextField;
 
 	/**
 	 * Constructor for the SettingsDialog.
@@ -66,6 +67,7 @@ public class SettingsDialog extends Dialog {
 		addTextFieldMillisToWait(dialog);
 		addTextFieldMonitoringFreq(dialog);
 		addTextFieldsForTimeRange(dialog);
+		addTextFieldForClockFrequency(dialog);
 		addGuiSelection(dialog);
 		addImportButton(dialog);
 		return dialog;
@@ -110,6 +112,7 @@ public class SettingsDialog extends Dialog {
 		userPreferences.setMonitoringPeriod(Double.parseDouble(monitoringPeriodTextField.getText()));
 		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
 		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
+		userPreferences.setClockFrequency(Integer.parseInt(clockFrequencyTextField.getText()) * 1_000_000);
 		super.okPressed();
 	}
 
@@ -203,6 +206,22 @@ public class SettingsDialog extends Dialog {
 		simulationTimeRangeToTextField = new Text(timeRangeComposite, SWT.BORDER);
 		simulationTimeRangeToTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		simulationTimeRangeToTextField.setText(String.valueOf(userPreferences.getSimulationTimeRangeTo()));
+	}
+
+	/**
+	 * Add text field for clock frequency.
+	 * 
+	 * @param dialog The dialog to which the text field will be added.
+	 */
+	private void addTextFieldForClockFrequency(Composite dialog) {
+		Label label = new Label(dialog, SWT.NONE);
+		label.setText("Clock frequency in MHz:");
+
+		Text clockFrequencyTextField = new Text(dialog, SWT.BORDER);
+		clockFrequencyTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		clockFrequencyTextField.setText(String.valueOf(userPreferences.getClockFrequency() / 1_000_000));
+		clockFrequencyTextField
+				.setToolTipText("Clock frequency in MHz. The simulation will be updated every X seconds.");
 	}
 
 	/**

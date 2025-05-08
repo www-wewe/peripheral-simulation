@@ -2,6 +2,7 @@
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.flexio.FlexIOConfig;
 import peripheralsimulation.model.flexio.FlexIOOutputs;
 import peripheralsimulation.model.flexio.FlexIOShifter;
@@ -21,70 +22,24 @@ import peripheralsimulation.model.flexio.FlexIOTimer;
  * = Transmit/Receive</li>
  * </ul>
  *
- * <p>
- * Názvy výstupov (poradie v poliach <code>outputs</code>):
- * </p>
- * <ol>
- * <li>PWM_PIN_STATE (boolean)</li>
- * <li>UART_TX_PIN (boolean)</li>
- * <li>UART_RX_READY (boolean)</li>
- * <li>UART_RX_BYTE (int 0-255)</li>
- * </ol>
- *
  * @author Veronika Lenková
  */
 public class FlexIOModel implements PeripheralModel {
 
-	/* Output indices */
-	private static final int IDX_PWM_PIN = 0;
-	private static final int IDX_UART_TX_PIN = 1;
-	private static final int IDX_UART_RX_RDY = 2;
-	private static final int IDX_UART_RX_BYTE = 3;
-
 	/** Output names */
-	private static final String[] OUTPUT_NAMES = { "PWM_PIN", "UART_TX_PIN", "UART_RX_READY", "UART_RX_BYTE" };
-	// private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
+	 private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
 
 	/** The configuration object with all the "register" bits */
 	private final FlexIOConfig config;
 
-	/*------------- PWM ---------------*/
-	/** Timer which generates PWM signal */
-	private FlexIOTimer pwmTimer;
-	/** Actual state of the output pin */
-	private boolean pwmPinState;
-	/** Absolute time of the next change */
-	private double nextPwmEdgeTime = -1;
+	/** Clock period (in seconds) */
+	private double tickPeriod = 1.0 / UserPreferences.getInstance().getClockFrequency();
 
-	/*------------- UART --------------*/
-	/** Timer which generates UART signal */
-	private FlexIOTimer  uartTimer;
-	/** TX a RX shifter */
-    private FlexIOShifter txShifter, rxShifter;
-	/** Actual state of the TX pin */
-	private boolean uartTxPinLevel;
-	/** Bit which we are currently sending (0-9: start, 8 data, stop) */
-	private int txBitPos;
-	/** Value which we are currently sending */
-	private int uartTxShiftReg;
-	/** Time when we will send the next bit */
-	private double nextUartBitTime;
+	/** The timers used in the FlexIO peripheral */
+	private FlexIOTimer[] timers;
 
-	/** Flag indicating that the RX pin is ready to receive data */
-	private boolean uartRxReady;
-	/** Value of the RX */
-	private int uartRxByte;
-	/** Value of the RX pin */
-	private int rxShiftReg;
-	/** Bit position of the RX pin */
-	private int rxBitPos;
-
-	private double bitPeriod;
-	/** Helper variable for RX sampling */
-	private double nextRxEdge = -1;
-
-	/** Seconds per clock cycle */
-	private double clkPeriod;
+	/** The shifters used in the FlexIO peripheral */
+	private FlexIOShifter[] shifters;
 
 	/**
 	 * Constructor for FlexIOModel.
@@ -93,37 +48,44 @@ public class FlexIOModel implements PeripheralModel {
 	 */
 	public FlexIOModel(FlexIOConfig config) {
 		this.config = config;
-		clkPeriod = 1.0 / config.getClockFrequency();
+		this.timers = config.getTimers();
+		this.shifters = config.getShifters();
 	}
 
 	@Override
 	public void initialize(SimulationEngine engine) {
 		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled()) return;
 
-        detectPeripherals();
-        initPwm(engine);
-        initUart(engine);
+		for (FlexIOTimer   t : timers)   t.reset();
+        for (FlexIOShifter s : shifters) s.reset();
+
+		scheduleEvent(engine, engine.getCurrentTime() + tickPeriod);
 	}
 
 	@Override
 	public void update(SimulationEngine engine) {
-		double now = engine.getCurrentTime();
+		boolean[] edges = new boolean[timers.length];
+		// timers
+		for (int i = 0; i < timers.length; i++) {
+			// decrement timer, compare with CMP, set/clear TIMSTAT bits, trigger shifters, etc.
+	        edges[i] = timers[i].tick();
+        }
+        // shifters
+        for (FlexIOShifter shifter : shifters) {
+            // depending on SMOD/TIMSEL/INSRC/etc., shift bits in/out of the buffer,
+            // update SHIFTSTAT/SHIFTERR, feed data to next shifter or pin, etc.
+        	boolean clockEdge = edges[ shifter.getTimSel() ];
+        	shifter.shift(clockEdge);
+        }
 
-		/* --- PWM --------------------------------------------------------- */
-		if (pwmTimer != null && now + 1e-15 >= nextPwmEdgeTime) {
-			pwmPinState = !pwmPinState;
-			scheduleNextPwmEdge(engine, now);
+		// Re-schedule next tick
+		if (engine.isSimulationRunning()) {
+			scheduleEvent(engine, engine.getCurrentTime() + tickPeriod);
 		}
+	}
 
-		/* --- UART TX ----------------------------------------------------- */
-		if (uartTimer != null && txShifter != null && now + 1e-15 >= nextUartBitTime) {
-			transmitNextBit(engine, now);
-		}
-
-		/* --- UART RX (sampluje na stred bitu) ---------------------------- */
-		if (uartTimer != null && rxShifter != null) {
-			sampleRx(now);
-		}
+	private void scheduleEvent(SimulationEngine engine, double eventTime) {
+		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	@Override
@@ -138,7 +100,7 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public Object[] getOutputs() {
-		return new Object[] { pwmPinState, uartTxPinLevel, uartRxReady, uartRxReady ? uartRxByte : 0 };
+		return new Object[] {  };
 	}
 
 	@Override
@@ -157,149 +119,6 @@ public class FlexIOModel implements PeripheralModel {
 	@Override
 	public Integer getRegisterValue(int addr) {
 		return config.readByAddress(addr);
-	}
-
-	/** nájde prvý PWM-timer a UART (timer+shifter(y)) podľa konfigurácie */
-	private void detectPeripherals() {
-		/* --- PWM timer (TIMOD == 10) ----------------------------------- */
-		for (FlexIOTimer timer : config.getTimers())
-			if (timer.getTimod() == 0b10) {
-				pwmTimer = timer;
-				break;
-			}
-
-		/* --- UART (TIMOD == 01 + shifter) ------------------------------ */
-		for (FlexIOTimer timer : config.getTimers())
-			if (timer.getTimod() == 0b01) {
-				uartTimer = timer;
-				break;
-			}
-
-		if (uartTimer != null) {
-			for (FlexIOShifter shifter : config.getShifters())
-				if (shifter.getTimSel() == uartTimer.getIndex()) {
-					if (shifter.getSmod() == 0b010 && txShifter == null)
-						txShifter = shifter; // Transmit
-					if (shifter.getSmod() == 0b001 && rxShifter == null)
-						rxShifter = shifter; // Receive
-				}
-		}
-	}
-
-	/* =================================================================== */
-	/* 									PWM								   */
-	/* =================================================================== */
-
-	/**
-	 * Initializes the PWM output settings.
-	 *
-	 * @param engine the simulation engine
-	 */
-	private void initPwm(SimulationEngine engine) {
-		if (pwmTimer == null || pwmTimer.getTimod() != 0b10 || pwmTimer.getTimEna() == 0b00)
-			return;
-
-		int high = (pwmTimer.getCmp() & 0xFF) + 1; // CMP[7:0] + 1
-		int low = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1; // CMP[15:8]+ 1
-
-		pwmPinState = (pwmTimer.getTimOut() & 1) == 0; // logic 1 when 00/10
-		nextPwmEdgeTime = engine.getCurrentTime() + (pwmPinState ? high : low) * clkPeriod;
-
-		engine.scheduleEvent(nextPwmEdgeTime, () -> update(engine));
-	}
-
-	/**
-	 * Schedules the next PWM edge event based on the current state of the PWM
-	 * timer.
-	 *
-	 * @param engine the simulation engine
-	 * @param now    the current simulation time
-	 */
-	private void scheduleNextPwmEdge(SimulationEngine engine, double now) {
-		int high = (pwmTimer.getCmp() & 0xFF) + 1;
-		int low = ((pwmTimer.getCmp() >> 8) & 0xFF) + 1;
-
-		nextPwmEdgeTime = now + (pwmPinState ? high : low) * clkPeriod;
-		engine.scheduleEvent(nextPwmEdgeTime, () -> update(engine));
-	}
-
-	/* =================================================================== */
-	/*									 UART							   */
-	/* =================================================================== */
-
-	/**
-	 * Initializes the UART transmission settings.
-	 *
-	 * @param engine the simulation engine
-	 */
-	private void initUart(SimulationEngine engine) {
-		if (uartTimer == null || txShifter == null)
-			return;
-
-		int baudDiv = (uartTimer.getCmp() & 0xFF) + 1; // podľa RM
-		bitPeriod = baudDiv * 2 * clkPeriod; // (CMP+1)*2/clk
-		uartTxShiftReg = txShifter.getBuffer() & 0xFF; // buffer plnim ručne s loadUartTxByte
-		txBitPos = 0; // start-bit
-		uartTxPinLevel = true; // idle = 1
-		nextUartBitTime = engine.getCurrentTime() + bitPeriod;
-		engine.scheduleEvent(nextUartBitTime, () -> update(engine));
-
-		/* RX – inicializácia */
-		if (rxShifter != null) {
-			uartRxReady = false;
-			rxBitPos = 0;
-		}
-	}
-
-	/**
-	 * Transfer the next bit in the UART transmission.
-	 *
-	 * @param engine the simulation engine
-	 * @param now    the current simulation time
-	 */
-	private void transmitNextBit(SimulationEngine engine, double now) {
-		switch (txBitPos) {
-		case 0 -> uartTxPinLevel = false; // start 0
-		case 9 -> uartTxPinLevel = true; // stop 1
-		default -> uartTxPinLevel = ((uartTxShiftReg >> (txBitPos - 1)) & 1) != 0;
-		}
-		txBitPos++;
-		if (txBitPos > 9) { // celý rámec
-			uartTxShiftReg = txShifter.getBuffer() & 0xFF; // načítaj nový
-			txBitPos = 0;
-		}
-		nextUartBitTime = now + bitPeriod;
-		engine.scheduleEvent(nextUartBitTime, () -> update(engine));
-	}
-
-	private void sampleRx(double now) {
-		// jednoduchá simulácia len na demonštráciu: prijíma TX z toho istého modulu
-		if (uartTxPinLevel == false && rxBitPos == 0) { // zachytený štart
-			rxBitPos = 1;
-			rxShiftReg = 0;
-			nextRxEdge = now + bitPeriod * 1.5; // stred prvého bitu
-		}
-		if (rxBitPos > 0 && now + 1e-15 >= nextRxEdge) {
-			if (rxBitPos >= 1 && rxBitPos <= 8) {
-				rxShiftReg |= (uartTxPinLevel ? 1 : 0) << (rxBitPos - 1);
-			}
-			rxBitPos++;
-			nextRxEdge += bitPeriod;
-			if (rxBitPos == 10) { // stop-bit odmeraný
-				uartRxByte = rxShiftReg & 0xFF;
-				uartRxReady = true;
-				rxBitPos = 0;
-			}
-		}
-	}
-
-	/* =================================================================== */
-	/* Konfiguračné (helper) metódy */
-	/* =================================================================== */
-
-	/** Load byte into UART TX shifter register FLEXIO_SHIFTBUF */
-	public void loadUartTxByte(int b) {
-		uartTxShiftReg = b & 0xFF;
 	}
 
 }

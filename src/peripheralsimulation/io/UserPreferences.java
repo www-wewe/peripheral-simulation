@@ -52,6 +52,7 @@ public final class UserPreferences {
 	/** The simulation time range to which to stop monitoring */
 	private double simulationTimeRangeTo;
 
+	// TODO: use microseconds or nano?
 	/** Constant value for converting time to microseconds */
 	private static final double MICROSECONDS_SCALE = 1e6;
 
@@ -66,6 +67,9 @@ public final class UserPreferences {
 
 	/** The list of user events to be scheduled */
 	private List<UserEvent> userEvents = new ArrayList<>();
+
+	/** Clock source frequency */
+	private int clockFrequency = 8_000_000; // 8 MHz
 
 	private UserPreferences() {
 		// Private constructor to prevent instantiation
@@ -232,4 +236,14 @@ public final class UserPreferences {
 	public void setUserEvents(List<UserEvent> userEvents) {
 		this.userEvents = userEvents;
 	}
+
+
+	public int getClockFrequency() {
+		return clockFrequency;
+	}
+
+	public void setClockFrequency(int clockFrequency) {
+		this.clockFrequency = clockFrequency;
+	}
+
 }

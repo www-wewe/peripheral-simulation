@@ -22,6 +22,7 @@ public class FlexIOConfig {
 	 * 					Register addresses (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
+	// TODO: zmazat base, pouzivat offsety
 	public static final int FLEXIO_BASE = 0x4005_F000; // MCXN444
 
 	public static final int VERID_ADDR = FLEXIO_BASE + 0x000;
@@ -122,9 +123,6 @@ public class FlexIOConfig {
 	private boolean flexEn, swRst, fastAcc, dbgE, dozen;
 
 	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
-
-	/** Clock source frequency */
-	private int clockFrequency = 8_000_000; // 8 MHz
 
 	/** RegisterMap object to access register values. */
 	private RegisterMap registerMap;
@@ -441,15 +439,25 @@ public class FlexIOConfig {
 	 */
 	public void writeByAddress(int addr, int value) {
 		registerMap.setRegisterValue(addr, value);
-		// TODO: update the register value in the FlexIOConfig object
-	}
-
-	public int getClockFrequency() {
-		return clockFrequency;
-	}
-
-	public void setClockFrequency(int clockFrequency) {
-		this.clockFrequency = clockFrequency;
+		switch (addr) {
+		case CTRL_ADDR -> setCTRL(value);
+		case SHIFTSTAT_ADDR -> setShiftStat(value);
+		case SHIFTERR_ADDR -> setShiftErr(value);
+		case TIMSTAT_ADDR -> setTimStat(value);
+		case SHIFTSIEN_ADDR -> setShiftsIEN(value);
+		case SHIFTEIEN_ADDR -> setShiftEIEN(value);
+		case TIMIEN_ADDR -> setTimIEN(value);
+		case SHIFTSDEN_ADDR -> setShiftSDEN(value);
+		default -> {
+			if (addr >= SHIFTCTL0_ADDR && addr < SHIFTCTL0_ADDR + shiftersCount * SHIFTER_STRIDE) {
+				int index = (addr - SHIFTCTL0_ADDR) / SHIFTER_STRIDE;
+				setShiftCtl(index, value);
+			} else if (addr >= TIMCTL0_ADDR && addr < TIMCTL0_ADDR + timersCount * TIMER_STRIDE) {
+				int index = (addr - TIMCTL0_ADDR) / TIMER_STRIDE;
+				setTimCtl(index, value);
+			}
+		}
+		}
 	}
 
 	/**
