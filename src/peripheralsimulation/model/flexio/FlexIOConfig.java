@@ -145,13 +145,14 @@ public class FlexIOConfig {
 		this.registerMap = registerMap;
 
 		PARAM = registerMap.getRegisterValue(PARAM_OFFSET);
-		if (PARAM == 0) { // Default value if PARAM is not set (in MCXC444)
-			PARAM = 0x10080404; // 4 shifters, 4 timers, 8 pins
+		if (PARAM != 0) {
+			shiftersCount = PARAM & 0xFF;
+			timersCount = (PARAM >> 8) & 0xFF;
+			pinCount = (PARAM >> 16) & 0xFF;
+		} else {
+			shiftersCount = countBlocks(SHIFTCTL0_OFFSET, SHIFTER_STRIDE);
+			timersCount = countBlocks(TIMCTL0_OFFSET, TIMER_STRIDE);
 		}
-		shiftersCount = PARAM & 0xFF;
-		timersCount = (PARAM >> 8) & 0xFF;
-		pinCount = (PARAM >> 16) & 0xFF;
-		// triggersCount = (PARAM >> 24) & 0xFF;
 
 		SHIFTCTL = new int[shiftersCount];
 		SHIFTCFG = new int[shiftersCount];
@@ -524,6 +525,21 @@ public class FlexIOConfig {
 	 */
 	public static int getRegisterOffset(String name) {
 		return NAME2OFFSET.getOrDefault(name, -1);
+	}
+
+	/**
+	 * Returns the number of blocks (shifters or timers) in the FlexIO peripheral.
+	 *
+	 * @param firstCtlOffset The offset of the first control register of the block.
+	 * @param stride         The stride between consecutive control registers.
+	 * @return The number of blocks.
+	 */
+	private int countBlocks(int firstCtlOffset, int stride) {
+		int count = 0;
+		while (registerMap.containsRegister(firstCtlOffset + count * stride)) {
+			count++;
+		}
+		return count;
 	}
 
 }
