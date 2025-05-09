@@ -35,7 +35,7 @@ public class FlexIOModel implements PeripheralModel {
 	private final FlexIOConfig config;
 
 	/** Clock period (in seconds) */
-	private double tickPeriod = 1.0 / UserPreferences.getInstance().getClockFrequency();
+	private double tickPeriod;
 
 	/** The timers used in the FlexIO peripheral */
 	private FlexIOTimer[] timers;
@@ -82,6 +82,7 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public void initialize(SimulationEngine engine) {
+		tickPeriod = 1.0 / UserPreferences.getInstance().getClockFrequency();
 		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled())
 			return;
 
