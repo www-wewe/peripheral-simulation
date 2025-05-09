@@ -48,6 +48,8 @@ public class SettingsDialog extends Dialog {
 	private Text simulationTimeRangeToTextField;
 	/** Text field for clock frequency */
 	private Text clockFrequencyTextField;
+	/** Combo box for selecting the time scale */
+	private Combo timeScaleCombo;
 
 	/**
 	 * Constructor for the SettingsDialog.
@@ -68,6 +70,7 @@ public class SettingsDialog extends Dialog {
 		addTextFieldMonitoringFreq(dialog);
 		addTextFieldsForTimeRange(dialog);
 		addTextFieldForClockFrequency(dialog);
+		addTimeScaleSelection(dialog);
 		addGuiSelection(dialog);
 		addImportButton(dialog);
 		return dialog;
@@ -88,7 +91,8 @@ public class SettingsDialog extends Dialog {
 		for (Button checkbox : checkboxes) {
 			if (checkbox.getSelection()) {
 				String output = checkbox.getText();
-				selectedOutputs.add(output);			}
+				selectedOutputs.add(output);
+			}
 		}
 		userPreferences.setSelectedOutputs(selectedOutputs);
 		userPreferences.setOnlyChanges(onlyChanges.getSelection());
@@ -108,6 +112,7 @@ public class SettingsDialog extends Dialog {
 		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
 		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
 		userPreferences.setClockFrequency(Integer.parseInt(clockFrequencyTextField.getText()) * 1_000_000);
+		userPreferences.setTimeScaleUnits(timeScaleCombo.getText());
 		super.okPressed();
 	}
 
@@ -147,6 +152,24 @@ public class SettingsDialog extends Dialog {
 	}
 
 	/**
+	 * Add combo box for selecting the time scale.
+	 *
+	 * @param dialog The dialog to which the combo box will be added.
+	 */
+	private void addTimeScaleSelection(Composite dialog) {
+		Label label = new Label(dialog, SWT.NONE);
+		label.setText("Time units to display:");
+
+		timeScaleCombo = new Combo(dialog, SWT.READ_ONLY);
+		timeScaleCombo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
+		timeScaleCombo.add(UserPreferences.TIME_MS);
+		timeScaleCombo.add(UserPreferences.TIME_US);
+		timeScaleCombo.add(UserPreferences.TIME_NS);
+		timeScaleCombo.select(0);
+		timeScaleCombo.setToolTipText("Time scale for the simulation.");
+	}
+
+	/**
 	 * Add combo box for selecting the simulation visualization.
 	 * 
 	 * @param dialog The dialog to which the combo box will be added.
@@ -155,11 +178,11 @@ public class SettingsDialog extends Dialog {
 		// label ku comboboxu
 		Label comboLabel = new Label(dialog, SWT.NONE);
 		comboLabel.setText("Select GUI: ");
-		comboLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+		comboLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 
 		// combobox na výber vizualizácie
 		visualizationSelectionCombo = new Combo(dialog, SWT.READ_ONLY);
-		visualizationSelectionCombo.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
+		visualizationSelectionCombo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		visualizationSelectionCombo.add(SimulationGuiChoice.TABLE.toString());
 		visualizationSelectionCombo.add(SimulationGuiChoice.GRAPH.toString());
 		visualizationSelectionCombo.select(userPreferences.getSelectedSimulationGUI().ordinal());
@@ -229,6 +252,7 @@ public class SettingsDialog extends Dialog {
 			return;
 		}
 		Button importBtn = new Button(dialog, SWT.PUSH);
+		importBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		importBtn.setText("Import of registers");
 		importBtn.addListener(SWT.Selection, e -> {
 			Map<String, Integer> newRegs = RegisterUtils.loadRegistersFromCsv();

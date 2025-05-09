@@ -52,18 +52,29 @@ public final class UserPreferences {
 	/** The simulation time range to which to stop monitoring */
 	private double simulationTimeRangeTo;
 
-	// TODO: use microseconds or nano?
 	/** Constant value for converting time to microseconds */
-	private static final double MICROSECONDS_SCALE = 1e6;
+	private static final double US_SCALE = 1e6;
 
 	/** Constant value for converting time to milliseconds */
 	private static final double MS_SCALE = 1e3;
+
+	/** Constant value for converting time to nanoseconds */
+	private static final double NS_SCALE = 1e9;
+
+	/** Time unit for displaying time values in milliseconds */
+	public static final String TIME_MS = "ms";
+
+	/** Time unit for displaying time values in microseconds */
+	public static final String TIME_US = "us";
+
+	/** Time unit for displaying time values in nanoseconds */
+	public static final String TIME_NS = "ns";
 
 	/** The time scale factor for converting simulation time to display time */
 	private double timeScaleFactor = MS_SCALE;
 
 	/** The time units for displaying time values */
-	private String timeUnits = "ms";
+	private String timeUnits = TIME_MS;
 
 	/** The list of user events to be scheduled */
 	private List<UserEvent> userEvents = new ArrayList<>();
@@ -237,7 +248,6 @@ public final class UserPreferences {
 		this.userEvents = userEvents;
 	}
 
-
 	public int getClockFrequency() {
 		return clockFrequency;
 	}
@@ -246,4 +256,20 @@ public final class UserPreferences {
 		this.clockFrequency = clockFrequency;
 	}
 
+	public void setTimeScaleUnits(String timeUnits) {
+		switch (timeUnits) {
+		case TIME_MS:
+			timeScaleFactor = MS_SCALE;
+			break;
+		case TIME_US:
+			timeScaleFactor = US_SCALE;
+			break;
+		case TIME_NS:
+			timeScaleFactor = NS_SCALE;
+			break;
+		default:
+			throw new IllegalArgumentException("Invalid time unit: " + timeUnits);
+		}
+		this.timeUnits = timeUnits;
+	}
 }
