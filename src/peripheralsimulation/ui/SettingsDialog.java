@@ -84,18 +84,13 @@ public class SettingsDialog extends Dialog {
 		SimulationGuiChoice selectedGui = SimulationGuiChoice.fromDisplayName(visualizationSelectionCombo.getText());
 		userPreferences.setSelectedSimulationGUI(selectedGui);
 
-		PeripheralModel peripheralModel = userPreferences.getPeripheralModel();
 		List<String> selectedOutputs = new ArrayList<>();
-		List<Integer> selectedOutputsIndices = new ArrayList<>();
 		for (Button checkbox : checkboxes) {
 			if (checkbox.getSelection()) {
 				String output = checkbox.getText();
-				selectedOutputs.add(output);
-				selectedOutputsIndices.add(peripheralModel.getOutputIndex(output));
-			}
+				selectedOutputs.add(output);			}
 		}
 		userPreferences.setSelectedOutputs(selectedOutputs);
-		userPreferences.setSelectedOutputsIndices(selectedOutputsIndices.stream().mapToInt(i -> i).toArray());
 		userPreferences.setOnlyChanges(onlyChanges.getSelection());
 
 		String millisToWait = millisToWaitTextField.getText();
@@ -217,7 +212,7 @@ public class SettingsDialog extends Dialog {
 		Label label = new Label(dialog, SWT.NONE);
 		label.setText("Clock frequency in MHz:");
 
-		Text clockFrequencyTextField = new Text(dialog, SWT.BORDER);
+		clockFrequencyTextField = new Text(dialog, SWT.BORDER);
 		clockFrequencyTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		clockFrequencyTextField.setText(String.valueOf(userPreferences.getClockFrequency() / 1_000_000));
 		clockFrequencyTextField

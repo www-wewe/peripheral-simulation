@@ -137,16 +137,16 @@ public final class UserPreferences {
 			return;
 		}
 		this.selectedOutputs = selectedOutputs;
+		List<Integer> outputsIndices = new ArrayList<>();
+		for (String output : selectedOutputs) {
+			outputsIndices.add(peripheralModel.getOutputIndex(output));
+		}
+		this.selectedOutputsIndices = outputsIndices.stream().mapToInt(i -> i).toArray();
 		notifyListenersWhenSelectedOutputsChanged();
 	}
 
 	public int[] getSelectedOutputsIndices() {
 		return selectedOutputsIndices;
-	}
-
-	public void setSelectedOutputsIndices(int[] selectedOutputsIndices) {
-		this.selectedOutputsIndices = selectedOutputsIndices;
-		notifyListenersWhenSelectedOutputsChanged();
 	}
 
 	public PeripheralModel getPeripheralModel() {
