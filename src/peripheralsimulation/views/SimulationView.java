@@ -8,6 +8,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.*;
 
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.SWT;
@@ -231,6 +232,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		default:
 			throw new IllegalArgumentException("Unknown peripheral.");
 		}
+		userPreferences.setSelectedOutputs(List.of());
 		userPreferences.setPeripheralModel(simulationModel);
 		return simulationModel;
 	}
