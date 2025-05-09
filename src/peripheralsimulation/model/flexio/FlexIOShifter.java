@@ -219,6 +219,15 @@ public class FlexIOShifter {
 		}
 	}
 
+	/**
+	 * Returns the current pin level.
+	 *
+	 * @return true if the pin level is high, false otherwise.
+	 */
+	public boolean isPinLevelHigh() {
+		return pinLevel;
+	}
+
 	public int getIndex() {
 		return index;
 	}

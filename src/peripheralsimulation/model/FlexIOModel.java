@@ -1,10 +1,12 @@
 /** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.flexio.FlexIOConfig;
-import peripheralsimulation.model.flexio.FlexIOOutputs;
 import peripheralsimulation.model.flexio.FlexIOShifter;
 import peripheralsimulation.model.flexio.FlexIOTimer;
 
@@ -27,7 +29,7 @@ import peripheralsimulation.model.flexio.FlexIOTimer;
 public class FlexIOModel implements PeripheralModel {
 
 	/** Output names */
-	 private static final String[] OUTPUT_NAMES = FlexIOOutputs.getOutputNames();
+	private final String[] outputNames;
 
 	/** The configuration object with all the "register" bits */
 	private final FlexIOConfig config;
@@ -41,6 +43,15 @@ public class FlexIOModel implements PeripheralModel {
 	/** The shifters used in the FlexIO peripheral */
 	private FlexIOShifter[] shifters;
 
+	/** Number of timers */
+	private int timersCount;
+
+	/** Number of shifters */
+	private int shifterCount;
+
+	/** Output array to hold the current output values */
+	private Object[] outputs;
+
 	/**
 	 * Constructor for FlexIOModel.
 	 *
@@ -50,14 +61,34 @@ public class FlexIOModel implements PeripheralModel {
 		this.config = config;
 		this.timers = config.getTimers();
 		this.shifters = config.getShifters();
+
+		/* Create output names: first all TIMER outputs, then SHIFTER pins */
+		List<String> names = new ArrayList<>();
+		for (int i = 0; i < timers.length; i++)
+			names.add("T" + i + "_OUT");
+		for (int i = 0; i < shifters.length; i++)
+			names.add("S" + i + "_PIN");
+
+		outputNames = names.toArray(String[]::new);
+		timersCount = timers.length;
+		shifterCount = shifters.length;
+		outputs = new Object[timersCount + shifterCount];
+		/* If we want true pin-based outputs, build PIN0…PINn instead: */
+//		int pinCount = config.getPinCount();
+//		for (int i = 0; i < pinCount; i++) {
+//			names.add("PIN" + i);
+//		}
 	}
 
 	@Override
 	public void initialize(SimulationEngine engine) {
-		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled()) return;
+		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled())
+			return;
 
-		for (FlexIOTimer   t : timers)   t.reset();
-        for (FlexIOShifter s : shifters) s.reset();
+		for (FlexIOTimer timer : timers)
+			timer.reset();
+		for (FlexIOShifter shifter : shifters)
+			shifter.reset();
 
 		scheduleEvent(engine, engine.getCurrentTime() + tickPeriod);
 	}
@@ -67,16 +98,17 @@ public class FlexIOModel implements PeripheralModel {
 		boolean[] edges = new boolean[timers.length];
 		// timers
 		for (int i = 0; i < timers.length; i++) {
-			// decrement timer, compare with CMP, set/clear TIMSTAT bits, trigger shifters, etc.
-	        edges[i] = timers[i].tick();
-        }
-        // shifters
-        for (FlexIOShifter shifter : shifters) {
-            // depending on SMOD/TIMSEL/INSRC/etc., shift bits in/out of the buffer,
-            // update SHIFTSTAT/SHIFTERR, feed data to next shifter or pin, etc.
-        	boolean clockEdge = edges[ shifter.getTimSel() ];
-        	shifter.shift(clockEdge);
-        }
+			// decrement timer, compare with CMP, set/clear TIMSTAT bits, trigger shifters,
+			// etc.
+			edges[i] = timers[i].tick();
+		}
+		// shifters
+		for (FlexIOShifter shifter : shifters) {
+			// depending on SMOD/TIMSEL/INSRC/etc., shift bits in/out of the buffer,
+			// update SHIFTSTAT/SHIFTERR, feed data to next shifter or pin, etc.
+			boolean clockEdge = edges[shifter.getTimSel()];
+			shifter.shift(clockEdge);
+		}
 
 		// Re-schedule next tick
 		if (engine.isSimulationRunning()) {
@@ -90,23 +122,32 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public String getOutputName(int index) {
-		return OUTPUT_NAMES[index];
+		return outputNames[index];
 	}
 
 	@Override
 	public String[] getOutputNames() {
-		return OUTPUT_NAMES;
+		return outputNames;
 	}
 
 	@Override
 	public Object[] getOutputs() {
-		return new Object[] {  };
+		/* TIMERs: output level after applying PINPOL */
+		for (int i = 0; i < timersCount; i++) {
+			outputs[i] = timers[i].isClockLevelHigh() ? 1 : 0;
+		}
+
+		/* SHIFTERs: current pin level (TX or RX) */
+		for (int i = 0; i < shifterCount; i++) {
+			outputs[timersCount + i] = shifters[i].isPinLevelHigh() ? 1 : 0;
+		}
+		return outputs;
 	}
 
 	@Override
 	public int getOutputIndex(String name) {
-		for (int i = 0; i < OUTPUT_NAMES.length; ++i)
-			if (OUTPUT_NAMES[i].equals(name))
+		for (int i = 0; i < outputNames.length; ++i)
+			if (outputNames[i].equals(name))
 				return i;
 		throw new IllegalArgumentException("Unknown output " + name);
 	}

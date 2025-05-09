@@ -132,7 +132,7 @@ public class FlexIOTimer {
 		counterLow = lowReload;
 		counterHigh = highReload;
 		outLevel = (timOut & 1) == 0; // RM: 00/10 -> logic 1
-		running = (timEna == 0); // Always enabled
+		running = (timEna == 0) || (timEna == 1 && trgSrc == 1);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class FlexIOTimer {
 	public boolean tick() {
 
 		if (!running) {
-			if (timEna == 0) // stop bit
+			if (timEna == 0 || (timEna == 1 && trgSrc == 1)) // was stop bit
 				running = true;
 			// (ďalšie možnosti – podľa trig/pin – zjednodušené)
 		}
