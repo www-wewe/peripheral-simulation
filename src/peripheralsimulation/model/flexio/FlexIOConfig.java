@@ -121,14 +121,14 @@ public class FlexIOConfig {
 	 */
 	private int shiftersCount;
 	private int timersCount;
-	private int pinCount;
+//	private int pinCount;
 
 	/** Jednotlivé konfigurácie: index == číslo periférie. */
 	private FlexIOShifter[] shifters;
 	private FlexIOTimer[] timers;
 
 	/** Globálne riadiace bity z CTRL. */
-	private boolean flexEn, swRst, fastAcc, dbgE, dozen;
+	private boolean flexEn, dbgE, dozen; // swRst, fastAcc
 
 	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
 
@@ -148,7 +148,7 @@ public class FlexIOConfig {
 		if (PARAM != 0) {
 			shiftersCount = PARAM & 0xFF;
 			timersCount = (PARAM >> 8) & 0xFF;
-			pinCount = (PARAM >> 16) & 0xFF;
+//			pinCount = (PARAM >> 16) & 0xFF;
 		} else {
 			shiftersCount = countBlocks(SHIFTCTL0_OFFSET, SHIFTER_STRIDE);
 			timersCount = countBlocks(TIMCTL0_OFFSET, TIMER_STRIDE);
@@ -204,10 +204,11 @@ public class FlexIOConfig {
 	}
 
 	public void setCTRL(int value) {
+		registerMap.setRegisterValue(CTRL_OFFSET, value);
 		CTRL = value;
 		flexEn = ((CTRL >> 0) & 1) == 1;
-		swRst = ((CTRL >> 1) & 1) == 1;
-		fastAcc = ((CTRL >> 2) & 1) == 1;
+//		swRst = ((CTRL >> 1) & 1) == 1;
+//		fastAcc = ((CTRL >> 2) & 1) == 1;
 		dbgE = ((CTRL >> 30) & 1) == 1;
 		dozen = ((CTRL >> 31) & 1) == 1;
 	}
@@ -237,10 +238,12 @@ public class FlexIOConfig {
 
 	public void clearShiftStat(int mask) {
 		SHIFTSTAT &= ~mask;
+		registerMap.setRegisterValue(SHIFTSTAT_OFFSET, SHIFTSTAT);
 	}
 
 	public void setShiftStat(int mask) {
 		SHIFTSTAT |= mask;
+		registerMap.setRegisterValue(SHIFTSTAT_OFFSET, SHIFTSTAT);
 	}
 
 	/* ================================================================== */
@@ -252,10 +255,12 @@ public class FlexIOConfig {
 
 	public void clearShiftErr(int mask) {
 		SHIFTERR &= ~mask;
+		registerMap.setRegisterValue(SHIFTERR_OFFSET, SHIFTERR);
 	}
 
 	public void setShiftErr(int mask) {
 		SHIFTERR |= mask;
+		registerMap.setRegisterValue(SHIFTERR_OFFSET, SHIFTERR);
 	}
 
 	/* ================================================================== */
@@ -268,10 +273,12 @@ public class FlexIOConfig {
 
 	public void clearTimStat(int mask) {
 		TIMSTAT &= ~mask;
+		registerMap.setRegisterValue(TIMSTAT_OFFSET, TIMSTAT);
 	}
 
 	public void setTimStat(int mask) {
 		TIMSTAT |= mask;
+		registerMap.setRegisterValue(TIMSTAT_OFFSET, TIMSTAT);
 	}
 
 	/* ================================================================== */
@@ -283,6 +290,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftsIEN(int value) {
+		registerMap.setRegisterValue(SHIFTSIEN_OFFSET, value);
 		SHIFTSIEN = value;
 	}
 
@@ -295,6 +303,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftEIEN(int value) {
+		registerMap.setRegisterValue(SHIFTEIEN_OFFSET, value);
 		SHIFTEIEN = value;
 	}
 
@@ -307,6 +316,7 @@ public class FlexIOConfig {
 	}
 
 	public void setTimIEN(int value) {
+		registerMap.setRegisterValue(TIMIEN_OFFSET, value);
 		TIMIEN = value;
 	}
 
@@ -319,6 +329,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftSDEN(int value) {
+		registerMap.setRegisterValue(SHIFTSDEN_OFFSET, value);
 		SHIFTSDEN = value;
 	}
 
@@ -331,6 +342,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftCtl(int index, int value) {
+		registerMap.setRegisterValue(SHIFTCTL0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTCTL[index] = value;
 		shifters[index].setControlRegister(value);
 	}
@@ -340,6 +352,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftCfg(int index, int value) {
+		registerMap.setRegisterValue(SHIFTCFG0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTCFG[index] = value;
 		shifters[index].setConfigRegister(value);
 	}
@@ -349,6 +362,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftBuf(int index, int value) {
+		registerMap.setRegisterValue(SHIFTBUF0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTBUF[index] = value;
 		shifters[index].setBuffer(value);
 	}
@@ -358,6 +372,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftBufBis(int index, int value) {
+		registerMap.setRegisterValue(SHIFTBUFBIS0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTBUFBIS[index] = value;
 	}
 
@@ -366,6 +381,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftBufBys(int index, int value) {
+		registerMap.setRegisterValue(SHIFTBUFBYS0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTBUFBYS[index] = value;
 	}
 
@@ -374,6 +390,7 @@ public class FlexIOConfig {
 	}
 
 	public void setShiftBufBbs(int index, int value) {
+		registerMap.setRegisterValue(SHIFTBUFBBS0_OFFSET + index * SHIFTER_STRIDE, value);
 		SHIFTBUFBBS[index] = value;
 	}
 
@@ -386,6 +403,7 @@ public class FlexIOConfig {
 	}
 
 	public void setTimCtl(int index, int value) {
+		registerMap.setRegisterValue(TIMCTL0_OFFSET + index * TIMER_STRIDE, value);
 		TIMCTL[index] = value;
 		timers[index].setControlRegister(value);
 	}
@@ -395,6 +413,7 @@ public class FlexIOConfig {
 	}
 
 	public void setTimCfg(int index, int value) {
+		registerMap.setRegisterValue(TIMCFG0_OFFSET + index * TIMER_STRIDE, value);
 		TIMCFG[index] = value;
 		timers[index].setConfigRegister(value);
 	}
@@ -404,6 +423,7 @@ public class FlexIOConfig {
 	}
 
 	public void setTimCmp(int index, int value) {
+		registerMap.setRegisterValue(TIMCMP0_OFFSET + index * TIMER_STRIDE, value);
 		TIMCMP[index] = value;
 		timers[index].setCmp(value);
 	}
@@ -416,16 +436,8 @@ public class FlexIOConfig {
 		return shifters;
 	}
 
-	public void setShifters(FlexIOShifter[] shifters) {
-		this.shifters = shifters;
-	}
-
 	public FlexIOTimer[] getTimers() {
 		return timers;
-	}
-
-	public void setTimers(FlexIOTimer[] timers) {
-		this.timers = timers;
 	}
 
 	public int getShiftersCount() {
