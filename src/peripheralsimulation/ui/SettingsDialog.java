@@ -282,12 +282,11 @@ public class SettingsDialog extends Dialog {
 		importBtn.addListener(SWT.Selection, e -> {
 			Map<String, Integer> newRegs = RegisterUtils.loadRegistersFromCsv();
 			if (!newRegs.isEmpty()) {
-				RegisterMap registerMap;
 				PeripheralModel peripheralModel = userPreferences.getPeripheralModel();
 				Peripheral peripheral = userPreferences.getSelectedPeripheralType();
+				RegisterMap registerMap = RegisterUtils.convertToRegisterMap(newRegs, peripheral);
 				switch (peripheral) {
 				case SYSTICKTIMER:
-					registerMap = RegisterUtils.convertToSysTickRegisterMap(newRegs);
 					SysTickTimerConfig config = new SysTickTimerConfig(registerMap);
 					peripheralModel = new SysTickTimerModel(config);
 					break;
@@ -299,7 +298,6 @@ public class SettingsDialog extends Dialog {
 					);
 					break;
 				case FLEXIO:
-					registerMap = RegisterUtils.convertToFlexIORegisterMap(newRegs);
 					FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
 					peripheralModel = new FlexIOModel(flexioConfig);
 					break;

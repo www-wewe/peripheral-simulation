@@ -12,6 +12,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
+import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.flexio.FlexIOConfig;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 
@@ -69,38 +70,25 @@ public class RegisterUtils {
 	}
 
 	/**
-	 * Converts a map of FlexIO register names and values to a RegisterMap object.
+	 * Converts a map of register names and values to a RegisterMap object.
 	 *
 	 * @param map Map of register names and their values.
 	 * @return RegisterMap object containing the converted registers.
 	 */
-	public static RegisterMap convertToFlexIORegisterMap(Map<String, Integer> map) {
+	public static RegisterMap convertToRegisterMap(Map<String, Integer> map, Peripheral peripheralType) {
 		Map<Integer, Integer> registerMap = new HashMap<>();
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
-			int offset = FlexIOConfig.getRegisterOffset(entry.getKey());
+			int offset = -1;
+			if (peripheralType == Peripheral.SYSTICKTIMER) {
+				offset = SysTickTimerConfig.getRegisterOffset(entry.getKey());
+			} else if (peripheralType == Peripheral.FLEXIO) {
+				offset = FlexIOConfig.getRegisterOffset(entry.getKey());
+			}
 			if (offset != -1) {
 				registerMap.put(offset, entry.getValue());
 			}
 		}
 		return new RegisterMap(registerMap);
 	}
-
-	/**
-	 * Converts a map of SysTick register names and values to a RegisterMap object.
-	 *
-	 * @param map Map of register names and their values.
-	 * @return RegisterMap object containing the converted registers.
-	 */
-	public static RegisterMap convertToSysTickRegisterMap(Map<String,Integer> map){
-	    Map<Integer,Integer> registerMap = new HashMap<>();
-	    for (Map.Entry<String, Integer> entry : map.entrySet()) {
-	        int offset = SysTickTimerConfig.getRegisterOffset(entry.getKey());
-	        if (offset != -1) {
-				registerMap.put(offset, entry.getValue());
-			}
-		}
-	    return new RegisterMap(registerMap);
-	}
-
 
 }
