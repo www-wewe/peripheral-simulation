@@ -47,9 +47,6 @@ public class SysTickTimerModel implements PeripheralModel {
 		this.currentValue = 0; // will get set in initialize() or on write
 		this.countFlag = false;
 		this.isInterrupt = false;
-
-		// Pre-calculate your tickPeriod once (or each time config changes):
-		this.tickPeriod = calculateTickPeriod();
 	}
 
 	/**
@@ -69,6 +66,7 @@ public class SysTickTimerModel implements PeripheralModel {
 		currentValue = config.getRVR();
 		countFlag = false;
 		isInterrupt = false;
+		this.tickPeriod = calculateTickPeriod();
 
 		// If the timer is enabled, schedule the first decrement
 		if (config.isEnabled()) {
