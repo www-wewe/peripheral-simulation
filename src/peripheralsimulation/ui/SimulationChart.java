@@ -44,7 +44,7 @@ public class SimulationChart implements SimulationGUI {
 		chart = new InteractiveChart(parent, SWT.NONE);
 		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 		chart.getTitle().setText("Simulation Chart");
-		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in milliseconds");
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
 		chart.getAxisSet().getYAxis(0).getTitle().setText("Output Value");
 		chart.getLegend().setVisible(false);
 
@@ -166,6 +166,7 @@ public class SimulationChart implements SimulationGUI {
 
 		// Redraw chart
 		chart.redraw();
+		chart.getLegend().setVisible(true);
 	}
 
 	/**
