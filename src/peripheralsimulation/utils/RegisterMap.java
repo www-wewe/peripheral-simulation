@@ -1,6 +1,7 @@
 /** Copyright (c) 2025 Veronika Lenková */
 package peripheralsimulation.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,7 +26,7 @@ public class RegisterMap {
 	 * @param registerMap A map of register offsets to their values.
 	 */
 	public RegisterMap(Map<Integer, Integer> registerMap) {
-		this.registerMap = registerMap;
+		this.registerMap = new HashMap<>(registerMap);
 	}
 
 	/**
