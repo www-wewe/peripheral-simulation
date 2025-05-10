@@ -12,7 +12,6 @@ import peripheralsimulation.utils.RegisterUtils;
  * (Current Value) - SYST_CALIB (optional read-only info)
  *
  * @author Veronika Lenková
- * TODO: refactor with SysTickTimerConfig
  */
 public class SysTickTimerModel implements PeripheralModel {
 
@@ -128,6 +127,7 @@ public class SysTickTimerModel implements PeripheralModel {
 		// sets SYST_CVR to 0, clears COUNTFLAG
 		currentValue = 0;
 		countFlag = false;
+		config.setCVR(value);
 	}
 
 	/**
@@ -200,19 +200,19 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public void setRegisterValue(int registerAddress, int value) {
-		switch (registerAddress) {
-		case SysTickTimerConfig.SYST_CSR_ADDR:
+		int offset = registerAddress & 0xffff;
+		switch (offset) {
+		case SysTickTimerConfig.CSR_OFFSET:
 			config.setCSR(value);
 			this.tickPeriod = calculateTickPeriod();
 			break;
-		case SysTickTimerConfig.SYST_RVR_ADDR:
+		case SysTickTimerConfig.RVR_OFFSET:
 			config.setRVR(value);
 			break;
-		case SysTickTimerConfig.SYST_CVR_ADDR:
+		case SysTickTimerConfig.CVR_OFFSET:
 			writeCVR(value);
-			config.setCVR(value);
 			break;
-		case SysTickTimerConfig.SYST_CALIB_ADDR:
+		case SysTickTimerConfig.CALIB_OFFSET:
 			throw new UnsupportedOperationException("Cannot write to read-only register: " + registerAddress);
 		default:
 			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
@@ -221,18 +221,24 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public Integer getRegisterValue(int registerAddress) {
-		switch (registerAddress) {
-		case SysTickTimerConfig.SYST_CSR_ADDR:
+		int offset = registerAddress & 0xffff;
+		switch (offset) {
+		case SysTickTimerConfig.CSR_OFFSET:
 			return config.getCSR();
-		case SysTickTimerConfig.SYST_RVR_ADDR:
+		case SysTickTimerConfig.RVR_OFFSET:
 			return config.getRVR();
-		case SysTickTimerConfig.SYST_CVR_ADDR:
+		case SysTickTimerConfig.CVR_OFFSET:
 			return readCVR();
-		case SysTickTimerConfig.SYST_CALIB_ADDR:
+		case SysTickTimerConfig.CALIB_OFFSET:
 			return config.getCALIB();
 		default:
 			throw new IllegalArgumentException("Invalid register address: " + registerAddress);
 		}
+	}
+
+	@Override
+	public Peripheral getPeripheralType() {
+		return Peripheral.SYSTICKTIMER;
 	}
 
 }

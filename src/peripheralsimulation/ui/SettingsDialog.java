@@ -18,9 +18,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 import peripheralsimulation.io.UserPreferences;
+import peripheralsimulation.model.CounterModel;
 import peripheralsimulation.model.FlexIOModel;
+import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
+import peripheralsimulation.model.SysTickTimerModel;
 import peripheralsimulation.model.flexio.FlexIOConfig;
+import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.utils.RegisterMap;
 import peripheralsimulation.utils.RegisterUtils;
 
@@ -165,8 +169,14 @@ public class SettingsDialog extends Dialog {
 		timeScaleCombo.add(UserPreferences.TIME_MS);
 		timeScaleCombo.add(UserPreferences.TIME_US);
 		timeScaleCombo.add(UserPreferences.TIME_NS);
-		timeScaleCombo.select(0);
 		timeScaleCombo.setToolTipText("Time scale for the simulation.");
+		String currentUnits = userPreferences.getTimeUnits();
+		int index = timeScaleCombo.indexOf(currentUnits);
+		if (index != -1) {
+			timeScaleCombo.select(index);
+		} else {
+			timeScaleCombo.select(0); // Default to the first one if not found
+		}
 	}
 
 	/**
@@ -248,18 +258,39 @@ public class SettingsDialog extends Dialog {
 	 * @param dialog The dialog to which the button will be added.
 	 */
 	private void addImportButton(Composite dialog) {
-		if (!(userPreferences.getPeripheralModel() instanceof FlexIOModel)) {
-			return;
-		}
 		Button importBtn = new Button(dialog, SWT.PUSH);
 		importBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		importBtn.setText("Import of registers");
 		importBtn.addListener(SWT.Selection, e -> {
 			Map<String, Integer> newRegs = RegisterUtils.loadRegistersFromCsv();
 			if (!newRegs.isEmpty()) {
-				RegisterMap registerMap = RegisterUtils.convertToFlexIORegisterMap(newRegs);
-				FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
-				userPreferences.setPeripheralModel(new FlexIOModel(flexioConfig));
+				RegisterMap registerMap;
+				PeripheralModel peripheralModel = userPreferences.getPeripheralModel();
+				Peripheral peripheral = userPreferences.getSelectedPeripheralType();
+				switch (peripheral) {
+				case SYSTICKTIMER:
+					registerMap = RegisterUtils.convertToSysTickRegisterMap(newRegs);
+					SysTickTimerConfig config = new SysTickTimerConfig(registerMap, 48e6, // mainClk
+							12e6 // externalClk
+					);
+					peripheralModel = new SysTickTimerModel(config);
+					break;
+				case COUNTER:
+					peripheralModel = new CounterModel(255, // overflow value
+							0, // initial value
+							1000, // 1 kHz clock
+							1 // prescaler
+					);
+					break;
+				case FLEXIO:
+					registerMap = RegisterUtils.convertToFlexIORegisterMap(newRegs);
+					FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
+					peripheralModel = new FlexIOModel(flexioConfig);
+					break;
+				default:
+					throw new IllegalArgumentException("Unknown peripheral.");
+				}
+				userPreferences.setPeripheralModel(peripheralModel);
 			}
 		});
 	}

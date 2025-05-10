@@ -1,6 +1,10 @@
 /** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.model.systick;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import peripheralsimulation.utils.RegisterMap;
 import peripheralsimulation.utils.RegisterUtils;
 
 /**
@@ -14,14 +18,22 @@ public class SysTickTimerConfig {
 
 	/*
 	 * ------------------------------------------------------------------ *
-	 * 					Register addresses (constants) 					  *
+	 * 					Register offsets (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	public static final int SYST_BASE = 0xE000E000;
-	public static final int SYST_CSR_ADDR = SYST_BASE + 0x010;
-	public static final int SYST_RVR_ADDR = SYST_BASE + 0x014;
-	public static final int SYST_CVR_ADDR = SYST_BASE + 0x018;
-	public static final int SYST_CALIB_ADDR = SYST_BASE + 0x01C;
+	// public static final int SYST_BASE = 0xE000E000;
+	public static final int CSR_OFFSET = 0x010;
+	public static final int RVR_OFFSET = 0x014;
+	public static final int CVR_OFFSET = 0x018;
+	public static final int CALIB_OFFSET = 0x01C;
+
+	private static final Map<String, Integer> NAME2OFFSET = new HashMap<>();
+	static {
+		NAME2OFFSET.put("SYST_CSR", CSR_OFFSET);
+		NAME2OFFSET.put("SYST_RVR", RVR_OFFSET);
+		NAME2OFFSET.put("SYST_CVR", CVR_OFFSET);
+		NAME2OFFSET.put("SYST_CALIB", CALIB_OFFSET);
+	}
 
 	/*
 	 * ------------------------------------------------------------------ *
@@ -45,22 +57,22 @@ public class SysTickTimerConfig {
 	/** Calibration Value Register (optional, read-only) */
 	private int SYST_CALIB;
 
+	/** RegisterMap object to access register values. */
+	private RegisterMap registerMap;
+
 	/**
 	 * Constructor for SysTickTimerConfig.
-	 * 
-	 * @param systCSR     Control and Status Register value
-	 * @param systRVR     Reload Value Register value
-	 * @param systCVR     Current Value Register value
-	 * @param systCALIB   Calibration Value Register value (optional, read-only)
+	 *
+	 * @param registerMap RegisterMap object to access register values
 	 * @param mainClk     Main clock frequency
 	 * @param externalClk External clock frequency
 	 */
-	public SysTickTimerConfig(int systCSR, int systRVR, int systCVR, int systCALIB, double mainClk,
-			double externalClk) {
-		this.SYST_CSR = systCSR;
-		this.SYST_RVR = systRVR & RegisterUtils.BIT_MASK;
-		this.SYST_CVR = systCVR & RegisterUtils.BIT_MASK;
-		this.SYST_CALIB = systCALIB; // read-only
+	public SysTickTimerConfig(RegisterMap registerMap, double mainClk, double externalClk) {
+		this.registerMap = registerMap;
+		this.SYST_CSR = registerMap.getRegisterValue(CSR_OFFSET);
+		this.SYST_RVR = registerMap.getRegisterValue(RVR_OFFSET) & RegisterUtils.BIT_MASK;
+		this.SYST_CVR = registerMap.getRegisterValue(CVR_OFFSET) & RegisterUtils.BIT_MASK;
+		this.SYST_CALIB = registerMap.getRegisterValue(CALIB_OFFSET);
 
 		this.mainClk = mainClk;
 		this.externalClk = externalClk;
@@ -72,6 +84,7 @@ public class SysTickTimerConfig {
 	}
 
 	public void setCSR(int val) {
+		registerMap.setRegisterValue(CSR_OFFSET, val);
 		SYST_CSR = val;
 	}
 
@@ -93,6 +106,7 @@ public class SysTickTimerConfig {
 		} else {
 			SYST_CSR &= ~(1 << 0);
 		}
+		registerMap.setRegisterValue(CSR_OFFSET, SYST_CSR);
 	}
 
 	public void setTickInt(boolean tickInt) {
@@ -101,6 +115,7 @@ public class SysTickTimerConfig {
 		} else {
 			SYST_CSR &= ~(1 << 1);
 		}
+		registerMap.setRegisterValue(CSR_OFFSET, SYST_CSR);
 	}
 
 	public void setUseCpuClock(boolean use) {
@@ -109,6 +124,7 @@ public class SysTickTimerConfig {
 		} else {
 			SYST_CSR &= ~(1 << 2);
 		}
+		registerMap.setRegisterValue(CSR_OFFSET, SYST_CSR);
 	}
 
 	// -------------- GET/SET for SYST_RVR --------------
@@ -118,6 +134,7 @@ public class SysTickTimerConfig {
 
 	public void setRVR(int value) {
 		SYST_RVR = value & RegisterUtils.BIT_MASK;
+		registerMap.setRegisterValue(RVR_OFFSET, SYST_RVR & RegisterUtils.BIT_MASK);
 	}
 
 	// -------------- GET/SET for SYST_CVR --------------
@@ -128,6 +145,7 @@ public class SysTickTimerConfig {
 	public void setCVR(int value) {
 		// writing any value => sets CVR=0, clears COUNTFLAG
 		SYST_CVR = 0;
+		registerMap.setRegisterValue(CVR_OFFSET, SYST_CVR);
 		// If code sets a separate bit for countFlag in SYST_CSR, clear it here
 		// e.g. SYST_CSR &= ~(1<<16)
 	}
@@ -145,4 +163,15 @@ public class SysTickTimerConfig {
 	public double getExternalClk() {
 		return externalClk;
 	}
+
+	/**
+	 * Returns the offset of a register by its name.
+	 *
+	 * @param name The name of the register.
+	 * @return The offset of the register, or -1 if not found.
+	 */
+	public static int getRegisterOffset(String name) {
+		return NAME2OFFSET.getOrDefault(name, -1);
+	}
+
 }

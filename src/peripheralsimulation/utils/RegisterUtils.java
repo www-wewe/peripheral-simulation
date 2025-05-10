@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 
 import peripheralsimulation.model.flexio.FlexIOConfig;
+import peripheralsimulation.model.systick.SysTickTimerConfig;
 
 /**
  * Utility class for register-related operations.
@@ -83,5 +84,23 @@ public class RegisterUtils {
 		}
 		return new RegisterMap(registerMap);
 	}
+
+	/**
+	 * Converts a map of SysTick register names and values to a RegisterMap object.
+	 *
+	 * @param map Map of register names and their values.
+	 * @return RegisterMap object containing the converted registers.
+	 */
+	public static RegisterMap convertToSysTickRegisterMap(Map<String,Integer> map){
+	    Map<Integer,Integer> registerMap = new HashMap<>();
+	    for (Map.Entry<String, Integer> entry : map.entrySet()) {
+	        int offset = SysTickTimerConfig.getRegisterOffset(entry.getKey());
+	        if (offset != -1) {
+				registerMap.put(offset, entry.getValue());
+			}
+		}
+	    return new RegisterMap(registerMap);
+	}
+
 
 }

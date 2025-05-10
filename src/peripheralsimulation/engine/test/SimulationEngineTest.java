@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 
 /**
@@ -113,6 +114,11 @@ public class SimulationEngineTest {
 			public Integer getRegisterValue(int registerAddress) {
 				return null;
 			}
+
+			@Override
+			public Peripheral getPeripheralType() {
+				return null;
+			}
 		};
 
 		engine.setPeripheralModel(dummyPeripheral);
@@ -185,6 +191,11 @@ public class SimulationEngineTest {
 
 			@Override
 			public Integer getRegisterValue(int registerAddress) {
+				return null;
+			}
+
+			@Override
+			public Peripheral getPeripheralType() {
 				return null;
 			}
 		});

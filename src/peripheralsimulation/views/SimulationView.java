@@ -203,14 +203,16 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	 */
 	private PeripheralModel updateSelectedPeripheralModel() {
 		PeripheralModel simulationModel;
+		RegisterMap registerMap;
 		Peripheral selectedPeripheral = Peripheral.fromDisplayName(selectPeripheralCombo.getText());
+		userPreferences.setSelectedPeripheralType(selectedPeripheral);
+		Map<String, Integer> registersNames2Values = RegisterUtils.loadRegistersFromCsv();
+
 		switch (selectedPeripheral) {
 		case SYSTICKTIMER:
+			registerMap = RegisterUtils.convertToSysTickRegisterMap(registersNames2Values);
 			// fill in the fields from your exported data or from code
-			SysTickTimerConfig config = new SysTickTimerConfig(0x3, // SYST_CSR
-					0x0001D4BF, // SYST_RVR
-					0, // SYST_CVR
-					0, // SYST_CALIB
+			SysTickTimerConfig config = new SysTickTimerConfig(registerMap,
 					48e6, // mainClk
 					12e6 // externalClk
 			);
@@ -224,8 +226,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			);
 			break;
 		case FLEXIO:
-			Map<String, Integer> flexioRegisters = RegisterUtils.loadRegistersFromCsv();
-			RegisterMap registerMap = RegisterUtils.convertToFlexIORegisterMap(flexioRegisters);
+			registerMap = RegisterUtils.convertToFlexIORegisterMap(registersNames2Values);
 			FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);
 			simulationModel = new FlexIOModel(flexioConfig);
 			break;

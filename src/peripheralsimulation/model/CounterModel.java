@@ -128,4 +128,9 @@ public class CounterModel implements PeripheralModel {
 		return null;
 	}
 
+	@Override
+	public Peripheral getPeripheralType() {
+		return Peripheral.COUNTER;
+	}
+
 }

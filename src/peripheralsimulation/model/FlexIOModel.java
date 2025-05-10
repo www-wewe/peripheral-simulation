@@ -163,4 +163,9 @@ public class FlexIOModel implements PeripheralModel {
 		return config.readByAddress(addr);
 	}
 
+	@Override
+	public Peripheral getPeripheralType() {
+		return Peripheral.FLEXIO;
+	}
+
 }

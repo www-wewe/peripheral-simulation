@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import peripheralsimulation.engine.UserEvent;
+import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.ui.SimulationGuiChoice;
 
@@ -30,6 +31,9 @@ public final class UserPreferences {
 
 	/** The peripheral model associated with the user preferences */
 	private PeripheralModel peripheralModel;
+
+	/** The selected peripheral type for the simulation */
+	private Peripheral selectedPeripheralType;
 
 	/** The list of listeners for user preferences changes */
 	private List<UserPreferencesListener> listeners = new ArrayList<>();
@@ -272,4 +276,13 @@ public final class UserPreferences {
 		}
 		this.timeUnits = timeUnits;
 	}
+
+	public Peripheral getSelectedPeripheralType() {
+		return selectedPeripheralType;
+	}
+
+	public void setSelectedPeripheralType(Peripheral selectedPeripheralType) {
+		this.selectedPeripheralType = selectedPeripheralType;
+	}
+
 }

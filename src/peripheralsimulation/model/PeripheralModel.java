@@ -121,4 +121,11 @@ public interface PeripheralModel {
 		}
 	}
 
+	/**
+	 * Returns the type of peripheral.
+	 *
+	 * @return Peripheral type
+	 */
+	Peripheral getPeripheralType();
+
 }

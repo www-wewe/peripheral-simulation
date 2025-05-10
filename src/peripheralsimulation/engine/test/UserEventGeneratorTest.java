@@ -15,6 +15,7 @@ import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.engine.UserEvent;
 import peripheralsimulation.engine.UserEventGenerator;
 import peripheralsimulation.engine.UserEventType;
+import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 
 /**
@@ -128,6 +129,11 @@ public class UserEventGeneratorTest {
 
 		@Override
 		public Integer getRegisterValue(int registerAddress) {
+			return null;
+		}
+
+		@Override
+		public Peripheral getPeripheralType() {
 			return null;
 		}
 	}
