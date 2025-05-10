@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import peripheralsimulation.engine.UserEvent;
+import peripheralsimulation.io.ConfigIO.UserPreferencesBlock;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
 import peripheralsimulation.ui.SimulationGuiChoice;
@@ -294,6 +295,25 @@ public final class UserPreferences {
 
 	public void setExternalClockFrequency(int externalClockFrequency) {
 		this.externalClockFrequency = externalClockFrequency;
+	}
+
+	/**
+	 * Applies the user preferences from the given UserPreferencesBlock (imported
+	 * YAML file).
+	 *
+	 * @param preferences The UserPreferencesBlock containing the user preferences.
+	 */
+	public void apply(UserPreferencesBlock preferences) {
+		setMonitoringPeriod(preferences.monitoringPeriod());
+		setSimulationTimeRangeFrom(preferences.rangeFrom());
+		setSimulationTimeRangeTo(preferences.rangeTo());
+		setClockFrequency(preferences.clkFreq());
+		setExternalClockFrequency(preferences.extClkFreq());
+		setMillisToWait(preferences.waitMs());
+		setOnlyChanges(preferences.onlyChanges());
+		setSelectedOutputs(preferences.outputs());
+		setSelectedSimulationGUI(preferences.simulationGui());
+		setTimeUnits(preferences.timeUnit());
 	}
 
 }

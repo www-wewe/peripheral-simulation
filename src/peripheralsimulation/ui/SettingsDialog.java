@@ -1,11 +1,13 @@
 /** Copyright (c) 2025, Veronika Lenková */
 package peripheralsimulation.ui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -13,10 +15,14 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import peripheralsimulation.io.ConfigIO;
+import peripheralsimulation.io.ConfigIO.SimulationConfig;
 import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.CounterModel;
 import peripheralsimulation.model.FlexIOModel;
@@ -78,7 +84,8 @@ public class SettingsDialog extends Dialog {
 		addTextFieldsForClockFrequency(dialog);
 		addTimeScaleSelection(dialog);
 		addGuiSelection(dialog);
-		addImportButton(dialog);
+		addImportRegistersButton(dialog);
+		addConfigYamlButton(dialog);
 		return dialog;
 	}
 
@@ -275,7 +282,7 @@ public class SettingsDialog extends Dialog {
 	 *
 	 * @param dialog The dialog to which the button will be added.
 	 */
-	private void addImportButton(Composite dialog) {
+	private void addImportRegistersButton(Composite dialog) {
 		Button importBtn = new Button(dialog, SWT.PUSH);
 		importBtn.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		importBtn.setText("Import of registers");
@@ -307,6 +314,39 @@ public class SettingsDialog extends Dialog {
 				userPreferences.setPeripheralModel(peripheralModel);
 			}
 		});
+	}
+
+	/**
+	 * Add button for loading configuration from YAML file.
+	 *
+	 * @param dialog The dialog to which the button will be added.
+	 */
+	private void addConfigYamlButton(Composite dialog) {
+		FileDialog importDialog = new FileDialog(Display.getCurrent().getActiveShell(), SWT.OPEN);
+		importDialog.setText("Load configuration from YAML");
+		importDialog.setFilterExtensions(new String[] { "*.yaml" });
+
+		Button importYamlButton = new Button(dialog, SWT.PUSH);
+		importYamlButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		importYamlButton.setText("Load configuration from YAML");
+		importYamlButton.addListener(SWT.Selection, e -> {
+			String file = importDialog.open();
+			if (file == null) {
+				return;
+			}
+			try {
+				SimulationConfig config = ConfigIO.loadYaml(file);
+				userPreferences.apply(config.preferences());
+				userPreferences.setUserEvents(config.events());
+				MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Import Successful",
+						"Configuration settings were successfully imported.");
+			} catch (IOException | NumberFormatException ex) {
+				MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error during import",
+						"YAML file could not be loaded.\n" + ex.getMessage());
+			}
+		});
+
+		// TODO: export configuration to YAML
 	}
 
 }
