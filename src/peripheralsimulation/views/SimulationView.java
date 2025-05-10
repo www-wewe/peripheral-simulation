@@ -212,10 +212,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		case SYSTICKTIMER:
 			registerMap = RegisterUtils.convertToSysTickRegisterMap(registersNames2Values);
 			// fill in the fields from your exported data or from code
-			SysTickTimerConfig config = new SysTickTimerConfig(registerMap,
-					48e6, // mainClk
-					12e6 // externalClk
-			);
+			SysTickTimerConfig config = new SysTickTimerConfig(registerMap);
 			simulationModel = new SysTickTimerModel(config);
 			break;
 		case COUNTER:

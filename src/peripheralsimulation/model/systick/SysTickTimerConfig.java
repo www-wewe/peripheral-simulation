@@ -37,14 +37,6 @@ public class SysTickTimerConfig {
 
 	/*
 	 * ------------------------------------------------------------------ *
-	 * 						Clock frequencies 		    				  *
-	 * ------------------------------------------------------------------ *
-	 */
-	private double mainClk; // e.g. 48e6
-	private double externalClk; // e.g. 12e6
-
-	/*
-	 * ------------------------------------------------------------------ *
 	 * 							Register values	    					  *
 	 * ------------------------------------------------------------------ *
 	 */
@@ -64,18 +56,13 @@ public class SysTickTimerConfig {
 	 * Constructor for SysTickTimerConfig.
 	 *
 	 * @param registerMap RegisterMap object to access register values
-	 * @param mainClk     Main clock frequency
-	 * @param externalClk External clock frequency
 	 */
-	public SysTickTimerConfig(RegisterMap registerMap, double mainClk, double externalClk) {
+	public SysTickTimerConfig(RegisterMap registerMap) {
 		this.registerMap = registerMap;
 		this.SYST_CSR = registerMap.getRegisterValue(CSR_OFFSET);
 		this.SYST_RVR = registerMap.getRegisterValue(RVR_OFFSET) & RegisterUtils.BIT_MASK;
 		this.SYST_CVR = registerMap.getRegisterValue(CVR_OFFSET) & RegisterUtils.BIT_MASK;
 		this.SYST_CALIB = registerMap.getRegisterValue(CALIB_OFFSET);
-
-		this.mainClk = mainClk;
-		this.externalClk = externalClk;
 	}
 
 	// -------------- GET/SET for SYST_CSR bits --------------
@@ -153,15 +140,6 @@ public class SysTickTimerConfig {
 	// --------- GET for SYST_CALIB (read-only) ---------
 	public int getCALIB() {
 		return SYST_CALIB;
-	}
-
-	// -------------- Frequencies --------------
-	public double getMainClk() {
-		return mainClk;
-	}
-
-	public double getExternalClk() {
-		return externalClk;
 	}
 
 	/**

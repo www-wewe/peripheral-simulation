@@ -86,6 +86,9 @@ public final class UserPreferences {
 	/** Clock source frequency */
 	private int clockFrequency = 8_000_000; // 8 MHz
 
+	/** External clock frequency */
+	private int externalClockFrequency = 12_000_000; // 0 MHz
+
 	private UserPreferences() {
 		// Private constructor to prevent instantiation
 	}
@@ -283,6 +286,14 @@ public final class UserPreferences {
 
 	public void setSelectedPeripheralType(Peripheral selectedPeripheralType) {
 		this.selectedPeripheralType = selectedPeripheralType;
+	}
+
+	public int getExternalClockFrequency() {
+		return externalClockFrequency;
+	}
+
+	public void setExternalClockFrequency(int externalClockFrequency) {
+		this.externalClockFrequency = externalClockFrequency;
 	}
 
 }

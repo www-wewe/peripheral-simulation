@@ -52,6 +52,8 @@ public class SettingsDialog extends Dialog {
 	private Text simulationTimeRangeToTextField;
 	/** Text field for clock frequency */
 	private Text clockFrequencyTextField;
+	/** Text field for external clock frequency */
+	private Text externalClkFrequencyTextField;
 	/** Combo box for selecting the time scale */
 	private Combo timeScaleCombo;
 
@@ -73,7 +75,7 @@ public class SettingsDialog extends Dialog {
 		addTextFieldMillisToWait(dialog);
 		addTextFieldMonitoringFreq(dialog);
 		addTextFieldsForTimeRange(dialog);
-		addTextFieldForClockFrequency(dialog);
+		addTextFieldsForClockFrequency(dialog);
 		addTimeScaleSelection(dialog);
 		addGuiSelection(dialog);
 		addImportButton(dialog);
@@ -116,6 +118,10 @@ public class SettingsDialog extends Dialog {
 		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
 		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
 		userPreferences.setClockFrequency(Integer.parseInt(clockFrequencyTextField.getText()) * 1_000_000);
+		if (externalClkFrequencyTextField != null) {
+			userPreferences
+					.setExternalClockFrequency(Integer.parseInt(externalClkFrequencyTextField.getText()) * 1_000_000);
+		}
 		userPreferences.setTimeScaleUnits(timeScaleCombo.getText());
 		super.okPressed();
 	}
@@ -241,7 +247,7 @@ public class SettingsDialog extends Dialog {
 	 * 
 	 * @param dialog The dialog to which the text field will be added.
 	 */
-	private void addTextFieldForClockFrequency(Composite dialog) {
+	private void addTextFieldsForClockFrequency(Composite dialog) {
 		Label label = new Label(dialog, SWT.NONE);
 		label.setText("Clock frequency in MHz:");
 
@@ -250,6 +256,18 @@ public class SettingsDialog extends Dialog {
 		clockFrequencyTextField.setText(String.valueOf(userPreferences.getClockFrequency() / 1_000_000));
 		clockFrequencyTextField
 				.setToolTipText("Clock frequency in MHz. The simulation will be updated every X seconds.");
+
+		Peripheral peripheral = userPreferences.getSelectedPeripheralType();
+		if (peripheral == Peripheral.SYSTICKTIMER) {
+			Label label2 = new Label(dialog, SWT.NONE);
+			label2.setText("External clock frequency in MHz:");
+			externalClkFrequencyTextField = new Text(dialog, SWT.BORDER);
+			externalClkFrequencyTextField.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			externalClkFrequencyTextField.setText(userPreferences.getExternalClockFrequency() / 1_000_000 + "");
+			externalClkFrequencyTextField.setToolTipText(
+					"External clock frequency in MHz. Used when System Tick Timer is set to use external clock.");
+		}
+
 	}
 
 	/**
@@ -270,9 +288,7 @@ public class SettingsDialog extends Dialog {
 				switch (peripheral) {
 				case SYSTICKTIMER:
 					registerMap = RegisterUtils.convertToSysTickRegisterMap(newRegs);
-					SysTickTimerConfig config = new SysTickTimerConfig(registerMap, 48e6, // mainClk
-							12e6 // externalClk
-					);
+					SysTickTimerConfig config = new SysTickTimerConfig(registerMap);
 					peripheralModel = new SysTickTimerModel(config);
 					break;
 				case COUNTER:

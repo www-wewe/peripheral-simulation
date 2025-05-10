@@ -2,6 +2,7 @@
 package peripheralsimulation.model;
 
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.systick.SysTickOutputs;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.utils.RegisterUtils;
@@ -57,7 +58,8 @@ public class SysTickTimerModel implements PeripheralModel {
 	 * @param config
 	 */
 	private double calculateTickPeriod() {
-		double freq = config.isUseCpuClock() ? config.getMainClk() : config.getExternalClk();
+		double freq = config.isUseCpuClock() ? UserPreferences.getInstance().getClockFrequency()
+				: UserPreferences.getInstance().getExternalClockFrequency();
 		return (freq <= 0) ? 1.0 : (1.0 / freq);
 	}
 
