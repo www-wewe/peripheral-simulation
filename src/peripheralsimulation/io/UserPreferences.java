@@ -296,4 +296,23 @@ public final class UserPreferences {
 		this.externalClockFrequency = externalClockFrequency;
 	}
 
+	/**
+	 * Applies the user preferences from the given UserPreferencesBlock (imported
+	 * YAML file).
+	 *
+	 * @param preferences The UserPreferencesBlock containing the user preferences.
+	 */
+	public void apply(UserPreferencesBlock preferences) {
+		setMonitoringPeriod(preferences.getMonitoringPeriod());
+		setSimulationTimeRangeFrom(preferences.getRangeFrom());
+		setSimulationTimeRangeTo(preferences.getRangeTo());
+		setClockFrequency(preferences.getClkFreq());
+		setExternalClockFrequency(preferences.getExtClkFreq());
+		setMillisToWait(preferences.getWaitMs());
+		setOnlyChanges(preferences.isOnlyChanges());
+		setSelectedOutputs(preferences.getOutputs());
+		setSelectedSimulationGUI(preferences.getSimulationGui());
+		setTimeUnits(preferences.getTimeUnit());
+	}
+
 }
