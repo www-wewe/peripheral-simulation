@@ -96,7 +96,7 @@ public final class ConfigYamlUtils {
 			double period = toDouble(event.get("period"), 0);
 			int repeat = toInt(event.get("repeat"), 1);
 			UserEventType type = UserEventType.valueOf(String.valueOf(event.get("type")).toUpperCase());
-			int reg = toInt(event.get("reg"), 0);
+			int reg = toHexOrDec(event.get("reg"), 0);
 			int bit = toInt(event.get("bit"), 0);
 			int value = toInt(event.get("value"), 0);
 
@@ -122,6 +122,19 @@ public final class ConfigYamlUtils {
 
 	private static boolean toBoolean(Object o, boolean def) {
 		return (o instanceof Boolean b) ? b : (o != null) ? Boolean.parseBoolean(o.toString()) : def;
+	}
+
+	private static int toHexOrDec(Object o, int def) {
+		try {
+			if (o instanceof String stringToParse) {
+				if (stringToParse.startsWith("0x") || stringToParse.startsWith("0X")) {
+					return Integer.parseInt(stringToParse.substring(2), 16);
+				}
+			}
+			return toInt(o, def);
+		} catch (NumberFormatException e) {
+			return def;
+		}
 	}
 
 }

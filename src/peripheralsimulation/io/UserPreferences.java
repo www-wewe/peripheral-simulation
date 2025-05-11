@@ -303,6 +303,7 @@ public final class UserPreferences {
 	 * @param preferences The UserPreferencesBlock containing the user preferences.
 	 */
 	public void apply(UserPreferencesBlock preferences) {
+		setSelectedSimulationGUI(preferences.getSimulationGui());
 		setMonitoringPeriod(preferences.getMonitoringPeriod());
 		setSimulationTimeRangeFrom(preferences.getRangeFrom());
 		setSimulationTimeRangeTo(preferences.getRangeTo());
@@ -311,7 +312,6 @@ public final class UserPreferences {
 		setMillisToWait(preferences.getWaitMs());
 		setOnlyChanges(preferences.isOnlyChanges());
 		setSelectedOutputs(preferences.getOutputs());
-		setSelectedSimulationGUI(preferences.getSimulationGui());
 		setTimeUnits(preferences.getTimeUnit());
 	}
 

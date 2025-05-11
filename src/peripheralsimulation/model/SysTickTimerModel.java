@@ -200,7 +200,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public void setRegisterValue(int registerAddress, int value) {
-		int offset = registerAddress & 0xffff;
+		int offset = registerAddress & 0xfff;
 		switch (offset) {
 		case SysTickTimerConfig.CSR_OFFSET:
 			config.setCSR(value);
@@ -221,7 +221,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	@Override
 	public Integer getRegisterValue(int registerAddress) {
-		int offset = registerAddress & 0xffff;
+		int offset = registerAddress & 0xfff;
 		switch (offset) {
 		case SysTickTimerConfig.CSR_OFFSET:
 			return config.getCSR();
