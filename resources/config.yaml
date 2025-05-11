@@ -1,0 +1,19 @@
+preferences:
+  monitoringPeriod: 5e-6    # 5 µs
+  rangeFrom: 0.0            # od-do v sekundách
+  rangeTo: 0.1
+  clkFreq: 48_000_000               # MHz
+  extClkFreq: 12_000_000            # MHz
+  waitMs: 0
+  onlyChanges: true
+  outputs: [ "INTERRUPT" ]
+  gui: GRAPH                # GRAPH | TABLE
+  timeUnit: ms              # ms | us | ns
+
+events:
+  - start: 0.010        # s
+    period: 0.010       # s, 0 == one–shot
+    repeat: 5
+    type:   TOGGLE_BIT
+    reg:    0xE000E010
+    bit:    1
