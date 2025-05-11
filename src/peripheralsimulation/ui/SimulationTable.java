@@ -63,6 +63,10 @@ public class SimulationTable implements SimulationGUI {
 	public void update(double timeValue, Object[] outputs) {
 		// Build an array of strings for the row (one per column)
 		int colCount = table.getColumnCount();
+		if (colCount == 0) {
+			createColumnsInTable();
+			colCount = table.getColumnCount();
+		}
 		String[] rowText = new String[colCount];
 		rowText[0] = formatTime(timeValue);
 		// true if at least one output changed (for the onlyChanges mode)

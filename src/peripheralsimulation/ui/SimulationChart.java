@@ -90,11 +90,12 @@ public class SimulationChart implements SimulationGUI {
 		boolean anyChange = false;
 		int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
 		// For each user-selected output:
-		for (int outputIndex : selectedOutputsIndices) {
-			if (outputIndex >= seriesList.size()) {
+		for (int position = 0;  position < selectedOutputsIndices.length; position++) {
+			int outputIndex = selectedOutputsIndices[position];
+			if (position >= seriesList.size()) {
 				createSeriesForOutput(outputIndex);
 			}
-			SeriesData outputData = seriesList.get(outputIndex);
+			SeriesData outputData = seriesList.get(position);
 			Object outputValue = outputs[outputIndex];
 			double numericVal = convertToDouble(outputValue);
 
