@@ -314,6 +314,7 @@ public class SettingsDialog extends Dialog {
 					throw new IllegalArgumentException("Unknown peripheral.");
 				}
 				userPreferences.setPeripheralModel(peripheralModel);
+				close();
 			}
 		});
 	}
@@ -343,7 +344,7 @@ public class SettingsDialog extends Dialog {
 				close();
 				MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Import Successful",
 						"Configuration settings were successfully imported.");
-			} catch (IOException | NumberFormatException ex) {
+			} catch (IOException | IllegalArgumentException ex) {
 				MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error during import",
 						"YAML file could not be loaded.\n" + ex.getMessage());
 			}
