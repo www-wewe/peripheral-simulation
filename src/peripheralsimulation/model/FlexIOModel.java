@@ -49,9 +49,6 @@ public class FlexIOModel implements PeripheralModel {
 	/** Number of shifters */
 	private int shifterCount;
 
-	/** Output array to hold the current output values */
-	private Object[] outputs;
-
 	/**
 	 * Constructor for FlexIOModel.
 	 *
@@ -72,7 +69,6 @@ public class FlexIOModel implements PeripheralModel {
 		outputNames = names.toArray(String[]::new);
 		timersCount = timers.length;
 		shifterCount = shifters.length;
-		outputs = new Object[timersCount + shifterCount];
 		/* If we want true pin-based outputs, build PIN0…PINn instead: */
 //		int pinCount = config.getPinCount();
 //		for (int i = 0; i < pinCount; i++) {
@@ -133,6 +129,7 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public Object[] getOutputs() {
+		Object[] outputs = new Object[timersCount + shifterCount];
 		/* TIMERs: output level after applying PINPOL */
 		for (int i = 0; i < timersCount; i++) {
 			outputs[i] = timers[i].isClockLevelHigh() ? 1 : 0;

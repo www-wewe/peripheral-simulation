@@ -159,15 +159,18 @@ public class FlexIOTimer {
 
 		/*---------------- DUAL-8-bit PWM ----------------------------*/
 		case TIMOD_PWM -> {
-			if (--counterLow == 0) {
-				counterLow = lowReload;
-				outLevel = !outLevel;
-				edge = true;
-			}
-			if (!outLevel && --counterHigh == 0) { // OUT=low => decrement high
-				counterHigh = highReload;
-				outLevel = !outLevel;
-				edge = true;
+			if (outLevel) {
+				if (--counterLow == 0) {
+					counterLow = lowReload;
+					outLevel = false;
+					edge = true;
+				}
+			} else {
+				if (--counterHigh == 0) {
+					counterHigh = highReload;
+					outLevel = true;
+					edge = true;
+				}
 			}
 		}
 
