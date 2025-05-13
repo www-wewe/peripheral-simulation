@@ -11,6 +11,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import peripheralsimulation.engine.SimulationEngine;
+import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.SysTickTimerModel;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.utils.RegisterMap;
@@ -37,9 +38,7 @@ public class SysTickTimerModelTest {
 				SysTickTimerConfig.CVR_OFFSET, 0, // SYST_CVR
 				SysTickTimerConfig.CALIB_OFFSET, 0 // SYST_CALIB
 		)));
-		SysTickTimerConfig config = new SysTickTimerConfig(map, 1, // mainClk
-				0 // externalClk
-		);
+		SysTickTimerConfig config = new SysTickTimerConfig(map);
 		SysTickTimerModel model = new SysTickTimerModel(config);
 
 		SimulationEngine dummyEngine = new SimulationEngine((t, outs) -> {
@@ -70,9 +69,7 @@ public class SysTickTimerModelTest {
 				SysTickTimerConfig.CVR_OFFSET, 0, // SYST_CVR
 				SysTickTimerConfig.CALIB_OFFSET, 0 // SYST_CALIB
 		)));
-		SysTickTimerConfig config = new SysTickTimerConfig(map, 48e6, // mainClk
-				12e6 // externalClk
-		);
+		SysTickTimerConfig config = new SysTickTimerConfig(map);
 		SysTickTimerModel model = new SysTickTimerModel(config);
 
 		model.writeCVR(123);
