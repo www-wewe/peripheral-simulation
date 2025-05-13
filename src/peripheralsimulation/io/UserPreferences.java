@@ -239,10 +239,6 @@ public final class UserPreferences {
 		return timeUnits;
 	}
 
-	public void setTimeUnits(String timeUnits) {
-		this.timeUnits = timeUnits;
-	}
-
 	public DecimalFormat getTimeFormat() {
 		return TIME_FORMAT;
 	}
@@ -312,7 +308,7 @@ public final class UserPreferences {
 		setMillisToWait(preferences.getWaitMs());
 		setOnlyChanges(preferences.isOnlyChanges());
 		setSelectedOutputs(preferences.getOutputs());
-		setTimeUnits(preferences.getTimeUnit());
+		setTimeScaleUnits(preferences.getTimeUnit());
 	}
 
 }
