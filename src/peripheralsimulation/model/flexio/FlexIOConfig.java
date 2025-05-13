@@ -425,7 +425,7 @@ public class FlexIOConfig {
 	public void setTimCmp(int index, int value) {
 		registerMap.setRegisterValue(TIMCMP0_OFFSET + index * TIMER_STRIDE, value);
 		TIMCMP[index] = value;
-		timers[index].setCmp(value);
+		timers[index].setTimerCompareValue(value);
 	}
 
 	/* ================================================================== */
