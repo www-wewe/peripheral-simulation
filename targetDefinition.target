@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="Running Platform">
+	<locations>
+		<location path="${eclipse_home}" type="Profile"/>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/swtchart/releases/0.14.0/repository/"/>
+			<unit id="org.eclipse.swtchart.feature.feature.group" version="0.14.0.202301260747"/>
+			<unit id="org.eclipse.swtchart.feature.source.feature.group" version="0.14.0.202301260747"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20230531010532/repository"/>
+			<unit id="org.yaml.snakeyaml" version="1.27.0.v20221112-0806"/>
+		</location>
+	</locations>
+	<environment>
+		<arch>x86_64</arch>
+		<os>win32</os>
+		<ws>win32</ws>
+		<nl>sk_SK</nl>
+	</environment>
+</target>
