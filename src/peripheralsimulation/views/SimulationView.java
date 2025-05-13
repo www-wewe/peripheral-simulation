@@ -131,28 +131,21 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		runSimulationButton.setText(RUN_SIMULATION_BTN_TEXT);
 		runSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		runSimulationButton.addListener(SWT.Selection, event -> runSimulation());
-		if (simulationEngine == null || !simulationEngine.isSimulationRunning()) {
-			runSimulationButton.setEnabled(true);
-		} else {
-			runSimulationButton.setEnabled(false);
-		}
+		runSimulationButton.setEnabled(false);
 
 		// Stop simulation button
 		stopSimulationButton = new Button(parent, SWT.PUSH);
 		stopSimulationButton.setText(STOP_SIMULATION_BTN_TEXT);
 		stopSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		stopSimulationButton.addListener(SWT.Selection, event -> stopSimulation());
-		if (simulationEngine != null && simulationEngine.isSimulationRunning()) {
-			stopSimulationButton.setEnabled(true);
-		} else {
-			stopSimulationButton.setEnabled(false);
-		}
+		stopSimulationButton.setEnabled(false);
 
 		// Clear simulation button
 		clearSimulationButton = new Button(parent, SWT.PUSH);
 		clearSimulationButton.setText(CLEAR_SIMULATION_BTN_TEXT);
 		clearSimulationButton.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
 		clearSimulationButton.addListener(SWT.Selection, event -> clearGUI());
+		clearSimulationButton.setEnabled(false);
 
 		// Combobox for selecting the peripheral
 		Label comboLabel = new Label(parent, SWT.NONE);
@@ -164,17 +157,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		for (Peripheral peripheral : Peripheral.values()) {
 			selectPeripheralCombo.add(peripheral.toString());
 		}
-		selectPeripheralCombo.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				updateSelectedPeripheralModel();
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-				updateSelectedPeripheralModel();
-			}
-		});
 
 		// Button which opens the SettingsDialog
 		Button settingsButton = new Button(parent, SWT.PUSH);
@@ -184,6 +166,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			SettingsDialog dialog = new SettingsDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
 		});
+		settingsButton.setEnabled(false);
 
 		// Button which opens the UserEventDialog
 		Button userEventButton = new Button(parent, SWT.PUSH);
@@ -192,6 +175,21 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		userEventButton.addListener(SWT.Selection, event -> {
 			UserEventDialog dialog = new UserEventDialog(workbench.getActiveWorkbenchWindow().getShell());
 			dialog.open();
+		});
+		userEventButton.setEnabled(false);
+
+		selectPeripheralCombo.addSelectionListener(new SelectionListener() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateSelectedPeripheralModel();
+				settingsButton.setEnabled(true);
+				userEventButton.setEnabled(true);
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+				updateSelectedPeripheralModel();
+			}
 		});
 	}
 
