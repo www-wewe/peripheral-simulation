@@ -34,6 +34,9 @@ public class FlexIOTimer {
 	private int lowReload, highReload;
 	/** Boolean flag indicating if the timer is running */
 	private boolean running;
+	private int stopDelay; // odpočítava sa, keď timer stojí
+	private boolean stopOnCompare; // TSTOP bit-0
+	private boolean stopOnDisable; // TSTOP bit-1
 
 	/*****************************************************************/
 	/* TIMCTL */
@@ -124,6 +127,9 @@ public class FlexIOTimer {
 		this.timerEnable = (timerConfigRegister >> 8) & 7;
 		this.timerStopBit = (timerConfigRegister >> 4) & 3;
 		this.timerStartBit = (timerConfigRegister >> 1) & 1;
+
+		stopOnCompare = (timerStopBit & 0b01) != 0;
+		stopOnDisable = (timerStopBit & 0b10) != 0;
 	}
 
 	public void setTimerCompareValue(int cmp) {
@@ -172,8 +178,19 @@ public class FlexIOTimer {
 	 */
 	public Edge tick() {
 
-		if (!running) { // was stop bit
-			running = true;
+		// Stop bit
+		if (stopDelay > 0) {
+			if (--stopDelay == 0)
+				running = true; // znova sa spustí
+			return Edge.NONE; // žiadna hrana
+		}
+
+		if (!running) {
+			if (stopOnDisable && stopDelay == 0) {
+				/* stop-bit on compare */
+				stopDelay = lowReload * 2; // 1 bit-time
+			}
+			return Edge.NONE;
 		}
 
 		boolean edge = false;
@@ -202,8 +219,14 @@ public class FlexIOTimer {
 				counterLow = lowReload;
 				outLevel = !outLevel;
 				edge = true;
+
 				if (--counterHigh == 0) {
 					counterHigh = highReload;
+					/* stop-bit on compare */
+					if (stopOnCompare) {
+						stopDelay = lowReload * 2; // 1 bit-čas (poz. + neg. hrana)
+						running = false;
+					}
 					config.setTimStat(1 << index);
 				}
 			}
@@ -211,12 +234,6 @@ public class FlexIOTimer {
 
 		default -> {
 			/* ostatné TIMOD neimplementované */ }
-		}
-
-		/*------------------ Stop bit -------------------------*/
-		if (edge && timerStopBit != 0 && counterHigh == highReload) {
-			// stop simulation for one cycle
-			running = false;
 		}
 
 		edge = (outLevel != prevOutLevel);
@@ -238,14 +255,6 @@ public class FlexIOTimer {
 
 	public int getHighReload() {
 		return highReload;
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
 	}
 
 }
