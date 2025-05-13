@@ -1,13 +1,13 @@
 preferences:
-  monitoringPeriod: 5e-6    # 5 µs
-  rangeFrom: 0.0            # od-do v sekundách
+  monitoringPeriod: 0
+  rangeFrom: 0.0
   rangeTo: 0.1
-  clkFreq: 48_000_000               # MHz
-  extClkFreq: 12_000_000            # MHz
+  clkFreq: 48_000_000               # 48MHz
+  extClkFreq: 12_000_000            # 12MHz
   waitMs: 0
   onlyChanges: true
   outputs: [ "INTERRUPT" ]
-  gui: GRAPH                # GRAPH | TABLE
+  gui: TABLE                # GRAPH | TABLE
   timeUnit: ms              # ms | us | ns
 
 events:
