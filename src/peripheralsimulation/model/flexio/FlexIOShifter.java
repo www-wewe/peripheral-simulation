@@ -119,16 +119,15 @@ public class FlexIOShifter {
 	/**
 	 * Simulate the shifter's operation based on the shifter mode.
 	 *
-	 * @param clockEdge The clock edge (rising or falling) that triggers the shift
-	 *                  operation.
+	 * @param edge The clock edge (rising or falling) that triggers the shift
+	 *             operation.
 	 */
-	public void shift(boolean clockEdge) {
-		if (timer == null || shifterMode == SMOD_DISABLED || !clockEdge)
+	public void shift(Edge edge) {
+		if (timer == null || shifterMode == SMOD_DISABLED || edge == Edge.NONE)
 			return;
 
 		// * vyber, či je to hrana, na ktorej máme shiftovať */
-		boolean posEdge = timer.isClockLevelHigh();
-		if ((timerPolarity == 0 && !posEdge) || (timerPolarity == 1 && posEdge))
+		if ((timerPolarity == 0 && edge != Edge.POSEDGE) || (timerPolarity == 1 && edge != Edge.NEGEDGE))
 			return;
 
 		/*
@@ -138,6 +137,7 @@ public class FlexIOShifter {
 		int wordBits = timer.getHighReload();
 
 		// pre demo – SHIFT na každom log. 1 (OUT high):
+		// Only sstart=10 a sstop=11 is implemented
 		switch (shifterMode) {
 
 		/* ============ TRANSMIT ============ */
@@ -234,6 +234,7 @@ public class FlexIOShifter {
 
 	public void setBuffer(int buffer) {
 		this.shiftBuffer = buffer;
+		this.bufValid = true;
 	}
 
 }

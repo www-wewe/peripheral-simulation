@@ -1,0 +1,10 @@
+preferences:
+  monitoringPeriod: 0
+  rangeFrom: 0.0
+  rangeTo: 1.0E-4           # 100us
+  clkFreq: 8_000_000        # 8MHz
+  waitMs: 0
+  onlyChanges: true
+  outputs: [ "Timer0_OUT" ]
+  gui: GRAPH 
+  timeUnit: us

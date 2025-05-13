@@ -190,8 +190,8 @@ public class FlexIOConfig {
 
 		shifters = new FlexIOShifter[shiftersCount];
 		timers = new FlexIOTimer[timersCount];
-		Arrays.setAll(shifters, i -> new FlexIOShifter(this, i));
 		Arrays.setAll(timers, i -> new FlexIOTimer(this, i));
+		Arrays.setAll(shifters, i -> new FlexIOShifter(this, i));
 	}
 
 	/* ================================================================== */

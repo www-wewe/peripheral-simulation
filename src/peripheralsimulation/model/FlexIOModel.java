@@ -6,6 +6,7 @@ import java.util.List;
 
 import peripheralsimulation.engine.SimulationEngine;
 import peripheralsimulation.io.UserPreferences;
+import peripheralsimulation.model.flexio.Edge;
 import peripheralsimulation.model.flexio.FlexIOConfig;
 import peripheralsimulation.model.flexio.FlexIOShifter;
 import peripheralsimulation.model.flexio.FlexIOTimer;
@@ -92,7 +93,7 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public void update(SimulationEngine engine) {
-		boolean[] edges = new boolean[timers.length];
+		Edge[] edges = new Edge[timers.length];
 		// timers
 		for (int i = 0; i < timers.length; i++) {
 			// decrement timer, compare with CMP, set/clear TIMSTAT bits, trigger shifters,
@@ -103,7 +104,7 @@ public class FlexIOModel implements PeripheralModel {
 		for (FlexIOShifter shifter : shifters) {
 			// depending on SMOD/TIMSEL/INSRC/etc., shift bits in/out of the buffer,
 			// update SHIFTSTAT/SHIFTERR, feed data to next shifter or pin, etc.
-			boolean clockEdge = edges[shifter.getTimerSelect()];
+			Edge clockEdge = edges[shifter.getTimerSelect()];
 			shifter.shift(clockEdge);
 		}
 

@@ -28,6 +28,8 @@ public class FlexIOTimer {
 	private int counterLow, counterHigh;
 	/** Actual output level */
 	private boolean outLevel;
+	/** Previous output level */
+	private boolean prevOutLevel;
 	/** Reload value (low / high) from CMP register */
 	private int lowReload, highReload;
 	/** Boolean flag indicating if the timer is running */
@@ -154,6 +156,7 @@ public class FlexIOTimer {
 		counterLow = lowReload;
 		counterHigh = highReload;
 		outLevel = (timerOutput & 1) == 0; // RM: 00/10 -> logic 1
+		prevOutLevel = outLevel;
 		// Timer output also decides the initial state of the pin after reset.
 		running = true;
 		// Now it is always true, but should be running according timerEnable, timerDisable
@@ -167,7 +170,7 @@ public class FlexIOTimer {
 	 *
 	 * @return true if the output level changed, false otherwise.
 	 */
-	public boolean tick() {
+	public Edge tick() {
 
 		if (!running) { // was stop bit
 			running = true;
@@ -216,7 +219,13 @@ public class FlexIOTimer {
 			running = false;
 		}
 
-		return edge;
+		edge = (outLevel != prevOutLevel);
+		Edge result = Edge.NONE;
+		if (edge) {
+			result = outLevel ? Edge.POSEDGE : Edge.NEGEDGE;
+		}
+		prevOutLevel = outLevel;
+		return result;
 	}
 
 	public boolean isClockLevelHigh() {
