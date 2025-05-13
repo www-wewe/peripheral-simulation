@@ -38,31 +38,31 @@ public class FlexIOShifter {
 	/*****************************************************************/
 
 	/** Mode of the shifter (disabled, RX, TX, Match store, etc.) */
-	private int smod;
+	private int shifterMode;
 	/** Pin polarity, 0 - Pin is active high, 1 - active low */
-	private int pinPol;
+	private int shifterPinPolarity;
 	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
-	private int pinSel;
+	private int shifterPinSelect;
 	/** Pin configuration (output disabled, open drain, etc.) */
-	private int pinCfg;
+	private int shifterPinConfiguration;
 	/** Timer polarity, 0 - Shift on posedge of Shift clock, 1 - on negative edge */
-	private int timPol;
+	private int timerPolarity;
 	/** Timer selection, 0 - Timer 0, 1 - Timer 1, etc. */
-	private int timSel;
+	private int timerSelect;
 
 	/*****************************************************************/
 	/* SHIFTCTL */
 	/*****************************************************************/
 
 	/** Start bit, allows automatic start bit insertion */
-	private int sstart;
+	private int shifterStartBit;
 	/** Stop bit, allows automatic stop bit insertion */
-	private int sstop;
+	private int shifterStopBit;
 	/** Input source, 0 - Pin, 1 - Shifter N+1 output */
-	private int insrc;
+	private int inputSource;
 
 	/** SHIFBUF - Shifter buffer */
-	private int buffer;
+	private int shiftBuffer;
 
 	/**
 	 * Constructor for FlexIOShifter.
@@ -84,14 +84,14 @@ public class FlexIOShifter {
 	 * @param shifterControlRegister The control register value.
 	 */
 	public void setControlRegister(int shifterControlRegister) {
-		this.smod = shifterControlRegister & 0x07;
-		this.pinPol = (shifterControlRegister >> 7) & 1;
-		this.pinSel = (shifterControlRegister >> 8) & 7;
-		this.pinCfg = (shifterControlRegister >> 16) & 3;
-		this.timPol = (shifterControlRegister >> 23) & 1;
-		this.timSel = (shifterControlRegister >> 24) & 3;
-		if (timSel < config.getTimers().length) {
-			this.timer = config.getTimers()[timSel];
+		this.shifterMode = shifterControlRegister & 0x07;
+		this.shifterPinPolarity = (shifterControlRegister >> 7) & 1;
+		this.shifterPinSelect = (shifterControlRegister >> 8) & 7;
+		this.shifterPinConfiguration = (shifterControlRegister >> 16) & 3;
+		this.timerPolarity = (shifterControlRegister >> 23) & 1;
+		this.timerSelect = (shifterControlRegister >> 24) & 3;
+		if (timerSelect < config.getTimers().length) {
+			this.timer = config.getTimers()[timerSelect];
 		}
 	}
 
@@ -101,9 +101,9 @@ public class FlexIOShifter {
 	 * @param shifterConfigRegister The configuration register value.
 	 */
 	public void setConfigRegister(int shifterConfigRegister) {
-		this.sstart = (shifterConfigRegister >> 0) & 3;
-		this.sstop = (shifterConfigRegister >> 4) & 3;
-		this.insrc = (shifterConfigRegister >> 8) & 1;
+		this.shifterStartBit = (shifterConfigRegister >> 0) & 3;
+		this.shifterStopBit = (shifterConfigRegister >> 4) & 3;
+		this.inputSource = (shifterConfigRegister >> 8) & 1;
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class FlexIOShifter {
 		bitCnt = 0;
 		startDone = false;
 		bufValid = false;
-		pinLevel = (pinPol == 1); // default HIGH (= 1) → po XOR môže byť 0
+		pinLevel = (shifterPinPolarity == 1); // default HIGH (= 1) → po XOR môže byť 0
 	}
 
 	/**
@@ -123,12 +123,12 @@ public class FlexIOShifter {
 	 *                  operation.
 	 */
 	public void shift(boolean clockEdge) {
-		if (timer == null || smod == SMOD_DISABLED || !clockEdge)
+		if (timer == null || shifterMode == SMOD_DISABLED || !clockEdge)
 			return;
 
 		// * vyber, či je to hrana, na ktorej máme shiftovať */
 		boolean posEdge = timer.isClockLevelHigh();
-		if ((timPol == 0 && !posEdge) || (timPol == 1 && posEdge))
+		if ((timerPolarity == 0 && !posEdge) || (timerPolarity == 1 && posEdge))
 			return;
 
 		/*
@@ -138,33 +138,33 @@ public class FlexIOShifter {
 		int wordBits = timer.getHighReload();
 
 		// pre demo – SHIFT na každom log. 1 (OUT high):
-		switch (smod) {
+		switch (shifterMode) {
 
 		/* ============ TRANSMIT ============ */
 		case SMOD_TRANSMIT -> {
 
 			/* (1) start-bit */
-			if (sstart == 0b10 && !startDone) {
-				pinLevel = (pinPol == 1); // start-bit value 0 (RM)
+			if (shifterStartBit == 0b10 && !startDone) {
+				pinLevel = (shifterPinPolarity == 1); // start-bit value 0 (RM)
 				startDone = true;
 				return;
 			}
 
 			/* (2) data bits */
-			boolean bit = (buffer & 1) != 0;
-			pinLevel = (bit ^ (pinPol == 1));
-			buffer >>>= 1;
+			boolean bit = (shiftBuffer & 1) != 0;
+			pinLevel = (bit ^ (shifterPinPolarity == 1));
+			shiftBuffer >>>= 1;
 
 			/* (3) stop-bit po dosiahnutí bit-count */
 			if (++bitCnt == wordBits) {
-				if (sstop == 0b11) { // stop = ‘1’
-					pinLevel = !(pinPol == 1);
+				if (shifterStopBit == 0b11) { // stop = ‘1’
+					pinLevel = !(shifterPinPolarity == 1);
 				}
 				// prázdny SHIFTBUF? → underrun
 				if (!bufValid)
 					config.setShiftErr(1 << index);
 				/* automatický load novej hodnoty do shiftra */
-				buffer = config.getShiftBuf(index);
+				shiftBuffer = config.getShiftBuf(index);
 				bitCnt = 0;
 				bufValid = false;
 				startDone = false;
@@ -177,8 +177,8 @@ public class FlexIOShifter {
 		case SMOD_RECEIVE -> {
 
 			/* start-bit kontrola */
-			if (!startDone && sstart == 0b10) {
-				boolean start = timer.isClockLevelHigh() ^ (pinPol == 1);
+			if (!startDone && shifterStartBit == 0b10) {
+				boolean start = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
 				if (start)
 					return; // ešte sme v start-bite
 				startDone = true; // hrana do high = stred 1. bitu
@@ -186,27 +186,27 @@ public class FlexIOShifter {
 
 			/* sample input */
 			boolean inBit;
-			if (insrc == 0) { // z pinu
-				inBit = timer.isClockLevelHigh() ^ (pinPol == 1);
+			if (inputSource == 0) { // z pinu
+				inBit = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
 			} else { // z výstupu (N+1) shiftra
 				FlexIOShifter next = config.getShifters()[(index + 1) % config.getShiftersCount()];
 				inBit = next.pinLevel;
 			}
-			buffer >>>= 1;
+			shiftBuffer >>>= 1;
 			if (inBit)
-				buffer |= 0x8000_0000;
+				shiftBuffer |= 0x8000_0000;
 
 			if (++bitCnt == wordBits) {
 				/* stop-bit check */
-				if (sstop == 0b11) {
-					boolean stop = timer.isClockLevelHigh() ^ (pinPol == 1);
+				if (shifterStopBit == 0b11) {
+					boolean stop = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
 					if (!stop)
 						config.setShiftErr(1 << index); // chyba!
 				}
 				if (bufValid) {
 					config.setShiftErr(1 << index);
 				}
-				config.setShiftBuf(index, buffer); // presun do SHIFTBUF
+				config.setShiftBuf(index, shiftBuffer); // presun do SHIFTBUF
 				bufValid = true;
 				config.setShiftStat(1 << index); // SSF=1
 				bitCnt = 0;
@@ -228,92 +228,12 @@ public class FlexIOShifter {
 		return pinLevel;
 	}
 
-	public int getIndex() {
-		return index;
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
-	}
-
-	public int getSmod() {
-		return smod;
-	}
-
-	public void setSmod(int mode) {
-		this.smod = mode;
-	}
-
-	public int getPinSel() {
-		return pinSel;
-	}
-
-	public void setPinSel(int pinSel) {
-		this.pinSel = pinSel;
-	}
-
-	public int getPinCfg() {
-		return pinCfg;
-	}
-
-	public void setPinCfg(int pinCfg) {
-		this.pinCfg = pinCfg;
-	}
-
-	public int getPinPol() {
-		return pinPol;
-	}
-
-	public void setPinPol(int pinPol) {
-		this.pinPol = pinPol;
-	}
-
-	public int getTimSel() {
-		return timSel;
-	}
-
-	public void setTimSel(int timSel) {
-		this.timSel = timSel;
-	}
-
-	public int getTimPol() {
-		return timPol;
-	}
-
-	public void setTimPol(int timPol) {
-		this.timPol = timPol;
-	}
-
-	public int getSstart() {
-		return sstart;
-	}
-
-	public void setSstart(int sstart) {
-		this.sstart = sstart;
-	}
-
-	public int getSstop() {
-		return sstop;
-	}
-
-	public void setSstop(int sstop) {
-		this.sstop = sstop;
-	}
-
-	public int getInsrc() {
-		return insrc;
-	}
-
-	public void setInsrc(int insrc) {
-		this.insrc = insrc;
-	}
-
-	public int getBuffer() {
-		return buffer;
+	public int getTimerSelect() {
+		return timerSelect;
 	}
 
 	public void setBuffer(int buffer) {
-		this.buffer = buffer;
+		this.shiftBuffer = buffer;
 	}
 
 }

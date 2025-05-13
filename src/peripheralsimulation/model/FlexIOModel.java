@@ -62,9 +62,9 @@ public class FlexIOModel implements PeripheralModel {
 		/* Create output names: first all TIMER outputs, then SHIFTER pins */
 		List<String> names = new ArrayList<>();
 		for (int i = 0; i < timers.length; i++)
-			names.add("T" + i + "_OUT");
+			names.add("Timer" + i + "_OUT");
 		for (int i = 0; i < shifters.length; i++)
-			names.add("S" + i + "_PIN");
+			names.add("Shifter" + i + "_PIN");
 
 		outputNames = names.toArray(String[]::new);
 		timersCount = timers.length;
@@ -103,7 +103,7 @@ public class FlexIOModel implements PeripheralModel {
 		for (FlexIOShifter shifter : shifters) {
 			// depending on SMOD/TIMSEL/INSRC/etc., shift bits in/out of the buffer,
 			// update SHIFTSTAT/SHIFTERR, feed data to next shifter or pin, etc.
-			boolean clockEdge = edges[shifter.getTimSel()];
+			boolean clockEdge = edges[shifter.getTimerSelect()];
 			shifter.shift(clockEdge);
 		}
 
