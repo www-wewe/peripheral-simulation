@@ -162,6 +162,7 @@ public class SimulationChart implements SimulationGUI {
 			outputData.series.setYSeries(ys);
 		}
 
+		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
 		// Adjust axis range so we can see everything
 		chart.getAxisSet().adjustRange();
 
