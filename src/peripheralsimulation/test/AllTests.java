@@ -8,6 +8,7 @@ import peripheralsimulation.engine.test.SimulationEngineTest;
 import peripheralsimulation.engine.test.SimulationEventTest;
 import peripheralsimulation.engine.test.UserEventGeneratorTest;
 import peripheralsimulation.model.test.CounterModelTest;
+import peripheralsimulation.model.test.FlexIOModelTest;
 import peripheralsimulation.model.test.SysTickTimerModelTest;
 
 /**
@@ -23,7 +24,8 @@ import peripheralsimulation.model.test.SysTickTimerModelTest;
 	    SimulationEventTest.class,
         UserEventGeneratorTest.class,
         CounterModelTest.class,
-        SysTickTimerModelTest.class
+        SysTickTimerModelTest.class,
+        FlexIOModelTest.class,
 })
 public class AllTests {
 	/*
