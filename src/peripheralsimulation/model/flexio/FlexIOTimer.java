@@ -37,6 +37,7 @@ public class FlexIOTimer {
 	private int stopDelay; // odpočítava sa, keď timer stojí
 	private boolean stopOnCompare; // TSTOP bit-0
 	private boolean stopOnDisable; // TSTOP bit-1
+	private boolean stopPending;   // čakáme na hranu, kde treba vložiť pauzu
 
 	/*****************************************************************/
 	/* TIMCTL */
@@ -141,8 +142,7 @@ public class FlexIOTimer {
 		}
 		case TIMOD_BAUDBIT -> { // baud-divider + bits*2-1
 			lowReload = ((cmp & 0xFF) + 1) * 2;
-			highReload = ((cmp >>> 8) & 0xFF) + 1;
-			highReload = (highReload + 1) / 2; // bits = (N+1)/2
+			highReload = ((cmp >>> 8) & 0xFF) + 1; // N = CMP + 1
 		}
 		case TIMOD_16BIT -> { // celý 16-bit counter
 			lowReload = (cmp + 1) * 2; // divider
@@ -168,6 +168,7 @@ public class FlexIOTimer {
 		// Now it is always true, but should be running according timerEnable, timerDisable
 		// Timer reset is not implemented yet
 		// Timer decrement is always from the clock, the other source is not implemented yet
+		stopPending = false;
 	}
 
 	/**
@@ -187,7 +188,7 @@ public class FlexIOTimer {
 
 		if (!running) {
 			if (stopOnDisable && stopDelay == 0) {
-				/* stop-bit on compare */
+				/* stop-bit on disable */
 				stopDelay = lowReload * 2; // 1 bit-time
 			}
 			return Edge.NONE;
@@ -217,15 +218,22 @@ public class FlexIOTimer {
 		case TIMOD_BAUDBIT -> {
 			if (--counterLow == 0) {
 				counterLow = lowReload;
-				outLevel = !outLevel;
+				outLevel = !outLevel; // ⇨ hrana
 				edge = true;
 
+				/* ––––– ak sme už na stop-bite, tu timer na chvíľu zastavíme ––––– */
+				if (stopPending) {
+					stopDelay = lowReload * 2; // 1 bit-time
+					running = false;
+					stopPending = false;
+				}
+
+				/* ––– odpočítavanie počtu bitov v slove ––– */
 				if (--counterHigh == 0) {
 					counterHigh = highReload;
-					/* stop-bit on compare */
+
 					if (stopOnCompare) {
-						stopDelay = lowReload * 2; // 1 bit-čas (poz. + neg. hrana)
-						running = false;
+						stopPending = true; // pauzu vložíme na ďalšej hrane
 					}
 					config.setTimStat(1 << index);
 				}

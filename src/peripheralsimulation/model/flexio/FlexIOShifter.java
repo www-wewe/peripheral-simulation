@@ -112,8 +112,13 @@ public class FlexIOShifter {
 	public void reset() {
 		bitCnt = 0;
 		startDone = false;
-		bufValid = false;
-		pinLevel = (shifterPinPolarity == 1); // default HIGH (= 1) → po XOR môže byť 0
+		shiftBuffer = config.getShiftBuf(index);
+		if (shiftBuffer == 0) {
+			bufValid = false; // buffer is empty;
+		} else {
+			bufValid = true;
+		}
+		pinLevel = !(shifterPinPolarity == 1); // default HIGH (= 1) → po XOR môže byť 0
 	}
 
 	/**
@@ -134,7 +139,7 @@ public class FlexIOShifter {
 		 * počet dátových bitov v slove z CMP[15:8]: reloadHigh = ((CMP[15:8] + 1) / 2)
 		 * → bits = reloadHigh
 		 */
-		int wordBits = timer.getHighReload();
+		int wordBits = timer.getHighReload() / 2;
 
 		// pre demo – SHIFT na každom log. 1 (OUT high):
 		// Only sstart=10 a sstop=11 is implemented
@@ -234,7 +239,6 @@ public class FlexIOShifter {
 
 	public void setBuffer(int buffer) {
 		this.shiftBuffer = buffer;
-		this.bufValid = true;
 	}
 
 }
