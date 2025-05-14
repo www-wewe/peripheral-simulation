@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swtchart.ILineSeries;
+import org.eclipse.swtchart.extensions.charts.InteractiveChart;
 
 /**
  * Data structure to hold series data for charting.
@@ -12,6 +13,8 @@ import org.eclipse.swtchart.ILineSeries;
  * @author Veronika Lenková
  */
 public class SeriesData {
+	/** The chart to which the series belongs */
+	InteractiveChart chart;
 	/** The series to be plotted */
 	ILineSeries<?> series;
 	/** Time values for the x-axis (seriex.setXseriex(timeValues) */

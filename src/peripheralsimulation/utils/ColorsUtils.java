@@ -33,7 +33,6 @@ public class ColorsUtils {
 			new RGB(255, 0, 255), // magenta
 			new RGB(128, 128, 0), // olive
 			new RGB(0, 128, 128), // teal
-			new RGB(128, 128, 128), // gray
 			new RGB(255, 192, 203), // pink
 			new RGB(255, 255, 0), // yellow
 	};

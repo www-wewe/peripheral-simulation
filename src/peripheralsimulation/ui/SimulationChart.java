@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swtchart.ILineSeries;
@@ -28,8 +29,8 @@ import org.eclipse.swtchart.ISeries.SeriesType;
  */
 public class SimulationChart implements SimulationGUI {
 
-	/** The chart in which the simulation results are displayed. */
-	private InteractiveChart chart;
+	/** Container that holds all individual charts. */
+	private final Composite container;
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();;
 	/** List of series data for charting. */
@@ -41,86 +42,55 @@ public class SimulationChart implements SimulationGUI {
 	 * @param parent The parent composite for the chart.
 	 */
 	public SimulationChart(Composite parent) {
-		chart = new InteractiveChart(parent, SWT.NONE);
-		chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
-		chart.getTitle().setText("Simulation Chart");
-		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
-		chart.getAxisSet().getYAxis(0).getTitle().setText("Output Value");
-		chart.getLegend().setVisible(false);
-
-		// Set background color of the chart
-		chart.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
-		chart.getPlotArea().setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
-		chart.getTitle().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-		chart.getAxisSet().getXAxis(0).getTitle().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-		chart.getAxisSet().getYAxis(0).getTitle().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-		chart.getLegend().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
-
-		// axis tick color
-		chart.getAxisSet().getXAxis(0).getTick()
-				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
-		chart.getAxisSet().getYAxis(0).getTick()
-				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
-
-		chart.getAxisSet().getXAxis(0).setRange(new Range(0, 10));
-		chart.getAxisSet().getYAxis(0).setRange(new Range(0, 10));
+		// Create a dedicated container so that we can add/remove charts freely
+		container = new Composite(parent, SWT.NONE);
+		GridLayout layout = new GridLayout(1, true);
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		container.setLayout(layout);
+		container.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
 	}
 
 	@Override
 	public void clear() {
-		if (chart != null && !chart.isDisposed()) {
-			for (SeriesData outputData : seriesList) {
-				outputData.timeValues.clear();
-				outputData.outputValues.clear();
-				outputData.series.setXSeries(new double[0]);
-				outputData.series.setYSeries(new double[0]);
+		for (SeriesData outputData : seriesList) {
+			outputData.timeValues.clear();
+			outputData.outputValues.clear();
+			outputData.series.setXSeries(new double[0]);
+			outputData.series.setYSeries(new double[0]);
+			for (ISeries<?> series : outputData.chart.getSeriesSet().getSeries()) {
+				outputData.chart.getSeriesSet().deleteSeries(series.getId());
+				outputData.chart.dispose();
 			}
-			seriesList.clear();
-			for (ISeries<?> series : chart.getSeriesSet().getSeries()) {
-				chart.getSeriesSet().deleteSeries(series.getId());
-			}
-			chart.getAxisSet().adjustRange();
-			chart.redraw();
 		}
+		seriesList.clear();
+		synchroniseTimeAxes();
+		container.layout();
 	}
 
 	@Override
 	public void update(double timeValue, Object[] outputs) {
-		// true if at least one output changed (for the onlyChanges mode)
-		boolean anyChange = false;
-		int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
-		// For each user-selected output:
-		for (int position = 0;  position < selectedOutputsIndices.length; position++) {
-			int outputIndex = selectedOutputsIndices[position];
-			if (position >= seriesList.size()) {
-				createSeriesForOutput(outputIndex);
-			}
+		int[] selectedOutputs = userPreferences.getSelectedOutputsIndices();
+		// Ensure we have a chart for every selected output
+		ensureChartCount(selectedOutputs.length);
+		for (int position = 0; position < selectedOutputs.length; position++) {
+			int outputIndex = selectedOutputs[position];
 			SeriesData outputData = seriesList.get(position);
-			Object outputValue = outputs[outputIndex];
-			double numericVal = convertToDouble(outputValue);
-
+			double numericVal = convertToDouble(outputs[outputIndex]);
 			List<Double> outputValues = outputData.outputValues;
-			Object lastValue = outputValues.isEmpty() ? null : outputValues.get(outputValues.size() - 1);
-			if (lastValue == null || !lastValue.equals(numericVal)) {
-				if (lastValue != null) {
-					// Add the last value again (to make horizontal line)
+			Double lastVal = outputValues.isEmpty() ? null : outputValues.get(outputValues.size() - 1);
+
+			if (lastVal == null || !lastVal.equals(numericVal)) {
+				if (lastVal != null) {
+					// Horizontal segment up to the change
 					outputData.timeValues.add(timeValue);
-					outputValues.add((double) lastValue);
+					outputValues.add(lastVal);
 				}
-				// Add the new value
 				outputData.timeValues.add(timeValue);
 				outputValues.add(numericVal);
-				anyChange = true;
-				System.out.println("Time: " + timeValue);
-				System.out.println("Output " + outputIndex + " changed to " + numericVal);
 			}
-
 		}
-
-		// Only redraw if user doesn't want "only changes" or if at least one changed
-		if (!userPreferences.isOnlyChanges() || anyChange) {
-//			redrawAllSeries(); // Uncomment when you want to see "real-time" updates
-		}
+		// redrawAllSeries(); // Uncomment when you want to see "real-time" updates
 	}
 
 	/**
@@ -149,74 +119,146 @@ public class SimulationChart implements SimulationGUI {
 	 */
 	public void redrawAllSeries() {
 		for (SeriesData outputData : seriesList) {
-			// Convert the xVals and yVals to arrays
-			double[] xs = new double[outputData.timeValues.size()];
-			double[] ys = new double[outputData.outputValues.size()];
-			for (int i = 0; i < outputData.timeValues.size(); i++) {
+			int size = outputData.timeValues.size();
+			double[] xs = new double[size];
+			double[] ys = new double[size];
+			for (int i = 0; i < size; i++) {
 				xs[i] = outputData.timeValues.get(i);
 				ys[i] = outputData.outputValues.get(i);
 			}
-
-			// Update the chart series
 			outputData.series.setXSeries(xs);
 			outputData.series.setYSeries(ys);
 		}
-
-		chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
-		// Adjust axis range so we can see everything
-		chart.getAxisSet().adjustRange();
-
-		// Redraw chart
-		chart.redraw();
-		chart.getLegend().setVisible(true);
+		synchroniseTimeAxes();
+		container.layout();
 	}
 
 	/**
-	 * Creates a new series for the given output.
+	 * Creates a new chart for the specified output.
 	 * 
-	 * @param outputIndex The index of the output for which to create the series.
+	 * @param logicalPosition The logical position of the output in the chart.
 	 */
-	private void createSeriesForOutput(int outputIndex) {
+	private void createChartForOutput(int logicalPosition) {
+		int outputIndex = userPreferences.getSelectedOutputsIndices()[logicalPosition];
 		String outputName = userPreferences.getPeripheralModel().getOutputName(outputIndex);
-		ILineSeries<?> lineSeries = (ILineSeries<?>) chart.getSeriesSet().createSeries(SeriesType.LINE, outputName);
-		lineSeries.setLineStyle(LineStyle.SOLID);
-		lineSeries.setSymbolType(PlotSymbolType.NONE);
-		lineSeries.setLineColor(ColorsUtils.getNextColor());
 
-		SeriesData outputData = new SeriesData();
-		outputData.series = lineSeries;
-		seriesList.add(outputData);
+		SeriesData data = new SeriesData();
+		data.chart = new InteractiveChart(container, SWT.NONE);
+		data.chart.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 4, 1));
+
+		// Cosmetic setup ---------------------------------------------------
+		data.chart.getTitle().setText(outputName);
+		data.chart.getLegend().setVisible(false);
+		data.chart.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		data.chart.getPlotArea().setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+
+		// Axis titles / appearance ----------------------------------------
+		data.chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
+		data.chart.getAxisSet().getYAxis(0).getTitle().setVisible(false);
+
+		// Set background color of the chart
+		data.chart.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		data.chart.getPlotArea().setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
+		data.chart.getTitle().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+		data.chart.getAxisSet().getXAxis(0).getTitle()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+		data.chart.getAxisSet().getYAxis(0).getTitle()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+		data.chart.getLegend().setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
+
+		// axis tick color
+		data.chart.getAxisSet().getXAxis(0).getTick()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
+		data.chart.getAxisSet().getYAxis(0).getTick()
+				.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY));
+
+		data.chart.getAxisSet().getXAxis(0).setRange(new Range(0, 10));
+		data.chart.getAxisSet().getYAxis(0).setRange(new Range(0, 10));
+
+		// Create the line series ------------------------------------------
+		data.series = (ILineSeries<?>) data.chart.getSeriesSet().createSeries(SeriesType.LINE, outputName);
+
+		data.series.setLineStyle(LineStyle.SOLID);
+		data.series.setSymbolType(PlotSymbolType.NONE);
+		data.series.setLineColor(ColorsUtils.getNextColor());
+
+		seriesList.add(data);
+	}
+
+	/**
+	 * Synchronizes the time axes of all charts to have the same range.
+	 */
+	private void synchroniseTimeAxes() {
+		double min = Double.MAX_VALUE;
+		double max = -Double.MAX_VALUE;
+		for (SeriesData outputData : seriesList) {
+			if (!outputData.timeValues.isEmpty()) {
+				min = Math.min(min, outputData.timeValues.get(0));
+				max = Math.max(max, outputData.timeValues.get(outputData.timeValues.size() - 1));
+			}
+		}
+		if (min == Double.MAX_VALUE || max == -Double.MAX_VALUE) {
+			min = 0;
+			max = 1;
+		}
+		if (min == max) {
+			max = min + 1;
+		}
+		Range commonRange = new Range(min, max);
+		for (SeriesData outputData : seriesList) {
+			outputData.chart.getAxisSet().getXAxis(0).setRange(commonRange);
+			outputData.chart.getAxisSet().getYAxis(0).adjustRange();
+		}
+	}
+
+	/**
+	 * Ensures that the number of charts matches the required number.
+	 * 
+	 * @param required The required number of charts.
+	 */
+	private void ensureChartCount(int required) {
+		// Create missing charts
+		while (seriesList.size() < required) {
+			createChartForOutput(seriesList.size());
+		}
+		// Dispose surplus charts (e.g. when user deselects outputs)
+		while (seriesList.size() > required) {
+			SeriesData removed = seriesList.remove(seriesList.size() - 1);
+			if (!removed.chart.isDisposed()) {
+				removed.chart.dispose();
+			}
+		}
 	}
 
 	@Override
 	public void setFocus() {
-		chart.setFocus();
+		container.setFocus();
 	}
 
 	@Override
 	public void onSelectedOutputsChanged() {
 		Display.getDefault().syncExec(() -> {
 			clear();
-			int[] selectedOutputsIndices = userPreferences.getSelectedOutputsIndices();
-			if (selectedOutputsIndices.length > seriesList.size()) {
-				for (int outputIndex : selectedOutputsIndices) {
-					createSeriesForOutput(outputIndex);
-				}
-			}
-			chart.redraw();
+			ensureChartCount(userPreferences.getSelectedOutputsIndices().length);
+			container.layout();
 		});
 	}
 
 	@Override
 	public Composite getParent() {
-		return chart.getParent();
+		return container.getParent();
 	}
 
 	@Override
 	public void dispose() {
 		clear();
-		if (chart != null) {
-			chart.dispose();
+		for (SeriesData d : seriesList) {
+			if (d.chart != null && !d.chart.isDisposed()) {
+				d.chart.dispose();
+			}
+		}
+		if (container != null) {
+			container.dispose();
 		}
 		seriesList.clear();
 	}
