@@ -113,11 +113,7 @@ public class FlexIOShifter {
 		bitCnt = 0;
 		startDone = false;
 		shiftBuffer = config.getShiftBuf(index);
-		if (shiftBuffer == 0) {
-			bufValid = false; // buffer is empty;
-		} else {
-			bufValid = true;
-		}
+		bufValid = shiftBuffer != 0; // buffer is not empty
 		pinLevel = !(shifterPinPolarity == 1); // default HIGH (= 1) → po XOR môže byť 0
 	}
 
@@ -169,10 +165,7 @@ public class FlexIOShifter {
 				if (!bufValid)
 					config.setShiftErr(1 << index);
 				/* automatický load novej hodnoty do shiftra */
-				shiftBuffer = config.getShiftBuf(index);
-				bitCnt = 0;
-				bufValid = false;
-				startDone = false;
+				reset();
 				/* SSF flag – prázdny buffer → požiadavka na DMA/IRQ */
 				config.setShiftStat(1 << index);
 			}

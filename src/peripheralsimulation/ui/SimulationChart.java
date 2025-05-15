@@ -88,6 +88,8 @@ public class SimulationChart implements SimulationGUI {
 				}
 				outputData.timeValues.add(timeValue);
 				outputValues.add(numericVal);
+				System.out.println("[SimulationChart] time=" + timeValue + ", outputIndex=" + outputIndex + ", value="
+						+ numericVal);
 			}
 		}
 		// redrawAllSeries(); // Uncomment when you want to see "real-time" updates
@@ -153,9 +155,13 @@ public class SimulationChart implements SimulationGUI {
 		data.chart.getPlotArea().setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
 
 		// Axis titles / appearance ----------------------------------------
-		data.chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
+		data.chart.getAxisSet().getXAxis(0).getTitle().setVisible(false);
 		data.chart.getAxisSet().getYAxis(0).getTitle().setVisible(false);
 
+		if (logicalPosition == userPreferences.getSelectedOutputsIndices().length - 1) {
+			data.chart.getAxisSet().getXAxis(0).getTitle().setText("Time in " + userPreferences.getTimeUnits());
+			data.chart.getAxisSet().getXAxis(0).getTitle().setVisible(true);
+		}
 		// Set background color of the chart
 		data.chart.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
 		data.chart.getPlotArea().setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WHITE));
