@@ -554,4 +554,13 @@ public class FlexIOConfig {
 		return count;
 	}
 
+	/**
+	 * Clears all runtime flags (status and error) for shifters and timers.
+	 */
+	public void clearRuntimeFlags() {
+		clearShiftStat(~0);
+		clearShiftErr(~0);
+		clearTimStat(~0);
+	}
+
 }

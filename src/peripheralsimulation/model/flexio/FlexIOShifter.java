@@ -233,12 +233,40 @@ public class FlexIOShifter {
 		return pinLevel;
 	}
 
+	/**
+	 * Retturns the timer index associated with this shifter.
+	 *
+	 * @return The timer index.
+	 */
 	public int getTimerSelect() {
 		return timerSelect;
 	}
 
+	/**
+	 * Sets the shifter buffer value.
+	 *
+	 * @param buffer The new buffer value.
+	 */
 	public void setBuffer(int buffer) {
 		this.shiftBuffer = buffer;
+	}
+
+	/**
+	 * Returns the Shifter Status Flag (SSF).
+	 *
+	 * @return true if the status flag is set, false otherwise.
+	 */
+	public boolean isStatusFlagSet() {
+		return (config.getShiftStat() & (1 << index)) != 0;
+	}
+
+	/**
+	 * Returns the Shifter Error Flag (SEF).
+	 *
+	 * @return true if the error flag is set, false otherwise.
+	 */
+	public boolean isErrorFlagSet() {
+		return (config.getShiftErr() & (1 << index)) != 0;
 	}
 
 }

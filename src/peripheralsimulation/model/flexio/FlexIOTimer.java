@@ -253,6 +253,10 @@ public class FlexIOTimer {
 		return result;
 	}
 
+	/**
+	 * Returns the timer output level.
+	 * @return The current output level of the timer.
+	 */
 	public boolean isClockLevelHigh() {
 		boolean level = outLevel;
 		if (timerPinPolarity == 1) {
@@ -261,8 +265,32 @@ public class FlexIOTimer {
 		return level;
 	}
 
+	/**
+	 * Returns the number of high reload ticks. For baud/bit mode, this is the
+	 * number of bits * 2.
+	 *
+	 * @return The number of high reload ticks.
+	 */
 	public int getHighReload() {
 		return highReload;
+	}
+
+	/**
+	 * Returns the current counter value of the timer.
+	 *
+	 * @return The current counter value.
+	 */
+	public int getCurrentCounter() {
+		return outLevel ? counterHigh : counterLow;
+	}
+
+	/**
+	 * Returns timer status flag.
+	 *
+	 * @returntrue if status flag is set, false otherwise.
+	 */
+	public boolean isStatusFlagSet() {
+		return (config.getTimStat() & (1 << index)) != 0;
 	}
 
 }

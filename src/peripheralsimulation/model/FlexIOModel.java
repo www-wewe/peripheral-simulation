@@ -62,19 +62,20 @@ public class FlexIOModel implements PeripheralModel {
 
 		/* Create output names: first all TIMER outputs, then SHIFTER pins */
 		List<String> names = new ArrayList<>();
-		for (int i = 0; i < timers.length; i++)
-			names.add("Timer" + i + "_OUT");
-		for (int i = 0; i < shifters.length; i++)
-			names.add("Shifter" + i + "_PIN");
+		for (int i = 0; i < timers.length; i++) {
+			names.add("Timer" + i + "_OUT"); // output level
+			names.add("Timer" + i + "_CNT"); // counter
+			names.add("Timer" + i + "_TSF"); // status flag
+		}
+		for (int i = 0; i < shifters.length; i++) {
+			names.add("Shifter" + i + "_PIN"); // pin level
+			names.add("Shifter" + i + "_SSF"); // status flag
+			names.add("Shifter" + i + "_SEF"); // error flag
+		}
 
 		outputNames = names.toArray(String[]::new);
 		timersCount = timers.length;
 		shifterCount = shifters.length;
-		/* If we want true pin-based outputs, build PIN0…PINn instead: */
-//		int pinCount = config.getPinCount();
-//		for (int i = 0; i < pinCount; i++) {
-//			names.add("PIN" + i);
-//		}
 	}
 
 	@Override
@@ -82,6 +83,8 @@ public class FlexIOModel implements PeripheralModel {
 		tickPeriod = 1.0 / UserPreferences.getInstance().getClockFrequency();
 		if (!config.isEnabled() || config.isDozeEnabled() || config.isDebugEnabled())
 			return;
+
+		config.clearRuntimeFlags();
 
 		for (FlexIOTimer timer : timers)
 			timer.reset();
@@ -130,16 +133,25 @@ public class FlexIOModel implements PeripheralModel {
 
 	@Override
 	public Object[] getOutputs() {
-		Object[] outputs = new Object[timersCount + shifterCount];
-		/* TIMERs: output level after applying PINPOL */
+		Object[] outputs = new Object[(timersCount + shifterCount) * 3];
+		int k = 0;
+
+		/* TIMERy */
 		for (int i = 0; i < timersCount; i++) {
-			outputs[i] = timers[i].isClockLevelHigh() ? 1 : 0;
+			FlexIOTimer timer = timers[i];
+			outputs[k++] = timer.isClockLevelHigh() ? 1 : 0; // _OUT
+			outputs[k++] = timer.getCurrentCounter(); // _CNT
+			outputs[k++] = timer.isStatusFlagSet() ? 1 : 0; // _TSF
 		}
 
-		/* SHIFTERs: current pin level (TX or RX) */
+		/* SHIFTERy */
 		for (int i = 0; i < shifterCount; i++) {
-			outputs[timersCount + i] = shifters[i].isPinLevelHigh() ? 1 : 0;
+			FlexIOShifter shifter = shifters[i];
+			outputs[k++] = shifter.isPinLevelHigh() ? 1 : 0; // _PIN
+			outputs[k++] = shifter.isStatusFlagSet() ? 1 : 0; // _SSF
+			outputs[k++] = shifter.isErrorFlagSet() ? 1 : 0; // _SEF
 		}
+		config.clearRuntimeFlags();
 		return outputs;
 	}
 
