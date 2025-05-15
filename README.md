@@ -9,9 +9,9 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
    - Manages multiple peripherals and steps through events in chronological order.
 
 2. **Peripheral Models**  
-   - **SysTickTimerModel**: Simulates the Cortex-M SysTick timer registers (CSR, RVR, CVR, CALIB).  
+   - **SysTickTimerModel**: Simulates the Cortex-M SysTick timer registers (CSR, RVR, CVR, CALIB).
    - **CounterModel**: A basic counter with overflow behavior.  
-   - **FlexIOModel** (placeholder example)  
+   - **FlexIOModel** (PWM/UART demo)
    - Each model implements the `PeripheralModel` interface for a consistent approach.
 
 3. **Register-Based Access**  
@@ -23,8 +23,8 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
    - The user can also choose which outputs (e.g. “current value”, “interupt”) to display in either a table or a chart.
 
 5. **UI Integration**  
-   - A new **“Simulation View”** in Eclipse (`SimulationView`) that lets you:  
-     - Pick the peripheral to simulate from a combo box.  
+   - A new **“Simulation View”** in Eclipse (`SimulationView`) that lets you:
+     - Pick the peripheral to simulate from a combo box.
      - Start/stop/clear the simulation.  
      - Switch between a table or chart display (the table lists time + outputs in rows; the chart graphs them over time).  
 
@@ -38,7 +38,7 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
    - Core simulation classes such as `SimulationEngine`, `SimulationEvent`, and user event definitions.  
 
 2. **`peripheralsimulation.model`**  
-   - Interface `PeripheralModel` plus specific peripheral implementations (SysTick, SCTimer, etc.).  
+   - Interface `PeripheralModel` plus specific peripheral implementations (SysTick, FlexIO, etc.).
    - Each model handles time-based updates (`update(...)`) and initialization (`initialize(...)`).  
    - Models can define internal registers, bit logic, and how to apply user events.
 
@@ -50,9 +50,12 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
    - Classes for rendering the outputs: `SimulationTable` (SWT table) or `SimulationChart` (SWTChart-based).  
 
 5. **`peripheralsimulation.io`**  
-   - Helper classes like `Register` or `UserPreferences`, enabling user- or file-based configurations, register definitions, etc.
+   - Helper classes like `ConfigYamlUtils` or `UserPreferences`, enabling user- or file-based configurations.
 
-6. **`plugin.xml`** & **`MANIFEST.MF`**  
+6. **`peripheralsimulation.test`** and other packages with `.test` sufix
+	- JUnit 4 test cases (Run As → JUnit Test).
+
+7. **`plugin.xml`** & **`MANIFEST.MF`**
    - Eclipse plugin definitions.  
    - The view is contributed to the Java Perspective, next to the “Problems” view by default.  
    - Bundles required: `org.eclipse.ui`, `org.eclipse.core.runtime`, `org.eclipse.swtchart`.
@@ -62,7 +65,8 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 1. **Import Plugin into Eclipse**  
    - Place this project in your Eclipse workspace as a Plug-in Project.  
    - Ensure dependencies (`org.eclipse.swtchart` etc.) are available.
-   - Download SWTChart here -> https://download.eclipse.org/swtchart/releases/0.14.0/repository/
+   - Either apply the supplied *`targetDefinition.target`* or download the bundles yourself.
+   - SWTChart can be obtained here -> https://download.eclipse.org/swtchart/releases/0.14.0/repository/
 
 2. **Launch an Eclipse Application**  
    - In Run Configurations, choose “Eclipse Application”.  
@@ -71,19 +75,75 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 
 3. **Select a Peripheral**  
    - In the combo box, pick e.g. “System Tick Timer”.
-   - TODO: import registers
+   - The file dialog will open to choose .CSV file with registers values.
 
 4. **Settings**
    - Configure simulation in the “Settings...” dialog.
    - The “Settings...” button can let you choose which outputs to display, or set a different monitoring period, or choose “Table” vs. “Graph” mode.
+   - There is also button to import registers or load configuration settings from YAML file.
    
 5. **Run simulation** 
    - Press “Run simulation”.  
    - The simulation runs. Outputs appear either in a table or chart, depending on user preferences.
 
 6. **Stop or Clear**  
-   - Use “Clear simulation” to stop.  
-   - “Clear simulation” resets the view.  
+   - Use “Stop simulation” to stop.
+   - “Clear simulation” resets the view.
+   
+---
+
+## Configuration File Formats
+
+Sample YAML and CSV files live in the project’s **`resources/`** folder.
+Without imported registers, simulation will not be running.
+
+### 2. CSV register snapshot (`*.csv`)
+
+A comma-separated file initialises the registers. Each line is:
+
+```csv
+REGISTER_NAME,0xXXXXXXXX
+```
+
+Example:
+
+```csv
+SYST_RVR,0x0001D4BF
+```
+
+* **REGISTER\_NAME** – must match the symbolic name used by the peripheral model.
+* **0xXXXXXXXX** – 32-bit unsigned integer in hexadecimal.
+
+### 1. YAML configuration (`*.yaml`)
+
+A YAML file combines global simulation **preferences** and a list of scheduled **events**.
+
+```yaml
+preferences:
+  monitoringPeriod: 0          # s – interval between UI updates (if <=0, every event)
+  rangeFrom: 0.0               # s – start of visible time window
+  rangeTo:   0.1               # s – end of visible time window
+  clkFreq:   48_000_000        # Hz – internal MCU clock
+  extClkFreq: 12_000_000       # Hz – external reference clock
+  waitMs: 0                    # ms – delay between simulation steps
+  onlyChanges: true            # true = suppress identical consecutive values
+  outputs: [ "INTERRUPT" ]     # list of output channels to show
+  gui: TABLE                   # TABLE | GRAPH – default view mode
+  timeUnit: ms                 # ms | us | ns – unit in the UI
+
+events:
+  - start:  0.010              # s – first trigger
+    period: 0.010              # s – 0 = one-shot
+    repeat: 5                  # how many times to repeat (ignored if period = 0)
+    type:   TOGGLE_BIT         # TOGGLE_BIT | SET_BIT | CLEAR_BIT | WRITE_VALUE
+    reg:    0xE000E010         # target register address
+    bit:    1                  # bit index (0–31)
+    value:  0                  # The value to write to the register
+```
+
+*Exactly one* `preferences` block is required; `events` may be an empty list.
+
+---
 
 ## Customizing or Extending
 
@@ -93,7 +153,7 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 
 2. **Adding New User Events**  
    - The engine can handle scheduled `SimulationEvent`s or user-defined triggers (toggle bits, etc.).  
-   - You can define these events in a config or UI using "User Events..." button in a simulation view.
+   - You can define these events in a configuration YAML file or UI using "User Events..." button in a simulation view.
 
 3. **Bit/Field Manipulations**  
    - Each peripheral can implement partial writes (like “setBit(...)” or “toggleBit(...)”).  
