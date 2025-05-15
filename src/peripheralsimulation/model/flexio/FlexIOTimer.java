@@ -281,7 +281,7 @@ public class FlexIOTimer {
 	 * @return The current counter value.
 	 */
 	public int getCurrentCounter() {
-		return outLevel ? counterHigh : counterLow;
+		return (timerMode == TIMOD_BAUDBIT) ? counterLow : (outLevel ? counterLow : counterHigh);
 	}
 
 	/**
