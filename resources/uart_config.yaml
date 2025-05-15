@@ -1,0 +1,10 @@
+preferences:
+  monitoringPeriod: 0
+  rangeFrom: 0.0
+  rangeTo: 1.0E-4           # 100us
+  clkFreq: 4_000_000        # 4MHz
+  waitMs: 0
+  onlyChanges: true
+  outputs: [ "Timer0_OUT", "Timer0_CNT", "Timer0_TSF", "Shifter0_PIN", "Shifter0_SSF" ]
+  gui: GRAPH 
+  timeUnit: us
