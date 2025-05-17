@@ -59,41 +59,59 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 	/** Label for the status of the simulation. */
 	private Label statusLabel;
+
 	/** Buttons for running the simulation. */
 	private Button runSimulationButton;
+
 	/** Button for stopping the simulation. */
 	private Button stopSimulationButton;
+
 	/** Button for clearing the simulation. */
 	private Button clearSimulationButton;
+
 	/** The simulation engine. */
 	private SimulationEngine simulationEngine;
+
 	/** The combo box for selecting the peripheral to simulate. */
 	private Combo selectPeripheralCombo;
+
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+
 	/** The GUI for the simulation. */
 	private SimulationGUI simulationGUI;
+
 	/** Text for the run simulation button. */
 	private static final String RUN_SIMULATION_BTN_TEXT = "Run simulation";
+
 	/** Text for the stop simulation button. */
 	private static final String STOP_SIMULATION_BTN_TEXT = "Stop simulation";
+
 	/** Text for the clear simulation button. */
 	private static final String CLEAR_SIMULATION_BTN_TEXT = "Clear simulation";
-	/** Text for the status label when no simulation is running. */
-	private static final String EMPTY_SIMULATION = "Click '" + RUN_SIMULATION_BTN_TEXT
-			+ "' button to start simulation...";
+
 	/** Text for the user events button. */
 	private static final String USER_EVENTS_BTN_TEXT = "User Events...";
+
 	/** Text for the settings button. */
 	private static final String SETTINGS_BTN_TEXT = "Settings...";
+
+	/** Text for the status label when no simulation is running. */
+	private static final String EMPTY_SIMULATION = "Choose peripheral in the combo box and CSV file with the registers. \nConfigure simulation in "
+			+ SETTINGS_BTN_TEXT + " dialog and click '" + RUN_SIMULATION_BTN_TEXT + "' button to start simulation...";
+
 	/** Text for selecting the peripheral in the combo box. */
 	private static final String SELECT_PERIPHERAL_TEXT = "Select peripheral: ";
+
 	/** Status label for simulation stopped. */
 	private static final String STATUS_LABEL_SIMULATION_STOPPED = "Simulation stopped.";
+
 	/** Status label for simulation failure. */
 	private static final String STATUS_LABEL_SIMULATION_FAILURE = "Failure during simulation.";
+
 	/** Status label for simulation finished. */
 	private static final String STATUS_LABEL_SIMULATION_FINISHED = "Simulation finished.";
+
 	/** Status label for running simulation. */
 	private static final String STATUS_LABEL_RUNNING_SIMULATION = "Running simulation...";
 
@@ -110,19 +128,20 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 
 	/**
 	 * Create the status label for the simulation.
-	 * 
+	 *
 	 * @param parent the parent composite
 	 */
 	private void createStatusLabel(Composite parent) {
 		statusLabel = new Label(parent, SWT.NONE);
 		statusLabel.setText(EMPTY_SIMULATION);
+		statusLabel.setToolTipText(EMPTY_SIMULATION);
 		statusLabel.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
 	}
 
 	/**
 	 * Create the buttons for running, stopping, clearing, selecting the peripheral,
 	 * opening settings dialog and user events dialog.
-	 * 
+	 *
 	 * @param parent the parent composite
 	 */
 	private void createButtons(Composite parent) {
@@ -196,7 +215,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	/**
 	 * Update the selected peripheral model based on the selected peripheral in the
 	 * combo box.
-	 * 
+	 *
 	 * @return the selected peripheral model
 	 */
 	private PeripheralModel updateSelectedPeripheralModel() {
@@ -235,7 +254,7 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	/**
 	 * Update the simulation GUI based on the selected simulation GUI in user
 	 * preferences.
-	 * 
+	 *
 	 * @param parent the parent composite
 	 * @return the selected simulation GUI
 	 */
@@ -265,16 +284,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		simulationEngine.cleanSimulation();
 		PeripheralModel simulationModel = userPreferences.getPeripheralModel();
 		simulationEngine.setPeripheralModel(simulationModel);
-//		UserEvent userEvent = new UserEvent(0.010, // start time
-//				0.010, // period, means every 10ms
-//				5, // repeat count (0 means infinite)
-//				simulationModel, // target peripheral
-//				UserEventType.TOGGLE_BIT, // event type
-//				0xE000E010, // register address - SYST_CSR
-//				1, // bit position - toggling bit #3 - enable
-//				0 // write value, not used for toggle
-//		);
-//		simulationEngine.addUserEvent(userEvent);
 
 		for (UserEvent userEvent : userPreferences.getUserEvents()) {
 			simulationEngine.addUserEvent(userEvent);
@@ -338,9 +347,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 	private void updateGUI(double timeValue, Object[] outputs) {
 		Display.getDefault().asyncExec(() -> {
 			double scaledTime = timeValue * userPreferences.getTimeScaleFactor();
-//			if (!simulationEngine.isSimulationRunning()) {
-//				return;
-//			}
 			simulationGUI.update(scaledTime, outputs);
 		});
 	}
@@ -367,4 +373,5 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 		userPreferences.removeListener(this);
 		super.dispose();
 	}
+
 }

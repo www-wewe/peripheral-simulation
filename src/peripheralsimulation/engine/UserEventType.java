@@ -13,19 +13,23 @@ public enum UserEventType {
 	 * definition.
 	 */
 	TOGGLE_BIT,
+
 	/**
 	 * Sets a bit in a register to 1. The bit position is specified in event
 	 * definition.
 	 */
 	SET_BIT,
+
 	/**
 	 * Clears a bit in a register to 0. The bit position is specified in the event
 	 * definition.
 	 */
 	CLEAR_BIT,
+
 	/**
-	 * Writes a value to a register. The register address is specified in the event
-	 * definition.
+	 * Writes a value to a register. The register address and value to write are
+	 * specified in the event definition.
 	 */
 	WRITE_VALUE
+
 }

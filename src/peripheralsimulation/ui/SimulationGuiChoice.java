@@ -7,13 +7,14 @@ package peripheralsimulation.ui;
  * This enum provides a way to specify the type of GUI to be used for the
  * simulation, either a table or a graph.
  * </p>
- * 
+ *
  * @author Veronika Lenková
  */
 public enum SimulationGuiChoice {
 
 	/** The table GUI choice */
 	TABLE("Table"),
+
 	/** The graph GUI choice */
 	GRAPH("Graph");
 

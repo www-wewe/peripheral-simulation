@@ -107,7 +107,6 @@ public class SimulationEngineTest {
 			@Override
 			public void setRegisterValue(int registerAddress, int value) {
 				// Intentionally empty
-
 			}
 
 			@Override
@@ -145,7 +144,7 @@ public class SimulationEngineTest {
 
 	/**
 	 * cleanSimulation() should remove all peripherals without throwing exceptions
-	 * on re‑initialisation.
+	 * on re-initialisation.
 	 */
 	@Test
 	public void testCleanSimulationClearsModels() {
@@ -163,7 +162,6 @@ public class SimulationEngineTest {
 			@Override
 			public void update(SimulationEngine engine) {
 				// Intentionally empty
-
 			}
 
 			@Override
@@ -186,7 +184,6 @@ public class SimulationEngineTest {
 			@Override
 			public void setRegisterValue(int registerAddress, int value) {
 				// Intentionally empty
-
 			}
 
 			@Override
@@ -245,4 +242,5 @@ public class SimulationEngineTest {
 		engine.startSimulation(5.0);
 		assertFalse("Event at t=10.0 must not fire if maxTime=5.0", called[0]);
 	}
+
 }

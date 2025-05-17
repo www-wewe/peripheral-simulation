@@ -21,7 +21,6 @@ public class SysTickTimerConfig {
 	 * 					Register offsets (constants) 					  *
 	 * ------------------------------------------------------------------ *
 	 */
-	// public static final int SYST_BASE = 0xE000E000;
 	public static final int CSR_OFFSET = 0x010;
 	public static final int RVR_OFFSET = 0x014;
 	public static final int CVR_OFFSET = 0x018;
@@ -42,10 +41,13 @@ public class SysTickTimerConfig {
 	 */
 	/** Control and Status Register */
 	private int SYST_CSR;
+
 	/** Reload Value Register */
 	private int SYST_RVR;
+
 	/** Current Value Register */
 	private int SYST_CVR;
+
 	/** Calibration Value Register (optional, read-only) */
 	private int SYST_CALIB;
 

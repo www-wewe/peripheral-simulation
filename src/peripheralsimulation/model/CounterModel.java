@@ -6,7 +6,7 @@ import peripheralsimulation.engine.SimulationEngine;
 /**
  * Simulates a hardware counter incrementing at a given clock frequency with a
  * prescaler. Once it exceeds 'overflowValue', it resets to zero (overflow).
- * 
+ *
  * @author Veronika Lenková
  */
 public class CounterModel implements PeripheralModel {
@@ -20,6 +20,9 @@ public class CounterModel implements PeripheralModel {
 
 	/** The current value of the counter. */
 	private int currentValue;
+
+	/** The initial value of the counter. */
+	private int initialValue;
 
 	/**
 	 * The time period between increments, calculated as 1 / (clockFreq /
@@ -42,7 +45,7 @@ public class CounterModel implements PeripheralModel {
 	 */
 	public CounterModel(int overflowValue, int initialValue, double clockFreq, int prescaler) {
 		this.overflowValue = overflowValue;
-		this.currentValue = initialValue;
+		this.initialValue = initialValue;
 
 		// Each increment occurs every (1 / (clockFreq / prescaler)) time units
 		this.tickPeriod = 1.0 / (clockFreq / prescaler);
@@ -56,6 +59,7 @@ public class CounterModel implements PeripheralModel {
 	 * @param eventTime The time at which the next increment should occur.
 	 */
 	private void scheduleNextIncrement(SimulationEngine engine, double eventTime) {
+		this.currentValue = initialValue;
 		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
@@ -119,7 +123,6 @@ public class CounterModel implements PeripheralModel {
 	@Override
 	public void setRegisterValue(int registerAddress, int value) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override

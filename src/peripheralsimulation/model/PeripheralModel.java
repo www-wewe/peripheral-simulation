@@ -8,7 +8,7 @@ import peripheralsimulation.engine.UserEventType;
 /**
  * Interface that all peripherals must implement in order to be simulated within
  * the SimulationEngine.
- * 
+ *
  * <p>
  * The goal is to provide a common contract for: 1. Initialization with default
  * or user-defined conditions. 2. Setting up or scheduling any time-based
@@ -22,7 +22,7 @@ public interface PeripheralModel {
 	/**
 	 * Called by the SimulationEngine before running begins. This is where you can
 	 * schedule initial events or set initial state.
-	 * 
+	 *
 	 * @param engine The core simulation engine controlling scheduling and time.
 	 */
 	void initialize(SimulationEngine engine);
@@ -31,7 +31,7 @@ public interface PeripheralModel {
 	 * Called by the SimulationEngine at each time step. Schedule next increment
 	 * only if the simulation is running. Use
 	 * {@link SimulationEngine.isSimulationRunning()}.
-	 * 
+	 *
 	 * @param engine The core simulation engine controlling scheduling and time
 	 */
 	void update(SimulationEngine engine);
@@ -50,14 +50,14 @@ public interface PeripheralModel {
 
 	/**
 	 * Returns an array of objects representing the current state of the peripheral.
-	 * 
+	 *
 	 * @return an array of peripheral outputs
 	 */
 	Object[] getOutputs();
 
 	/**
 	 * Returns the names of all outputs for this peripheral.
-	 * 
+	 *
 	 * @return an array of output names
 	 */
 	String[] getOutputNames();
@@ -80,7 +80,7 @@ public interface PeripheralModel {
 
 	/**
 	 * Applies a user event to the peripheral.
-	 * 
+	 *
 	 * @param event to apply
 	 */
 	default public void applyUserEvent(UserEvent event) {

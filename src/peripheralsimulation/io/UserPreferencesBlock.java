@@ -5,17 +5,45 @@ import java.util.List;
 
 import peripheralsimulation.ui.SimulationGuiChoice;
 
+/**
+ * User preferences block in the YAML configuration file.
+ *
+ * This class represents the user preferences for the simulation, including
+ * monitoring period, range, clock frequencies, wait time, output devices,
+ * simulation GUI choice, and time unit.
+ *
+ * @author Veronika Lenková
+ */
 public class UserPreferencesBlock {
-	double monitoringPeriod;
-	double rangeFrom;
-	double rangeTo;
-	int clkFreq;
-	int extClkFreq;
-	long waitMs;
-	boolean onlyChanges;
-	List<String> outputs;
-	SimulationGuiChoice simulationGui;
-	String timeUnit;
+	/** The monitoring period in seconds. */
+	private double monitoringPeriod;
+
+	/** The range from value. */
+	private double rangeFrom;
+
+	/** The range to value. */
+	private double rangeTo;
+
+	/** The clock frequency. */
+	private int clkFreq;
+
+	/** The external clock frequency. */
+	private int extClkFreq;
+
+	/** The wait time in milliseconds. */
+	private long waitMs;
+
+	/** Whether to only show changes in the output. */
+	private boolean onlyChanges;
+
+	/** The list of outputs to show. */
+	private List<String> outputs;
+
+	/** The selected simulation GUI choice. */
+	private SimulationGuiChoice simulationGui;
+
+	/** The time unit for the simulation. */
+	private String timeUnit;
 
 	/**
 	 * User preferences block in the YAML configuration file.

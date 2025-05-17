@@ -17,9 +17,9 @@ import peripheralsimulation.utils.RegisterUtils;
 public class SysTickTimerModel implements PeripheralModel {
 
 	/* Output indices */
-	public static final int IDX_CURRENT = 0;
-	public static final int IDX_INTERRUPT = 1;
-	public static final int IDX_COUNTFLAG = 2;
+	private static final int IDX_CURRENT = 0;
+	private static final int IDX_INTERRUPT = 1;
+	private static final int IDX_COUNTFLAG = 2;
 
 	/* Output names */
 	private static final String[] OUTPUT_NAMES = SysTickOutputs.getOutputNames();
@@ -51,8 +51,6 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	/**
 	 * Calculate the tick period based on the configuration
-	 * 
-	 * @param config
 	 */
 	private double calculateTickPeriod() {
 		double freq = config.isUseCpuClock() ? UserPreferences.getInstance().getClockFrequency()
@@ -102,13 +100,19 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	}
 
+	/**
+	 * Schedule the next decrement of the SysTick timer
+	 *
+	 * @param engine    The simulation engine to use for scheduling.
+	 * @param eventTime The time at which the next decrement should occur.
+	 */
 	private void scheduleNextDecrement(SimulationEngine engine, double eventTime) {
 		engine.scheduleEvent(eventTime, () -> update(engine));
 	}
 
 	/**
 	 * Read the current SysTick value
-	 * 
+	 *
 	 * @return current value of SYST_CVR
 	 */
 	public int readCVR() {
@@ -119,7 +123,7 @@ public class SysTickTimerModel implements PeripheralModel {
 	/**
 	 * "write" to SYST_CVR. Writing any value clears the System Tick counter and the
 	 * COUNTFLAG bit in SYST_CSR.
-	 * 
+	 *
 	 * @param value to write to SYST_CVR
 	 */
 	public void writeCVR(int value) {
@@ -132,7 +136,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	/**
 	 * "write" to SYST_CSR,
-	 * 
+	 *
 	 * @param enable
 	 * @param tickInt
 	 * @param clksource
@@ -148,7 +152,7 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	/**
 	 * Get the COUNTFLAG (auto-clears on read in real hardware)
-	 * 
+	 *
 	 * @return true if COUNTFLAG was set
 	 */
 	public boolean readCountFlag() {
@@ -159,8 +163,8 @@ public class SysTickTimerModel implements PeripheralModel {
 
 	/**
 	 * "interrupt" read
-	 * 
-	 * @return true if interrupt
+	 *
+	 * @return true if interrupt was generated
 	 */
 	public boolean isInterruptGenerated() {
 		boolean temp = isInterrupt;

@@ -13,31 +13,48 @@ public class FlexIOTimer {
 
 	/** Timer disabled mode */
 	private static final int TIMOD_DISABLED = 0b00;
+
 	/** Dual 8-bit counters baud/bit mode */
 	private static final int TIMOD_BAUDBIT = 0b01;
+
 	/** Dual 8-bit counters PWM mode */
 	private static final int TIMOD_PWM = 0b10;
+
 	/** Single 16-bit timer mode */
 	private static final int TIMOD_16BIT = 0b11;
 
 	/** Index of the timer */
 	private int index;
+
 	/** FlexIO configuration object */
 	private FlexIOConfig config;
+
 	/** Counter value (low / high) */
 	private int counterLow, counterHigh;
+
 	/** Actual output level */
 	private boolean outLevel;
+
 	/** Previous output level */
 	private boolean prevOutLevel;
+
 	/** Reload value (low / high) from CMP register */
 	private int lowReload, highReload;
+
 	/** Boolean flag indicating if the timer is running */
 	private boolean running;
-	private int stopDelay; // odpočítava sa, keď timer stojí
+
+	/** Counts down when the timer stops */
+	private int stopDelay;
+
+	/** When TSTOP bit-0 is set, the timer stops on compare */
 	private boolean stopOnCompare; // TSTOP bit-0
-	private boolean stopOnDisable; // TSTOP bit-1
-	private boolean stopPending;   // čakáme na hranu, kde treba vložiť pauzu
+
+	/** When TSTOP bit-1 is set, the timer stops on disable */
+	private boolean stopOnDisable;
+
+	/** True when the timer is stopped and waiting for the next edge */
+	private boolean stopPending;
 
 	/*****************************************************************/
 	/* TIMCTL */
@@ -45,14 +62,19 @@ public class FlexIOTimer {
 
 	/** Mode of the timer (disabled, Dual 8-bit counters baud/bit, PWM, etc.) */
 	private int timerMode;
+
 	/** Pin polarity, 0 - Pin is active high, 1 - active low */
 	private int timerPinPolarity;
+
 	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
 	private int timerPinSelect;
+
 	/** Pin configuration (output disabled, open drain, etc.) */
 	private int timerPinConfiguration;
+
 	/** Trigger Source, 0 - external trigger, 1 - internal trigger */
 	private int triggerSource;
+
 	/** Trigger polarity, 0 - Trigger is active high, 1 - active low */
 	private int triggerPolarity;
 	/**
@@ -72,14 +94,19 @@ public class FlexIOTimer {
 	 * the shift clock
 	 */
 	private int timerDecrement;
+
 	/** Timer reset - condition that resets the timer */
 	private int timerReset;
+
 	/** Timer disable - condition that disables the timer */
 	private int timerDisable;
+
 	/** Timer enable - condition that enables the timer */
 	private int timerEnable;
+
 	/** Timer stop bit */
 	private int timerStopBit;
+
 	/** Timer start bit */
 	private int timerStartBit;
 
@@ -88,7 +115,7 @@ public class FlexIOTimer {
 
 	/**
 	 * Constructor for FlexIOTimer.
-	 * 
+	 *
 	 * @param config The FlexIO configuration object.
 	 * @param index  The index of the timer.
 	 */
@@ -102,7 +129,7 @@ public class FlexIOTimer {
 
 	/**
 	 * Sets the timer control register.
-	 * 
+	 *
 	 * @param timerControlRegister The control register value.
 	 */
 	public void setControlRegister(int timerControlRegister) {
@@ -117,7 +144,7 @@ public class FlexIOTimer {
 
 	/**
 	 * Sets the timer configuration register.
-	 * 
+	 *
 	 * @param timerConfigRegister The configuration register value.
 	 */
 	public void setConfigRegister(int timerConfigRegister) {
@@ -133,6 +160,11 @@ public class FlexIOTimer {
 		stopOnDisable = (timerStopBit & 0b10) != 0;
 	}
 
+	/**
+	 * Sets the timer compare value.
+	 *
+	 * @param cmp The compare value to set.
+	 */
 	public void setTimerCompareValue(int cmp) {
 		this.timerCompareValue = cmp & 0xFFFF;
 		switch (timerMode) {
@@ -255,6 +287,7 @@ public class FlexIOTimer {
 
 	/**
 	 * Returns the timer output level.
+	 *
 	 * @return The current output level of the timer.
 	 */
 	public boolean isClockLevelHigh() {

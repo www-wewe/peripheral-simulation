@@ -13,12 +13,17 @@ import org.eclipse.swtchart.extensions.charts.InteractiveChart;
  * @author Veronika Lenková
  */
 public class SeriesData {
+
 	/** The chart to which the series belongs */
 	InteractiveChart chart;
+
 	/** The series to be plotted */
 	ILineSeries<?> series;
+
 	/** Time values for the x-axis (seriex.setXseriex(timeValues) */
 	List<Double> timeValues = new ArrayList<>();
+
 	/** Output values for the y-axis (series.setYseriex(outputValues) */
 	List<Double> outputValues = new ArrayList<>();
+
 }

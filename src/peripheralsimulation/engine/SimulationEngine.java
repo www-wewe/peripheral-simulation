@@ -24,6 +24,7 @@ public class SimulationEngine {
 	 */
 	private final Queue<SimulationEvent> eventQueue = new PriorityQueue<>(
 			Comparator.comparingDouble(SimulationEvent::getTime));
+
 	/**
 	 * Current simulation time in arbitrary time units.
 	 */
@@ -41,7 +42,7 @@ public class SimulationEngine {
 
 	/**
 	 * A consumer to handle simulation output (e.g., display in a view). Key:
-	 * current time, Value: map of peripheral outputs with their values.
+	 * current time, Value: array of peripheral outputs.
 	 */
 	private BiConsumer<Double, Object[]> outputHandler;
 
@@ -74,7 +75,7 @@ public class SimulationEngine {
 
 	/**
 	 * Initializes or resets the simulation. Clears the event queue and sets time to
-	 * zero.
+	 * zero. Schedules all user events.
 	 */
 	public void initSimulation() {
 		eventQueue.clear();
@@ -89,9 +90,9 @@ public class SimulationEngine {
 	}
 
 	/**
-	 * Starts or continues the simulation up to a specified maximum time (or until
-	 * no more events).
-	 * 
+	 * Starts the simulation up to a specified maximum time (or until no more
+	 * events).
+	 *
 	 * @param maxTime The simulation will not proceed beyond this time.
 	 */
 	public void startSimulation(double maxTime) {

@@ -11,6 +11,7 @@ public class SimulationEvent {
 
 	/** The time at which the event occurs. */
 	private final double time;
+
 	/** The action to be performed when the event occurs. */
 	private final Runnable runnable;
 

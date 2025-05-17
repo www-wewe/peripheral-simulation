@@ -86,10 +86,11 @@ public class CounterModelTest {
 
 	/** Simulation engine for the tests. */
 	private FakeSimulationEngine engine;
+
 	/** Counter model under test. */
 	private CounterModel counter;
 
-	/** 8‑bit counter ticking at 1 kHz, prescaler 1 → tickPeriod = 1 ms. */
+	/** 8-bit counter ticking at 1 kHz, prescaler 1 → tickPeriod = 1 ms. */
 	@Before
 	public void setUp() {
 		engine = new FakeSimulationEngine();

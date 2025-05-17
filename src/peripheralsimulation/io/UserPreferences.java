@@ -12,7 +12,7 @@ import peripheralsimulation.ui.SimulationGuiChoice;
 
 /**
  * Singleton class that manages user preferences for the simulation.
- * 
+ *
  * @author Veronika Lenková
  */
 public final class UserPreferences {
@@ -95,7 +95,7 @@ public final class UserPreferences {
 
 	/**
 	 * Returns the singleton instance of UserPreferences.
-	 * 
+	 *
 	 * @return The singleton instance of UserPreferences
 	 */
 	public static UserPreferences getInstance() {
@@ -108,7 +108,7 @@ public final class UserPreferences {
 
 	/**
 	 * Adds a listener to the list of listeners for user preferences changes.
-	 * 
+	 *
 	 * @param listener The listener to be added
 	 */
 	public void addListener(UserPreferencesListener listener) {
@@ -117,7 +117,7 @@ public final class UserPreferences {
 
 	/**
 	 * Removes a listener from the list of listeners for user preferences changes.
-	 * 
+	 *
 	 * @param listener The listener to be removed
 	 */
 	public void removeListener(UserPreferencesListener listener) {
@@ -140,6 +140,25 @@ public final class UserPreferences {
 		for (UserPreferencesListener listener : listeners) {
 			listener.onSelectedSimulationGUIChanged();
 		}
+	}
+
+	/**
+	 * Applies the user preferences from the given UserPreferencesBlock (imported
+	 * YAML file).
+	 *
+	 * @param preferences The UserPreferencesBlock containing the user preferences.
+	 */
+	public void apply(UserPreferencesBlock preferences) {
+		setSelectedSimulationGUI(preferences.getSimulationGui());
+		setMonitoringPeriod(preferences.getMonitoringPeriod());
+		setSimulationTimeRangeFrom(preferences.getRangeFrom());
+		setSimulationTimeRangeTo(preferences.getRangeTo());
+		setClockFrequency(preferences.getClkFreq());
+		setExternalClockFrequency(preferences.getExtClkFreq());
+		setMillisToWait(preferences.getWaitMs());
+		setOnlyChanges(preferences.isOnlyChanges());
+		setSelectedOutputs(preferences.getOutputs());
+		setTimeScaleUnits(preferences.getTimeUnit());
 	}
 
 	/* ================================================================== */
@@ -290,25 +309,6 @@ public final class UserPreferences {
 
 	public void setExternalClockFrequency(int externalClockFrequency) {
 		this.externalClockFrequency = externalClockFrequency;
-	}
-
-	/**
-	 * Applies the user preferences from the given UserPreferencesBlock (imported
-	 * YAML file).
-	 *
-	 * @param preferences The UserPreferencesBlock containing the user preferences.
-	 */
-	public void apply(UserPreferencesBlock preferences) {
-		setSelectedSimulationGUI(preferences.getSimulationGui());
-		setMonitoringPeriod(preferences.getMonitoringPeriod());
-		setSimulationTimeRangeFrom(preferences.getRangeFrom());
-		setSimulationTimeRangeTo(preferences.getRangeTo());
-		setClockFrequency(preferences.getClkFreq());
-		setExternalClockFrequency(preferences.getExtClkFreq());
-		setMillisToWait(preferences.getWaitMs());
-		setOnlyChanges(preferences.isOnlyChanges());
-		setSelectedOutputs(preferences.getOutputs());
-		setTimeScaleUnits(preferences.getTimeUnit());
 	}
 
 }

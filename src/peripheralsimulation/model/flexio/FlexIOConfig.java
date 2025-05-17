@@ -49,6 +49,7 @@ public class FlexIOConfig {
 	public static final int TIMCMP0_OFFSET = 0x500;
 	public static final int TIMER_STRIDE = 0x004;
 
+	/** Map of register names to their offsets */
 	private static final Map<String, Integer> NAME2OFFSET = new HashMap<>();
 
 	static {
@@ -121,7 +122,6 @@ public class FlexIOConfig {
 	 */
 	private int shiftersCount;
 	private int timersCount;
-//	private int pinCount;
 
 	/** Jednotlivé konfigurácie: index == číslo periférie. */
 	private FlexIOShifter[] shifters;
@@ -129,8 +129,6 @@ public class FlexIOConfig {
 
 	/** Globálne riadiace bity z CTRL. */
 	private boolean flexEn, dbgE, dozen; // swRst, fastAcc
-
-	// Chip modes = Run, Stop/Wait, Low Leakage Stop, Debug
 
 	/** RegisterMap object to access register values. */
 	private RegisterMap registerMap;
@@ -148,7 +146,6 @@ public class FlexIOConfig {
 		if (PARAM != 0) {
 			shiftersCount = PARAM & 0xFF;
 			timersCount = (PARAM >> 8) & 0xFF;
-//			pinCount = (PARAM >> 16) & 0xFF;
 		} else {
 			shiftersCount = countBlocks(SHIFTCTL0_OFFSET, SHIFTER_STRIDE);
 			timersCount = countBlocks(TIMCTL0_OFFSET, TIMER_STRIDE);

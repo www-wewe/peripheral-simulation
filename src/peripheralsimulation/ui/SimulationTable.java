@@ -24,21 +24,19 @@ public class SimulationTable implements SimulationGUI {
 
 	/** The table in which the simulation results are displayed. Graph later. */
 	private Table table;
+
 	/** User preferences for the simulation. */
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+
 	/** The simulation model. */
 	private PeripheralModel peripheralModel;
-	/**
-	 * Map of output values when output changes e.g. "INTERRUPT" -> [time and value,
-	 * 0.5 false, 1.0 true, ...]
-	 */
-	// private Map<String, Map<Double, Object>> outputsMap = new HashMap<>();
+
 	/** The last output values for each selected output. */
 	private Object[] lastOutputValues = new Object[userPreferences.getSelectedOutputs().size()];
 
 	/**
 	 * Constructor for the SimulationTable.
-	 * 
+	 *
 	 * @param parent The parent composite for the table.
 	 */
 	public SimulationTable(Composite parent) {
@@ -79,14 +77,7 @@ public class SimulationTable implements SimulationGUI {
 			Object outputValue = outputs[outputIndex];
 			rowText[i + 1] = (outputValue == null) ? "" : outputValue.toString();
 
-			// output =
-			// userPreferences.getPeripheralModel().getOutputName(selectedOutputsIndices.get(i));
-			// outputsMap.putIfAbsent(output, new LinkedHashMap<>());
-			// Map<Double, Object> outputMap = outputsMap.get(output);
-			// Object lastValue = outputMap.isEmpty() ? null :
-			// outputMap.values().toArray()[outputMap.size() - 1];
 			Object lastValue = lastOutputValues[i];
-
 			if (lastValue == null || !lastValue.equals(outputValue)) {
 				// outputMap.put(timeValue, outputValue);
 				lastOutputValues[i] = outputValue;
@@ -102,7 +93,7 @@ public class SimulationTable implements SimulationGUI {
 
 	/**
 	 * Format the time value to a string using the user's preferred format.
-	 * 
+	 *
 	 * @param timeValue the time value to format
 	 * @return the formatted time string
 	 */
@@ -184,4 +175,5 @@ public class SimulationTable implements SimulationGUI {
 		clear();
 		table.dispose();
 	}
+
 }

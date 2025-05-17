@@ -18,10 +18,9 @@ import peripheralsimulation.model.systick.SysTickTimerConfig;
 
 /**
  * Utility class for register-related operations.
- * 
  * This class provides constants and methods for working with registers in the
  * simulation.
- * 
+ *
  * @author Veronika Lenková
  */
 public class RegisterUtils {

@@ -44,24 +44,34 @@ public class SettingsDialog extends Dialog {
 
 	/** The user preferences instance */
 	private UserPreferences userPreferences;
+
 	/** List of checkboxes for selecting outputs */
 	private List<Button> checkboxes = new ArrayList<>();
+
 	/** Checkbox for showing only changes */
 	private Button onlyChanges;
+
 	/** Text field for milliseconds to wait between iterations */
 	private Text millisToWaitTextField;
+
 	/** Combo box for selecting the simulation visualization */
 	private Combo visualizationSelectionCombo;
+
 	/** Text field for monitoring period */
 	private Text monitoringPeriodTextField;
+
 	/** Text field for simulation time range from */
 	private Text simulationTimeRangeFromTextField;
+
 	/** Text field for simulation time range to */
 	private Text simulationTimeRangeToTextField;
+
 	/** Text field for clock frequency */
 	private Text clockFrequencyTextField;
+
 	/** Text field for external clock frequency */
 	private Text externalClkFrequencyTextField;
+
 	/** Combo box for selecting the time scale */
 	private Combo timeScaleCombo;
 
@@ -122,7 +132,6 @@ public class SettingsDialog extends Dialog {
 			millisToWait = "0";
 		}
 		userPreferences.setMillisToWait(Long.parseLong(millisToWait));
-		// TODO: verify inputs
 		userPreferences.setMonitoringPeriod(Double.parseDouble(monitoringPeriodTextField.getText()));
 		userPreferences.setSimulationTimeRangeFrom(Double.parseDouble(simulationTimeRangeFromTextField.getText()));
 		userPreferences.setSimulationTimeRangeTo(Double.parseDouble(simulationTimeRangeToTextField.getText()));
@@ -137,7 +146,7 @@ public class SettingsDialog extends Dialog {
 
 	/**
 	 * Adds checkboxes for each output of the selected peripheral.
-	 * 
+	 *
 	 * @param dialog The dialog to which the checkboxes will be added.
 	 */
 	private void addCheckboxes(Composite dialog) {
@@ -153,12 +162,13 @@ public class SettingsDialog extends Dialog {
 		}
 		onlyChanges = new Button(dialog, SWT.CHECK);
 		onlyChanges.setText("Show only changes");
+		onlyChanges.setToolTipText("Show only changes when TABLE is chosen.");
 		onlyChanges.setSelection(userPreferences.isOnlyChanges());
 	}
 
 	/**
 	 * Add text field for milliseconds to wait between each simulation step.
-	 * 
+	 *
 	 * @param dialog The dialog to which the text field will be added.
 	 */
 	private void addTextFieldMillisToWait(Composite dialog) {
@@ -196,7 +206,7 @@ public class SettingsDialog extends Dialog {
 
 	/**
 	 * Add combo box for selecting the simulation visualization.
-	 * 
+	 *
 	 * @param dialog The dialog to which the combo box will be added.
 	 */
 	private void addGuiSelection(Composite dialog) {
@@ -216,7 +226,7 @@ public class SettingsDialog extends Dialog {
 	/**
 	 * Add text field for monitoring frequency. (How often the simulation should be
 	 * updated)
-	 * 
+	 *
 	 * @param dialog The dialog to which the text field will be added.
 	 */
 	private void addTextFieldMonitoringFreq(Composite dialog) {
@@ -232,7 +242,7 @@ public class SettingsDialog extends Dialog {
 
 	/**
 	 * Add text fields (from, to) for time range.
-	 * 
+	 *
 	 * @param dialog The dialog to which the text fields will be added.
 	 */
 	private void addTextFieldsForTimeRange(Composite dialog) {
@@ -253,7 +263,7 @@ public class SettingsDialog extends Dialog {
 
 	/**
 	 * Add text field for clock frequency.
-	 * 
+	 *
 	 * @param dialog The dialog to which the text field will be added.
 	 */
 	private void addTextFieldsForClockFrequency(Composite dialog) {
@@ -349,8 +359,6 @@ public class SettingsDialog extends Dialog {
 						"YAML file could not be loaded.\n" + ex.getMessage());
 			}
 		});
-
-		// TODO: export configuration to YAML
 	}
 
 }

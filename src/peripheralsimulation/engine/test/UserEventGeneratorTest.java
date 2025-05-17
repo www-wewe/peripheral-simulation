@@ -92,13 +92,11 @@ public class UserEventGeneratorTest {
 		@Override
 		public void initialize(SimulationEngine engine) {
 			// Intentionally empty
-
 		}
 
 		@Override
 		public void update(SimulationEngine engine) {
 			// Intentionally empty
-
 		}
 
 		@Override
@@ -124,7 +122,6 @@ public class UserEventGeneratorTest {
 		@Override
 		public void setRegisterValue(int registerAddress, int value) {
 			// Intentionally empty
-
 		}
 
 		@Override
@@ -220,4 +217,5 @@ public class UserEventGeneratorTest {
 		assertEquals(0, engine.size());
 		assertEquals(0, peripheral.getCount());
 	}
+
 }

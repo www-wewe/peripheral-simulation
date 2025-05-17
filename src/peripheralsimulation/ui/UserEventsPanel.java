@@ -28,26 +28,34 @@ public class UserEventsPanel extends Composite {
 
 	/** User preferences instance */
 	private UserPreferences userPreferences = UserPreferences.getInstance();
+
 	/** List of user-defined events */
 	private List<UserEvent> userEvents = new ArrayList<>();
 
 	/** Text field for start time */
 	private Text txtStartTime;
+
 	/** Text field for period */
 	private Text txtPeriod;
+
 	/** Text field for repeat count */
 	private Text txtRepeatCount;
+
 	/** Combo box for event type */
 	private Combo comboEventType;
+
 	/** Text field for register address */
 	private Text txtRegisterAddress;
+
 	/** Text field for bit position */
 	private Text txtBitPosition;
+
 	/** Text field for value */
 	private Text txtValue;
 
 	/** Table to display existing events */
 	private Table tableEvents;
+
     /** Dialog with this panel. Used for showing messages. */
 	private UserEventDialog userEventDialog;
 
@@ -216,7 +224,7 @@ public class UserEventsPanel extends Composite {
 
 	/**
 	 * Parses a string to a double, returning a default value if parsing fails.
-	 * 
+	 *
 	 * @param stringToParse The string to parse.
 	 * @param defaultValue  The default value to return if parsing fails.
 	 * @return The parsed double or the default value.
@@ -249,7 +257,7 @@ public class UserEventsPanel extends Composite {
 	/**
 	 * Parses a string to an integer, interpreting it as hexadecimal if it starts
 	 * with "0x" or "0X". Returns a default value if parsing fails.
-	 * 
+	 *
 	 * @param stringToParse The string to parse.
 	 * @param defaultValue  The default value to return if parsing fails.
 	 * @return The parsed integer or the default value.
@@ -276,4 +284,5 @@ public class UserEventsPanel extends Composite {
 	public List<UserEvent> getUserEvents() {
 		return userEvents;
 	}
+
 }

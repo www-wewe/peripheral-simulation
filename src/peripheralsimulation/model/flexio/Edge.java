@@ -10,5 +10,12 @@ package peripheralsimulation.model.flexio;
  * @author Veronika Lenková
  */
 public enum Edge {
-	NONE, POSEDGE, NEGEDGE
+
+	/** No edge detection */
+	NONE,
+	/** Positive edge detection */
+	POSEDGE,
+	/** Negative edge detection */
+	NEGEDGE
+
 }

@@ -11,17 +11,16 @@ import java.util.Map;
 import org.junit.Test;
 
 import peripheralsimulation.engine.SimulationEngine;
-import peripheralsimulation.io.UserPreferences;
 import peripheralsimulation.model.SysTickTimerModel;
 import peripheralsimulation.model.systick.SysTickTimerConfig;
 import peripheralsimulation.utils.RegisterMap;
 
 /**
  * Test class for SysTickTimerModel.
- * 
+ *
  * This class contains unit tests for the SysTickTimerModel class, specifically
  * testing the underflow condition and the behavior of the CVR register.
- * 
+ *
  * @author Veronika Lenková
  */
 public class SysTickTimerModelTest {

@@ -10,9 +10,8 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * Dialog for displaying user events.
- * 
  * This dialog is used to show the user events in the simulation.
- * 
+ *
  * @author Veronika Lenková
  */
 public class UserEventDialog extends TitleAreaDialog {
@@ -22,7 +21,7 @@ public class UserEventDialog extends TitleAreaDialog {
 
 	/**
 	 * Constructor for the UserEventDialog.
-	 * 
+	 *
 	 * @param parentShell The parent shell for the dialog.
 	 */
 	public UserEventDialog(Shell parentShell) {
@@ -40,7 +39,9 @@ public class UserEventDialog extends TitleAreaDialog {
 	protected Control createContents(Composite parent) {
 		Control control = super.createContents(parent);
 		setTitle("User Events");
-		setMessage("User events in the simulation.");
+		setMessage("Define and manage custom user events for the simulation. \n"
+		         + "Specify timing, behavior, and target registers for the peripheral model. "
+		         + "All configured events will be listed below.");
 		setHelpAvailable(false);
 		setDialogHelpAvailable(false);
 		return control;
@@ -58,4 +59,5 @@ public class UserEventDialog extends TitleAreaDialog {
 	protected void okPressed() {
 		super.okPressed();
 	}
+
 }

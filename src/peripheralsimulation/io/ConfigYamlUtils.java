@@ -17,8 +17,8 @@ import peripheralsimulation.engine.UserEventType;
 import peripheralsimulation.ui.SimulationGuiChoice;
 
 /**
- * ConfigIO is responsible for loading and saving YAML configuration files for
- * the simulation.
+ * ConfigYamlUtils class is responsible for loading and saving YAML
+ * configuration files for the simulation.
  *
  * @author Veronika Lenková
  */
@@ -62,7 +62,7 @@ public final class ConfigYamlUtils {
 
 	/**
 	 * Convert a YAML configuration file to a SimulationConfig object.
-	 * 
+	 *
 	 * @param root The root map of the YAML configuration.
 	 * @return The SimulationConfig object.
 	 */
@@ -107,7 +107,7 @@ public final class ConfigYamlUtils {
 		return new SimulationConfig(prefBlock, events);
 	}
 
-	/* ======= konverzné helpery ======= */
+	/* ======= helpers functions ======= */
 	private static double toDouble(Object o, double def) {
 		return (o instanceof Number n) ? n.doubleValue() : (o != null) ? Double.parseDouble(o.toString()) : def;
 	}

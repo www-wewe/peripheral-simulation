@@ -6,10 +6,9 @@ import java.util.Map;
 
 /**
  * Class representing a map of registers.
- * 
  * This class provides methods to read register values and check individual
  * bits.
- * 
+ *
  * @author Veronika Lenková
  */
 public class RegisterMap {

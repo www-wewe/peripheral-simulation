@@ -40,7 +40,7 @@ public class ColorsUtils {
 	/**
 	 * Returns the next RGB color in the sequence. The colors are cycled through in
 	 * a round-robin fashion.
-	 * 
+	 *
 	 * @return The next RGB color.
 	 */
 	public static RGB getNextRGB() {
@@ -58,4 +58,5 @@ public class ColorsUtils {
 	public static Color getNextColor() {
 		return new Color(Display.getDefault(), getNextRGB());
 	}
+
 }

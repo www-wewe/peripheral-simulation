@@ -39,9 +39,7 @@ import peripheralsimulation.utils.RegisterMap;
 public class FlexIOModelTest {
 
 	/*
-	 * ------------------------------------------------------------------ Helper –
-	 * creates a minimal RegisterMap containing exactly one timer and zero shifters.
-	 * ------------------------------------------------------------------
+	 * Creates a minimal RegisterMap containing exactly one timer and zero shifters.
 	 */
 	private static RegisterMap createRegisterMap(int timctl0, int timcfg0, int timcmp0) {
 		Map<Integer, Integer> regs = new HashMap<>();
@@ -130,4 +128,5 @@ public class FlexIOModelTest {
 		model.update(engine);
 		assertTrue("TIMSTAT[0] set after one bit period", (cfg.getTimStat() & 0x1) != 0);
 	}
+
 }

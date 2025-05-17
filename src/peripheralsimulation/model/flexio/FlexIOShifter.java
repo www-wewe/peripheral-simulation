@@ -3,33 +3,41 @@ package peripheralsimulation.model.flexio;
 
 /**
  * Class representing a FlexIO shifter.
- * 
+ *
  * This class provides methods to configure and manage the shifter's settings,
  * including its mode, pin selection, and buffer.
- * 
+ *
  * @author Veronika Lenková
  */
 public class FlexIOShifter {
 
 	/** Shifter disabled mode */
 	private static final int SMOD_DISABLED = 0b000;
+
 	/** Shifter receive mode */
 	private static final int SMOD_RECEIVE = 0b001;
+
 	/** Shifter transmit mode */
 	private static final int SMOD_TRANSMIT = 0b010;
 
 	/** Index of the shifter */
 	private int index;
+
 	/** FlexIO configuration object */
 	private FlexIOConfig config;
+
 	/** FlexIO timer object asociated with this shifter */
 	private FlexIOTimer timer;
+
 	/** Count of bits shifted (0-31) */
 	private int bitCnt;
+
 	/** Current output level (0 - low, 1 - high) */
 	private boolean pinLevel;
+
 	/** Boolean flag indicating if the start bit has been processed */
 	private boolean startDone;
+
 	/** Boolean flag indicating if the buffer contains data to be sent */
 	private boolean bufValid;
 
@@ -39,14 +47,19 @@ public class FlexIOShifter {
 
 	/** Mode of the shifter (disabled, RX, TX, Match store, etc.) */
 	private int shifterMode;
+
 	/** Pin polarity, 0 - Pin is active high, 1 - active low */
 	private int shifterPinPolarity;
+
 	/** Pin selection, 0 - Pin 0, 1 - Pin 1, etc. */
 	private int shifterPinSelect;
+
 	/** Pin configuration (output disabled, open drain, etc.) */
 	private int shifterPinConfiguration;
+
 	/** Timer polarity, 0 - Shift on posedge of Shift clock, 1 - on negative edge */
 	private int timerPolarity;
+
 	/** Timer selection, 0 - Timer 0, 1 - Timer 1, etc. */
 	private int timerSelect;
 
@@ -56,8 +69,10 @@ public class FlexIOShifter {
 
 	/** Start bit, allows automatic start bit insertion */
 	private int shifterStartBit;
+
 	/** Stop bit, allows automatic stop bit insertion */
 	private int shifterStopBit;
+
 	/** Input source, 0 - Pin, 1 - Shifter N+1 output */
 	private int inputSource;
 
@@ -66,7 +81,7 @@ public class FlexIOShifter {
 
 	/**
 	 * Constructor for FlexIOShifter.
-	 * 
+	 *
 	 * @param config The FlexIO configuration object.
 	 * @param index  The index of the shifter.
 	 */
@@ -80,7 +95,7 @@ public class FlexIOShifter {
 
 	/**
 	 * Sets the shifter control register.
-	 * 
+	 *
 	 * @param shifterControlRegister The control register value.
 	 */
 	public void setControlRegister(int shifterControlRegister) {
@@ -97,7 +112,7 @@ public class FlexIOShifter {
 
 	/**
 	 * Sets the shifter configuration register.
-	 * 
+	 *
 	 * @param shifterConfigRegister The configuration register value.
 	 */
 	public void setConfigRegister(int shifterConfigRegister) {
@@ -114,7 +129,7 @@ public class FlexIOShifter {
 		startDone = false;
 		shiftBuffer = config.getShiftBuf(index);
 		bufValid = shiftBuffer != 0; // buffer is not empty
-		pinLevel = !(shifterPinPolarity == 1); // default HIGH (= 1) → po XOR môže byť 0
+		pinLevel = !(shifterPinPolarity == 1); // default HIGH (= 1) → after XOR can be 0
 	}
 
 	/**
@@ -127,17 +142,16 @@ public class FlexIOShifter {
 		if (timer == null || shifterMode == SMOD_DISABLED || edge == Edge.NONE)
 			return;
 
-		// * vyber, či je to hrana, na ktorej máme shiftovať */
+		// choose whether this is the edge we should shift on
 		if ((timerPolarity == 0 && edge != Edge.POSEDGE) || (timerPolarity == 1 && edge != Edge.NEGEDGE))
 			return;
 
 		/*
-		 * počet dátových bitov v slove z CMP[15:8]: reloadHigh = ((CMP[15:8] + 1) / 2)
+		 * number of data bits in word from CMP[15:8]: reloadHigh = ((CMP[15:8] + 1) / 2)
 		 * → bits = reloadHigh
 		 */
 		int wordBits = timer.getHighReload() / 2;
 
-		// pre demo – SHIFT na každom log. 1 (OUT high):
 		// Only sstart=10 a sstop=11 is implemented
 		switch (shifterMode) {
 
@@ -156,17 +170,17 @@ public class FlexIOShifter {
 			pinLevel = (bit ^ (shifterPinPolarity == 1));
 			shiftBuffer >>>= 1;
 
-			/* (3) stop-bit po dosiahnutí bit-count */
+			/* (3) stop-bit after bit-count is reached */
 			if (++bitCnt == wordBits) {
 				if (shifterStopBit == 0b11) { // stop = ‘1’
 					pinLevel = !(shifterPinPolarity == 1);
 				}
-				// prázdny SHIFTBUF? → underrun
+				// empty SHIFTBUF? → underrun
 				if (!bufValid)
 					config.setShiftErr(1 << index);
-				/* automatický load novej hodnoty do shiftra */
+				/* automatic load of new value into shifter */
 				reset();
-				/* SSF flag – prázdny buffer → požiadavka na DMA/IRQ */
+				/* SSF flag – empty buffer → DMA/IRQ request */
 				config.setShiftStat(1 << index);
 			}
 		}
@@ -174,19 +188,19 @@ public class FlexIOShifter {
 		/* ============ RECEIVE ============ */
 		case SMOD_RECEIVE -> {
 
-			/* start-bit kontrola */
+			/* start-bit check */
 			if (!startDone && shifterStartBit == 0b10) {
 				boolean start = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
 				if (start)
 					return; // ešte sme v start-bite
-				startDone = true; // hrana do high = stred 1. bitu
+				startDone = true; // high edge = middle of 1st bit
 			}
 
 			/* sample input */
 			boolean inBit;
-			if (inputSource == 0) { // z pinu
+			if (inputSource == 0) { // from pin
 				inBit = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
-			} else { // z výstupu (N+1) shiftra
+			} else { // output from (N+1) shifter
 				FlexIOShifter next = config.getShifters()[(index + 1) % config.getShiftersCount()];
 				inBit = next.pinLevel;
 			}
@@ -199,12 +213,12 @@ public class FlexIOShifter {
 				if (shifterStopBit == 0b11) {
 					boolean stop = timer.isClockLevelHigh() ^ (shifterPinPolarity == 1);
 					if (!stop)
-						config.setShiftErr(1 << index); // chyba!
+						config.setShiftErr(1 << index);
 				}
 				if (bufValid) {
 					config.setShiftErr(1 << index);
 				}
-				config.setShiftBuf(index, shiftBuffer); // presun do SHIFTBUF
+				config.setShiftBuf(index, shiftBuffer); // move to SHIFTBUF
 				bufValid = true;
 				config.setShiftStat(1 << index); // SSF=1
 				bitCnt = 0;
@@ -213,7 +227,7 @@ public class FlexIOShifter {
 		}
 
 		default -> {
-			/* ostatné SMOD neimplementované */ }
+			/* other SMODs not implemented */ }
 		}
 	}
 

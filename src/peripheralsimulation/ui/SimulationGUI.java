@@ -7,7 +7,7 @@ import org.eclipse.swt.widgets.Composite;
  * Interface for the simulation GUI. Defines methods for updating the GUI,
  * clearing it, setting focus, handling output selection changes, and disposing
  * of the GUI.
- * 
+ *
  * @author Veronika Lenková
  */
 public interface SimulationGUI {

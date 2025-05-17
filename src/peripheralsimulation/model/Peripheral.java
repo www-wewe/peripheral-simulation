@@ -5,15 +5,17 @@ package peripheralsimulation.model;
  * Enum representing different types of peripherals in the simulation. Each
  * peripheral has a display name that can be used for user-friendly
  * representation.
- * 
+ *
  * @author Veronika Lenková
  */
 public enum Peripheral {
 
 	/** Peripheral representing a System Tick Timer. */
 	SYSTICKTIMER("System Tick Timer"),
+
 	/** Peripheral representing a simplyfied counter. */
 	COUNTER("Counter"),
+
 	/** Peripheral representing a Flexible I/O module. */
 	FLEXIO("FlexIO");
 

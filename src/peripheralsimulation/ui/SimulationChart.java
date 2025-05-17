@@ -31,14 +31,16 @@ public class SimulationChart implements SimulationGUI {
 
 	/** Container that holds all individual charts. */
 	private final Composite container;
+
 	/** User preferences for the simulation. */
-	private UserPreferences userPreferences = UserPreferences.getInstance();;
+	private UserPreferences userPreferences = UserPreferences.getInstance();
+
 	/** List of series data for charting. */
 	private List<SeriesData> seriesList = new ArrayList<>();
 
 	/**
 	 * Constructor for the SimulationChart.
-	 * 
+	 *
 	 * @param parent The parent composite for the chart.
 	 */
 	public SimulationChart(Composite parent) {
@@ -137,7 +139,7 @@ public class SimulationChart implements SimulationGUI {
 
 	/**
 	 * Creates a new chart for the specified output.
-	 * 
+	 *
 	 * @param logicalPosition The logical position of the output in the chart.
 	 */
 	private void createChartForOutput(int logicalPosition) {
@@ -219,7 +221,7 @@ public class SimulationChart implements SimulationGUI {
 
 	/**
 	 * Ensures that the number of charts matches the required number.
-	 * 
+	 *
 	 * @param required The required number of charts.
 	 */
 	private void ensureChartCount(int required) {
