@@ -14,16 +14,16 @@ import java.util.List;
 public class UserEventGenerator {
 
 	/**
-	 * List of user events to be scheduled. Each event is defined by a
-	 * UserEventDefinition object.
+	 * List of user events to be scheduled. Each event is defined by a UserEvent
+	 * object.
 	 */
 	private List<UserEvent> userEvents = new ArrayList<>();
 
 	/**
 	 * Adds a user event definition to the list of user events.
 	 * 
-	 * @param eventDefinition The UserEventDefinition object representing the event
-	 *                        to be scheduled.
+	 * @param eventDefinition The UserEvent object representing the event to be
+	 *                        scheduled.
 	 */
 	public void addEvent(UserEvent eventDefinition) {
 		userEvents.add(eventDefinition);
