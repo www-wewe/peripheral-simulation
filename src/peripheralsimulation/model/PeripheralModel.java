@@ -39,12 +39,18 @@ public interface PeripheralModel {
 	/**
 	 * Returns the name for a given output index. e.g. 0 -> "CURRENT", 1 ->
 	 * "INTERRUPT", 2 -> "COUNTFLAG"
+	 *
+	 * @param index The index of the output to get the name for.
+	 * @return The name of the output.
 	 */
 	String getOutputName(int index);
 
 	/**
 	 * Returns the index of a given output name. e.g. "CURRENT" -> 0, "INTERRUPT" ->
 	 * 1, "COUNTFLAG" -> 2
+	 *
+	 * @param name The name of the output to get the index for.
+	 * @return The index of the output.
 	 */
 	int getOutputIndex(String name);
 
@@ -95,8 +101,7 @@ public interface PeripheralModel {
 	 * Sets or clears a specific bit in the register. True means set the bit, false
 	 * means clear the bit.
 	 *
-	 * @param bitPosition The position of the bit to set (0-31).
-	 * @param newVal      The new value for the bit (true for set, false for clear).
+	 * @param event The user event containing the register address and bit position.
 	 */
 	private void setBit(UserEvent event) {
 		Integer registerValue = getRegisterValue(event.getRegisterAddress());

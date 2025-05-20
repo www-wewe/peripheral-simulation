@@ -320,7 +320,7 @@ public class FlexIOTimer {
 	/**
 	 * Returns timer status flag.
 	 *
-	 * @returntrue if status flag is set, false otherwise.
+	 * @return true if status flag is set, false otherwise.
 	 */
 	public boolean isStatusFlagSet() {
 		return (config.getTimStat() & (1 << index)) != 0;

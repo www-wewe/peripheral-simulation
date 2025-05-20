@@ -7,7 +7,6 @@ import org.junit.runners.Suite;
 import peripheralsimulation.engine.test.SimulationEngineTest;
 import peripheralsimulation.engine.test.SimulationEventTest;
 import peripheralsimulation.engine.test.UserEventGeneratorTest;
-import peripheralsimulation.model.test.CounterModelTest;
 import peripheralsimulation.model.test.FlexIOModelTest;
 import peripheralsimulation.model.test.SysTickTimerModelTest;
 
@@ -23,7 +22,6 @@ import peripheralsimulation.model.test.SysTickTimerModelTest;
 	    SimulationEngineTest.class,
 	    SimulationEventTest.class,
         UserEventGeneratorTest.class,
-        CounterModelTest.class,
         SysTickTimerModelTest.class,
         FlexIOModelTest.class,
 })

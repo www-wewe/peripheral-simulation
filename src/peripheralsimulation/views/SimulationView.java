@@ -32,7 +32,6 @@ import peripheralsimulation.ui.SimulationTable;
 import peripheralsimulation.ui.UserEventDialog;
 import peripheralsimulation.utils.RegisterMap;
 import peripheralsimulation.utils.RegisterUtils;
-import peripheralsimulation.model.CounterModel;
 import peripheralsimulation.model.FlexIOModel;
 
 import org.eclipse.swt.layout.GridData;
@@ -231,13 +230,6 @@ public class SimulationView extends ViewPart implements UserPreferencesListener 
 			// fill in the fields from your exported data or from code
 			SysTickTimerConfig config = new SysTickTimerConfig(registerMap);
 			simulationModel = new SysTickTimerModel(config);
-			break;
-		case COUNTER:
-			simulationModel = new CounterModel(255, // overflow value
-					0, // initial value
-					1000, // 1 kHz clock
-					1 // prescaler
-			);
 			break;
 		case FLEXIO:
 			FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);

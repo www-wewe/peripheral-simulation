@@ -31,7 +31,7 @@ public class RegisterMap {
 	/**
 	 * Returns the value of a register at the specified offset.
 	 *
-	 * @param addr The offset of the register.
+	 * @param offset The offset of the register.
 	 * @return The value of the register. If the register does not exist, returns 0.
 	 */
 	public int getRegisterValue(int offset) {

@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Text;
 import peripheralsimulation.io.ConfigYamlUtils;
 import peripheralsimulation.io.SimulationConfig;
 import peripheralsimulation.io.UserPreferences;
-import peripheralsimulation.model.CounterModel;
 import peripheralsimulation.model.FlexIOModel;
 import peripheralsimulation.model.Peripheral;
 import peripheralsimulation.model.PeripheralModel;
@@ -308,13 +307,6 @@ public class SettingsDialog extends Dialog {
 				case SYSTICKTIMER:
 					SysTickTimerConfig config = new SysTickTimerConfig(registerMap);
 					peripheralModel = new SysTickTimerModel(config);
-					break;
-				case COUNTER:
-					peripheralModel = new CounterModel(255, // overflow value
-							0, // initial value
-							1000, // 1 kHz clock
-							1 // prescaler
-					);
 					break;
 				case FLEXIO:
 					FlexIOConfig flexioConfig = new FlexIOConfig(registerMap);

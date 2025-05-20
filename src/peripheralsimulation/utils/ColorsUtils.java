@@ -38,6 +38,13 @@ public class ColorsUtils {
 	};
 
 	/**
+	 * Private constructor to prevent instantiation of this utility class.
+	 */
+	private ColorsUtils() {
+		// Prevent instantiation
+	}
+
+	/**
 	 * Returns the next RGB color in the sequence. The colors are cycled through in
 	 * a round-robin fashion.
 	 *

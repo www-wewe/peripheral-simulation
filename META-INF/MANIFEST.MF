@@ -15,4 +15,16 @@ Bundle-RequiredExecutionEnvironment: JavaSE-23
 Automatic-Module-Name: PeripheralSimulation
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
+Export-Package: peripheralsimulation,
+ peripheralsimulation.engine,
+ peripheralsimulation.engine.test,
+ peripheralsimulation.io,
+ peripheralsimulation.model,
+ peripheralsimulation.model.flexio,
+ peripheralsimulation.model.systick,
+ peripheralsimulation.model.test,
+ peripheralsimulation.test,
+ peripheralsimulation.ui,
+ peripheralsimulation.utils,
+ peripheralsimulation.views
 

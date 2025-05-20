@@ -13,9 +13,6 @@ public enum Peripheral {
 	/** Peripheral representing a System Tick Timer. */
 	SYSTICKTIMER("System Tick Timer"),
 
-	/** Peripheral representing a simplyfied counter. */
-	COUNTER("Counter"),
-
 	/** Peripheral representing a Flexible I/O module. */
 	FLEXIO("FlexIO");
 

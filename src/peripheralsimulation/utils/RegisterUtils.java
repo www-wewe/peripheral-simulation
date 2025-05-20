@@ -28,6 +28,11 @@ public class RegisterUtils {
 	/** 24-bit register mask */
 	public static final int BIT_MASK = 0x00FFFFFF;
 
+	/** Private constructor for RegisterUtils */
+	private RegisterUtils() {
+		// Prevent instantiation
+	}
+
 	/**
 	 * Loads FlexIO registers from a CSV file and returns them as a map (register
 	 * name -> register value).

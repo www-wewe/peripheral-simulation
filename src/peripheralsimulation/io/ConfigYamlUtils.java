@@ -108,22 +108,58 @@ public final class ConfigYamlUtils {
 	}
 
 	/* ======= helpers functions ======= */
+
+	/**
+	 * Helper function to convert an Object to a double value.
+	 *
+	 * @param o   The object to convert.
+	 * @param def The default value to return if conversion fails.
+	 * @return The converted double value.
+	 */
 	private static double toDouble(Object o, double def) {
 		return (o instanceof Number n) ? n.doubleValue() : (o != null) ? Double.parseDouble(o.toString()) : def;
 	}
 
+	/**
+	 * Helper function to convert an Object to an int value.
+	 *
+	 * @param o   The object to convert.
+	 * @param def The default value to return if conversion fails.
+	 * @return The converted int value.
+	 */
 	private static int toInt(Object o, int def) {
 		return (o instanceof Number n) ? n.intValue() : (o != null) ? Integer.parseInt(o.toString()) : def;
 	}
 
+	/**
+	 * Helper function to convert an Object to a long value.
+	 *
+	 * @param o   The object to convert.
+	 * @param def The default value to return if conversion fails.
+	 * @return The converted long value.
+	 */
 	private static long toLong(Object o, long def) {
 		return (o instanceof Number n) ? n.longValue() : (o != null) ? Long.parseLong(o.toString()) : def;
 	}
 
+	/**
+	 * Helper function to convert an Object to a boolean value.
+	 *
+	 * @param o   The object to convert.
+	 * @param def The default value to return if conversion fails.
+	 * @return The converted boolean value.
+	 */
 	private static boolean toBoolean(Object o, boolean def) {
 		return (o instanceof Boolean b) ? b : (o != null) ? Boolean.parseBoolean(o.toString()) : def;
 	}
 
+	/**
+	 * Helper function to convert an Object to a hexadecimal or decimal int value.
+	 *
+	 * @param o   The object to convert.
+	 * @param def The default value to return if conversion fails.
+	 * @return The converted int value.
+	 */
 	private static int toHexOrDec(Object o, int def) {
 		try {
 			if (o instanceof String stringToParse) {
