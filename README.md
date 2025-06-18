@@ -97,7 +97,7 @@ This project is an **Eclipse Plug-in** that simulates various **microcontroller 
 Sample YAML and CSV files live in the project’s **`resources/`** folder.
 Without imported registers, simulation will not be running.
 
-### 2. CSV register snapshot (`*.csv`)
+### 1. CSV register snapshot (`*.csv`)
 
 A comma-separated file initialises the registers. Each line is:
 
@@ -114,7 +114,7 @@ SYST_RVR,0x0001D4BF
 * **REGISTER\_NAME** – must match the symbolic name used by the peripheral model.
 * **0xXXXXXXXX** – 32-bit unsigned integer in hexadecimal.
 
-### 1. YAML configuration (`*.yaml`)
+### 2. YAML configuration (`*.yaml`)
 
 A YAML file combines global simulation **preferences** and a list of scheduled **events**.
 
